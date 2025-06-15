@@ -5,5 +5,5 @@ import (
 )
 
 func main() {
-	db.InitDB("data/database.db")
+	db.InitDB()
 }
