@@ -41,8 +41,10 @@ func Randon_fdp() {
 
 	if EhPrimo(numero_b) {
 		fmt.Printf("Ganhou -> numero %d\n", numero_b)
+
 	} else {
 		fmt.Printf("NAO ganhou -> numero %d\n", numero_b)
+
 	}
 
 }
