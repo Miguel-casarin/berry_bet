@@ -7,31 +7,36 @@
 *.test
 *.out
 
-# Output of `go run`
-*.log
-
-# Dependency directories (if you use vendoring)
-vendor/
-
-# Go workspace file
-go.work
-go.work.sum
-
 # Build directories
-bin/
-build/
+/bin/
+/build/
+/dist/
 
-# IDE/editor files
+# Dependency directories
+/vendor/
+
+# IDE/editor settings
 .vscode/
 .idea/
-*.swp
 
-# OS generated files
+# OS files
 .DS_Store
 Thumbs.db
 
-# SQLite database
-*.db
+# Logs
+*.log
 
-# Coverage reports
-coverage.out
+# Go-specific
+*.mod
+*.sum
+
+# Database or local data
+data/
+*.db
+*.sqlite
+*.sqlite3
+
+# Static cache (if generated)
+static/js/bundle.js
+static/js/*.map
+static/css/*.map
