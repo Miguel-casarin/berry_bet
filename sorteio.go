@@ -19,6 +19,39 @@ func EhPrimo(n int) bool {
 	return true
 }
 
+func cartinha () {
+	numero_cartinha := rand.Intn(99) + 1
+
+	if numero_cartinha Ehprimo(numero_cartinha) && <= 70{
+		return dez
+	}
+
+	if numero_cartinha Ehprimo(numero_cartinha) && <= 50{
+		return vinte
+	}
+
+	if numero_cartinha Ehprimo(numero_cartinha) && <= 10{
+		return master
+	}
+
+}
+
+// calculo da porcentagem oara o multiplicador
+func Porcentagem(porcentagem, valor float64) float64 {
+	return (porcentagem / 100) * valor
+}
+
+switch cartinha {
+	case cinco:
+		resultado = Porcentagem(5, valor)
+	case dez:
+		resultado = Porcentagem(10, valor)
+	case vinte:
+		resultado = Porcentagem(20, valor)
+	case master
+		resultado = Porcentagem(70, valor)
+}
+
 func Randon_inicial() {
 	// controle para nas 5 primeiras partidas ganhe muito
 	var numero_inicial int = 0
@@ -33,8 +66,8 @@ func Randon_inicial() {
 }
 
 func Randon_fdp() {
-	numero_a := rand.Intn(100) // entre 0 e 99
-	max := 100                 // limite superior desejado
+	numero_a := rand.Intn(99) + 1 // entre 0 e 99
+	max := 100                 
 
 	// Garante que numero_b >= numero_a
 	numero_b := rand.Intn(max-numero_a+1) + numero_a
