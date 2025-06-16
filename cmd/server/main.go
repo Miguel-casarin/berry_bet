@@ -1,9 +1,10 @@
 package main
 
 import (
-	"berry_bet/internal/db"
 	"log"
 	"net/http"
+
+	"berry_bet/internal/db"
 
 	"github.com/gorilla/mux"
 )
@@ -16,9 +17,11 @@ func main() {
 	defer database.Close()
 
 	r := mux.NewRouter()
-	// aqui você registra seus handlers
 	http.Handle("/", r)
+	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("Servidor rodando!"))
+	})
 
-	log.Println("Listening on :8080")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	log.Println("Servidor rodando em :8000")
+	log.Fatal(http.ListenAndServe(":8000", nil))
 }

@@ -1,0 +1,10 @@
+CREATE TABLE IF NOT EXISTS users (
+  id   INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT    NOT NULL,
+  cpf  TEXT    UNIQUE NOT NULL,
+  email TEXT   UNIQUE NOT NULL,
+  nickname TEXT,
+  balance REAL  DEFAULT 0,
+  password TEXT NOT NULL,
+  phone TEXT
+);

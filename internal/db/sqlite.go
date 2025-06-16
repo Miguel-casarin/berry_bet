@@ -3,44 +3,53 @@ package db
 import (
 	"database/sql"
 	"embed"
+	"fmt"
 	"io/fs"
 
-	_ "github.com/mattn/go-sqlite3" // Importa o driver SQLite3 para uso com database/sql
+	_ "github.com/mattn/go-sqlite3"
 )
 
-// migrations irá armazenar os arquivos de migração embutidos no binário.
-// Você precisa adicionar uma diretiva //go:embed para especificar os arquivos.
-// Exemplo: //go:embed migrations/*.sql
-var migrations embed.FS
+//go:embed migrations/*.sql
+var migrationFiles embed.FS
 
-// Open abre (ou cria) um banco de dados SQLite no caminho especificado.
-// Também executa as migrações encontradas no embed.FS.
 func Open(path string) (*sql.DB, error) {
-	db, err := sql.Open("sqlite3", path) // Abre conexão com o banco SQLite
+	db, err := sql.Open("sqlite3", path)
 	if err != nil {
-		return nil, err // Retorna erro se falhar ao abrir
-	}
-	if err := migrate(db); err != nil { // Executa as migrações
-		db.Close() // Fecha o banco em caso de erro na migração
 		return nil, err
 	}
-	return db, nil // Retorna a conexão aberta
+
+	// Ativa foreign keys
+	_, err = db.Exec("PRAGMA foreign_keys = ON;")
+	if err != nil {
+		return nil, err
+	}
+
+	if err := runMigrations(db); err != nil {
+		return nil, err
+	}
+
+	fmt.Println("Banco iniciado com sucesso.")
+	return db, nil
 }
 
-// migrate executa todos os arquivos de migração encontrados no embed.FS.
-func migrate(db *sql.DB) error {
-	entries, err := fs.ReadDir(migrations, ".") // Lista arquivos no embed.FS
+func runMigrations(db *sql.DB) error {
+	entries, err := fs.ReadDir(migrationFiles, "migrations")
 	if err != nil {
 		return err
 	}
-	for _, e := range entries {
-		content, err := migrations.ReadFile(e.Name()) // Lê o conteúdo do arquivo de migração
+
+	for _, entry := range entries {
+		if entry.IsDir() {
+			continue // ignora subdiretórios
+		}
+		sqlBytes, err := migrationFiles.ReadFile("migrations/" + entry.Name())
 		if err != nil {
 			return err
 		}
-		if _, err := db.Exec(string(content)); err != nil { // Executa o SQL da migração
-			return err
+		_, err = db.Exec(string(sqlBytes))
+		if err != nil {
+			return fmt.Errorf("erro ao aplicar %s: %w", entry.Name(), err)
 		}
 	}
-	return nil // Retorna nil se todas as migrações forem aplicadas com sucesso
+	return nil
 }
