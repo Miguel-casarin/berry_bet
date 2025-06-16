@@ -1,10 +1,14 @@
 # binários
-*.exe
-*.db
 /bin/
+/cmd/server/server
 
-# Go
+# módulos Go
+/go.mod
 /go.sum
 
 # IDE
 .vscode/
+*.swp
+
+# DB
+*.db
