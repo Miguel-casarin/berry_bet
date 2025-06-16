@@ -1,0 +1,10 @@
+# binários
+*.exe
+*.db
+/bin/
+
+# Go
+/go.sum
+
+# IDE
+.vscode/
