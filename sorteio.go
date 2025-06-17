@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"math/rand"
-	"time"
 )
 
 type cartinha string
@@ -107,19 +106,5 @@ func Randon_fdp() bool {
 }
 
 func main() {
-	rand.Seed(time.Now().UnixNano())
-	saldo := 100.0
 
-	fmt.Println("Rodada inicial")
-	ganho_inicial := Randon_inicial(saldo)
-	saldo += ganho_inicial
-	fmt.Printf("Ganho da rodada inicial: R$ %.2f\n", ganho_inicial)
-	fmt.Printf("Saldo após rodada inicial: R$ %.2f\n", saldo)
-
-	fmt.Println("Rodada FDP")
-	ganho_fdp := op_valor(saldo)
-	saldo += ganho_fdp
-	fmt.Printf("Ganho da rodada FDP: R$ %.2f\n", ganho_fdp)
-
-	fmt.Printf("Saldo final: R$ %.2f\n", saldo)
 }
