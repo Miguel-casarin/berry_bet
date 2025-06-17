@@ -12,7 +12,7 @@ func GetUsers(c *gin.Context) {
 
 func GetUserByID(c *gin.Context) {
 	id := c.Param("id")
-	c.JSON(http.StatusOK, gin.H{"message": "GetUserByID" + id + " Called"})
+	c.JSON(http.StatusOK, gin.H{"message": "GetUserByID " + id + " Called"})
 }
 
 func AddUser(c *gin.Context) {
@@ -25,5 +25,5 @@ func UpdateUser(c *gin.Context) {
 
 func DeleteUser(c *gin.Context) {
 	id := c.Param("id")
-	c.JSON(http.StatusOK, gin.H{"message": "DeleteUser" + id + " Called"})
+	c.JSON(http.StatusOK, gin.H{"message": "DeleteUser " + id + " Called"})
 }
