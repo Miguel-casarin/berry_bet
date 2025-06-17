@@ -1,4 +1,4 @@
-package api
+package api_users
 
 import (
 	"berry_bet/internal/users"
