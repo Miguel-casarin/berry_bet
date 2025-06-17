@@ -4,7 +4,8 @@ import (
 	"fmt"
 )
 
-var equity_value float64 = 0
+var historical_value float64 = 0
+var saldo float64 = 0
 var loser_count int = 0
 var statistical_loser int = 0
 
@@ -22,6 +23,11 @@ func Loser_count(value int) int {
 
 func Statistical_loser(old_value, new_value int) int {
 	return old_value + new_value
+}
+
+// conta o total já gasto
+func Count_money(spent, saldo float64) float64 {
+	return spent + saldo
 }
 
 func main() {
