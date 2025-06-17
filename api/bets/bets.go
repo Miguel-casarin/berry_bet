@@ -1,4 +1,4 @@
-package api
+package bets
 
 import (
 	"berry_bet/internal/bets"

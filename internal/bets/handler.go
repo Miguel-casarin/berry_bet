@@ -12,7 +12,7 @@ func GetBets(c *gin.Context) {
 
 func GetBetByID(c *gin.Context) {
 	id := c.Param("id")
-	c.JSON(http.StatusOK, gin.H{"message": "GetBetByID " + id + " Called"})
+	c.JSON(http.StatusOK, gin.H{"message": "GetBetByID" + id + " Called"})
 }
 
 func AddBet(c *gin.Context) {
@@ -25,5 +25,5 @@ func UpdateBet(c *gin.Context) {
 
 func DeleteBet(c *gin.Context) {
 	id := c.Param("id")
-	c.JSON(http.StatusOK, gin.H{"message": "DeleteBet " + id + " Called"})
+	c.JSON(http.StatusOK, gin.H{"message": "DeleteBet" + id + " Called"})
 }
