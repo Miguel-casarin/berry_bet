@@ -1,29 +1,47 @@
 package bets
 
 import (
+	"berry_bet/internal/utils"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
-func GetBets(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{"message": "GetBets Called"})
+func GetBetsHandler(c *gin.Context) {
+	bets, err := GetBets(10)
+	utils.CheckError(err)
+
+	if bets == nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "No Records found"})
+		return
+	} else {
+		c.JSON(http.StatusOK, gin.H{"data": bets})
+	}
 }
 
-func GetBetByID(c *gin.Context) {
+func GetBetByIDHandler(c *gin.Context) {
 	id := c.Param("id")
-	c.JSON(http.StatusOK, gin.H{"message": "GetBetByID " + id + " Called"})
+
+	bet, err := GetBetByID(id)
+	utils.CheckError(err)
+
+	if bet.BetStatus == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "No Record Found"})
+		return
+	} else {
+		c.JSON(http.StatusOK, gin.H{"data": bet})
+	}
 }
 
-func AddBet(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{"message": "AddBet Called"})
+func AddBetHandler(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{"message": "AddBetHandler Called"})
 }
 
-func UpdateBet(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{"message": "UpdateBet Called"})
+func UpdateBetHandler(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{"message": "UpdateBetHandler Called"})
 }
 
-func DeleteBet(c *gin.Context) {
+func DeleteBetHandler(c *gin.Context) {
 	id := c.Param("id")
-	c.JSON(http.StatusOK, gin.H{"message": "DeleteBet " + id + " Called"})
+	c.JSON(http.StatusOK, gin.H{"message": "DeleteBetHandler " + id + " Called"})
 }

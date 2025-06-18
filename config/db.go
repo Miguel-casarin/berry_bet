@@ -8,12 +8,15 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
+var DB *sql.DB
+
 func SetupDatabase() {
 	db, err := sql.Open("sqlite3", "./data/berry_bet.db")
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer db.Close()
+
+	DB = db
 
 	migrations := []string{
 		"./migrations/001_create_users.sql",
