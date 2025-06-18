@@ -73,6 +73,16 @@ func UpdateBetHandler(c *gin.Context) {
 }
 
 func DeleteBetHandler(c *gin.Context) {
-	id := c.Param("id")
-	c.JSON(http.StatusOK, gin.H{"message": "DeleteBetHandler " + id + " Called"})
+	betId, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
+	}
+
+	success, err := DeleteBet(betId)
+
+	if success {
+		c.JSON(http.StatusOK, gin.H{"message": "Success"})
+	} else {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err})
+	}
 }

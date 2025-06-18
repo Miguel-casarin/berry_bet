@@ -84,7 +84,7 @@ func AddBet(newBet Bet) (bool, error) {
 		return false, err
 	}
 
-	stmt, err := tx.Prepare("INSERT INTO bets (user_id, amount, odds, bet_status, profit_loss, game_id, created_at) VALUES (?, ?, ?, ?, ?, ?, datetime('now'))")
+	stmt, err := config.DB.Prepare("INSERT INTO bets (user_id, amount, odds, bet_status, profit_loss, game_id, created_at) VALUES (?, ?, ?, ?, ?, ?, datetime('now'))")
 
 	if err != nil {
 		return false, err
@@ -111,7 +111,7 @@ func UpdateBet(ourBet Bet, id int64) (bool, error) {
 		return false, err
 	}
 
-	stmt, err := tx.Prepare("UPDATE bets SET user_id = ?, amount = ?, odds = ?, bet_status = ?, profit_loss = ?, game_id = ? WHERE id = ?")
+	stmt, err := config.DB.Prepare("UPDATE bets SET user_id = ?, amount = ?, odds = ?, bet_status = ?, profit_loss = ?, game_id = ? WHERE id = ?")
 
 	if err != nil {
 		return false, err
@@ -120,6 +120,31 @@ func UpdateBet(ourBet Bet, id int64) (bool, error) {
 
 	_, err = stmt.Exec(ourBet.UserID, ourBet.Amount, ourBet.Odds, ourBet.BetStatus, ourBet.ProfitLoss, ourBet.GameID, id)
 
+	if err != nil {
+		return false, err
+	}
+
+	tx.Commit()
+
+	return true, nil
+}
+
+// Deleta uma aposta do banco de dados pelo ID
+
+func DeleteBet(betId int) (bool, error) {
+	tx, err := config.DB.Begin()
+
+	if err != nil {
+		return false, err
+	}
+
+	stmt, err := config.DB.Prepare("DELETE FROM bets WHERE id = ?")
+
+	if err != nil {
+		return false, err
+	}
+
+	_, err = stmt.Exec(betId)
 	if err != nil {
 		return false, err
 	}
