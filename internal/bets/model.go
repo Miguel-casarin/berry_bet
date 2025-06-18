@@ -8,6 +8,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
+// Bet representa uma aposta no sistema
 type Bet struct {
 	ID         int64   `json:"id"`
 	UserID     int64   `json:"user_id"`
@@ -18,6 +19,8 @@ type Bet struct {
 	GameID     int64   `json:"game_id"`
 	CreatedAt  string  `json:"created_at"`
 }
+
+// Busca as apostas do banco de dados, limitando o número de resultados retornados
 
 func GetBets(count int) ([]Bet, error) {
 	rows, err := config.DB.Query("SELECT id, user_id, amount, odds, bet_status, profit_loss, game_id, created_at FROM bets LIMIT " + strconv.Itoa(count))
@@ -50,6 +53,8 @@ func GetBets(count int) ([]Bet, error) {
 	return bets, err
 }
 
+// Busca uma aposta pelo ID no banco de dados
+
 func GetBetByID(id string) (Bet, error) {
 	stmt, err := config.DB.Prepare("SELECT id, user_id, amount, odds, bet_status, profit_loss, game_id, created_at FROM bets WHERE id = ?")
 
@@ -70,6 +75,8 @@ func GetBetByID(id string) (Bet, error) {
 	return bet, nil
 }
 
+// Adiciona uma nova aposta ao banco de dados
+
 func AddBet(newBet Bet) (bool, error) {
 	tx, err := config.DB.Begin()
 
@@ -85,6 +92,33 @@ func AddBet(newBet Bet) (bool, error) {
 	defer stmt.Close()
 
 	_, err = stmt.Exec(newBet.UserID, newBet.Amount, newBet.Odds, newBet.BetStatus, newBet.ProfitLoss, newBet.GameID)
+
+	if err != nil {
+		return false, err
+	}
+
+	tx.Commit()
+
+	return true, nil
+}
+
+// Atualiza uma aposta existente no banco de dados
+
+func UpdateBet(ourBet Bet, id int64) (bool, error) {
+	tx, err := config.DB.Begin()
+
+	if err != nil {
+		return false, err
+	}
+
+	stmt, err := tx.Prepare("UPDATE bets SET user_id = ?, amount = ?, odds = ?, bet_status = ?, profit_loss = ?, game_id = ? WHERE id = ?")
+
+	if err != nil {
+		return false, err
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(ourBet.UserID, ourBet.Amount, ourBet.Odds, ourBet.BetStatus, ourBet.ProfitLoss, ourBet.GameID, id)
 
 	if err != nil {
 		return false, err

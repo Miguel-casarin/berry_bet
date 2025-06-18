@@ -3,6 +3,7 @@ package bets
 import (
 	"berry_bet/internal/utils"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -50,7 +51,25 @@ func AddBetHandler(c *gin.Context) {
 }
 
 func UpdateBetHandler(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{"message": "UpdateBetHandler Called"})
+	var json Bet
+	if err := c.ShouldBindJSON(&json); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	betId, err := strconv.Atoi(c.Param("id"))
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
+	}
+
+	success, err := UpdateBet(json, int64(betId))
+
+	if success {
+		c.JSON(http.StatusOK, gin.H{"message": "Success"})
+	} else {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err})
+	}
 }
 
 func DeleteBetHandler(c *gin.Context) {
