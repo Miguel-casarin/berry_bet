@@ -73,23 +73,24 @@ func Op_valor(salddo float64) float64 {
 	return resultado
 
 }
-func Give_low(saldo float64) float64 {
-	var resultado float64 = saldo + Porcentagem(0.5, saldo)
+
+func Give_low(saldo_aposta float64) float64 {
+	var resultado float64 = saldo_aposta + Porcentagem(0.5, saldo_aposta)
 	return resultado
 }
 
-func Haddad(saldo float64) float64 {
+func Haddad(saldo_aposta float64) float64 {
 	numero := rand.Intn(99) + 1
 
 	if EhPrimo(numero) && numero <= 5 {
-		saldo = saldo + Give_low(saldo)
-		return saldo
+		saldo_aposta = saldo_aposta + Give_low(saldo_aposta)
+		return saldo_aposta
 	} else {
 		return 0
 	}
 }
 
-func Randon_inicial(saldo float64) float64 {
+func Randon_inicial(saldo_aposta float64) float64 {
 	var numero_inicial int = 0
 	var resultado float64
 
@@ -97,7 +98,7 @@ func Randon_inicial(saldo float64) float64 {
 	for numero_inicial <= 3 {
 		if numero_inicial == 1 || EhPrimo(numero_inicial) {
 			fmt.Printf("Ganhou -> numero %d\n", numero_inicial)
-			resultado += Porcentagem(10, saldo)
+			resultado += Porcentagem(10, saldo_aposta)
 		}
 		numero_inicial++
 	}
