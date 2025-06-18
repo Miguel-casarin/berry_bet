@@ -86,3 +86,13 @@ func DeleteBetHandler(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err})
 	}
 }
+
+func OptionsHandler(c *gin.Context) {
+	ourOptions := "HTTP/1.1 200 OK\n" +
+		"Allow: GET, POST, PUT, DELETE, OPTIONS\n" +
+		"Access-Control-Allow-Origin: http://localhost:8080\n" +
+		"Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS\n" +
+		"Access-Control-Allow-Headers: Content-Type\n"
+
+	c.String(200, ourOptions)
+}

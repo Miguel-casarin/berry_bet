@@ -14,5 +14,6 @@ func RegisterBetRoutes(router *gin.Engine) {
 		v1.POST("/bets", bets.AddBetHandler)
 		v1.PUT("/bets/:id", bets.UpdateBetHandler)
 		v1.DELETE("/bets/:id", bets.DeleteBetHandler)
+		v1.OPTIONS("/bets", bets.OptionsHandler)
 	}
 }
