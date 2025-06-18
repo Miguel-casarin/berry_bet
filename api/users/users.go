@@ -9,10 +9,10 @@ import (
 func RegisterUserRoutes(router *gin.Engine) {
 	v1 := router.Group("/api/v1")
 	{
-		v1.GET("/users", users.GetUsers)
-		v1.GET("/users/:id", users.GetUserByID)
-		v1.POST("/users", users.AddUser)
-		v1.PUT("/users/:id", users.UpdateUser)
-		v1.DELETE("/users/:id", users.DeleteUser)
+		v1.GET("/users", users.GetUsersHandler)
+		v1.GET("/users/:id", users.GetUserByIDHandler)
+		v1.POST("/users", users.AddUserHandler)
+		v1.PUT("/users/:id", users.UpdateUserHandler)
+		v1.DELETE("/users/:id", users.DeleteUserHandler)
 	}
 }
