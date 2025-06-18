@@ -69,3 +69,28 @@ func GetBetByID(id string) (Bet, error) {
 	}
 	return bet, nil
 }
+
+func AddBet(newBet Bet) (bool, error) {
+	tx, err := config.DB.Begin()
+
+	if err != nil {
+		return false, err
+	}
+
+	stmt, err := tx.Prepare("INSERT INTO bets (user_id, amount, odds, bet_status, profit_loss, game_id, created_at) VALUES (?, ?, ?, ?, ?, ?, datetime('now'))")
+
+	if err != nil {
+		return false, err
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(newBet.UserID, newBet.Amount, newBet.Odds, newBet.BetStatus, newBet.ProfitLoss, newBet.GameID)
+
+	if err != nil {
+		return false, err
+	}
+
+	tx.Commit()
+
+	return true, nil
+}

@@ -34,7 +34,19 @@ func GetBetByIDHandler(c *gin.Context) {
 }
 
 func AddBetHandler(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{"message": "AddBetHandler Called"})
+	var json Bet
+	if err := c.ShouldBindJSON(&json); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	success, err := AddBet(json)
+
+	if success {
+		c.JSON(http.StatusOK, gin.H{"message": "Success"})
+	} else {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err})
+	}
 }
 
 func UpdateBetHandler(c *gin.Context) {
