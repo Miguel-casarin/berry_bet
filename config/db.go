@@ -20,8 +20,8 @@ func SetupDatabase() {
 
 	migrations := []string{
 		"./migrations/001_create_users.sql",
-		"./migrations/002_create_bets.sql",
-		"./migrations/003_create_games.sql",
+		"./migrations/002_create_games.sql",
+		"./migrations/003_create_bets.sql",
 	}
 
 	for _, migrationFile := range migrations {
