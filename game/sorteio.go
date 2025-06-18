@@ -51,7 +51,7 @@ func Porcentagem(porcentagem, valor float64) float64 {
 	return (porcentagem / 100) * valor
 }
 
-func Op_valor(salddo float64) float64 {
+func Op_valor(saldo float64) float64 {
 
 	carta := Cartinha_aleatoria()
 	var resultado float64

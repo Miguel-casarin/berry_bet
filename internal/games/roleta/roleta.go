@@ -5,6 +5,10 @@ func Start(saldo_aposta float64) float64 {
 	return saldo_aposta
 }
 
+// criar uma struct para guardar os resultados
+type Dados_rodadas struct {
+}
+
 func Final(saldo_aposta float64) (float64, float64, int) {
 
 	var limit float64 = 1000.00
