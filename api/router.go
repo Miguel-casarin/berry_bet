@@ -6,6 +6,7 @@ import (
 	"berry_bet/api/games"
 	"berry_bet/api/games/roulette"
 	"berry_bet/api/sessions"
+	"berry_bet/api/transactions"
 	"berry_bet/api/user_stats"
 	"berry_bet/api/users"
 
@@ -20,4 +21,5 @@ func RegisterRoutes(router *gin.Engine) {
 	user_stats.RegisterUserStatsRoutes(router)
 	games.RegisterGameRoutes(router)
 	roulette.RegisterRouletteRoutes(router)
+	transactions.RegisterTransactionRoutes(router)
 }
