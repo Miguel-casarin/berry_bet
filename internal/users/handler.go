@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"golang.org/x/crypto/bcrypt"
 )
 
 func GetUsersHandler(c *gin.Context) {
@@ -35,14 +36,31 @@ func GetUserByIDHandler(c *gin.Context) {
 }
 
 func AddUserHandler(c *gin.Context) {
-	var json User
-	if err := c.ShouldBindJSON(&json); err != nil {
+	var req struct {
+		Username string `json:"username"`
+		Email    string `json:"email"`
+		Password string `json:"password"`
+		Phone    string `json:"phone"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	success, err := AddUser(json)
+	hashed, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to hash password"})
+		return
+	}
 
+	user := User{
+		Username:     req.Username,
+		Email:        req.Email,
+		PasswordHash: string(hashed),
+		Phone:        req.Phone,
+	}
+
+	success, err := AddUser(user)
 	if success {
 		c.JSON(http.StatusOK, gin.H{"message": "Success"})
 	} else {
@@ -51,20 +69,40 @@ func AddUserHandler(c *gin.Context) {
 }
 
 func UpdateUserHandler(c *gin.Context) {
-	var json User
-	if err := c.ShouldBindJSON(&json); err != nil {
+	var req struct {
+		Username string `json:"username"`
+		Email    string `json:"email"`
+		Password string `json:"password,omitempty"`
+		Phone    string `json:"phone"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
 	userId, err := strconv.Atoi(c.Param("id"))
-
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
+		return
 	}
 
-	success, err := UpdateUser(json, int64(userId))
+	user := User{
+		ID:       int64(userId),
+		Username: req.Username,
+		Email:    req.Email,
+		Phone:    req.Phone,
+	}
 
+	if req.Password != "" {
+		hashed, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to hash password"})
+			return
+		}
+		user.PasswordHash = string(hashed)
+	}
+
+	success, err := UpdateUser(user, int64(userId))
 	if success {
 		c.JSON(http.StatusOK, gin.H{"message": "Success"})
 	} else {
