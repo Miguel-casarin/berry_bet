@@ -1,7 +1,7 @@
 package  roulette
 
 import (
-	"berry_bet/internal/roulette"
+	"berry_bet/internal/games/roulette"
 
 	 "github.com/gin-gonic/gin"
 )
