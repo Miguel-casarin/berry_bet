@@ -64,7 +64,12 @@ func AddUserHandler(c *gin.Context) {
 
 	success, err := AddUser(user)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "data": nil, "message": err.Error()})
+		errMsg := err.Error()
+		if errMsg == "cpf is already taken" || errMsg == "email is already taken" || errMsg == "username is already taken" {
+			c.JSON(http.StatusConflict, gin.H{"success": false, "data": nil, "message": errMsg})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "data": nil, "message": errMsg})
 		return
 	}
 	if success {
@@ -112,7 +117,12 @@ func UpdateUserHandler(c *gin.Context) {
 
 	success, err := UpdateUser(user, int64(userId))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "data": nil, "message": err.Error()})
+		errMsg := err.Error()
+		if errMsg == "cpf is already taken" || errMsg == "email is already taken" || errMsg == "username is already taken" {
+			c.JSON(http.StatusConflict, gin.H{"success": false, "data": nil, "message": errMsg})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "data": nil, "message": errMsg})
 		return
 	}
 	if success {
@@ -148,4 +158,18 @@ func OptionsHandler(c *gin.Context) {
 		"Access-Control-Allow-Headers: Content-Type\n"
 
 	c.String(200, ourOptions)
+}
+
+func GetUserBalanceHandler(c *gin.Context) {
+	userId, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"success": false, "data": nil, "message": "Invalid user ID"})
+		return
+	}
+	balance, err := CalculateUserBalance(int64(userId))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "data": nil, "message": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"success": true, "data": gin.H{"balance": balance}, "message": "Saldo consultado com sucesso"})
 }

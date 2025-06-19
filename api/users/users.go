@@ -14,5 +14,6 @@ func RegisterUserRoutes(router *gin.Engine) {
 		v1.POST("/users", users.AddUserHandler)
 		v1.PUT("/users/:id", users.UpdateUserHandler)
 		v1.DELETE("/users/:id", users.DeleteUserHandler)
+		v1.GET("/users/:id/balance", users.GetUserBalanceHandler)
 	}
 }
