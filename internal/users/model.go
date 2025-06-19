@@ -12,6 +12,7 @@ type User struct {
 	Username     string `json:"username"`
 	Email        string `json:"email"`
 	PasswordHash string `json:"password_hash"`
+	CPF          string `json:"cpf"`
 	Phone        string `json:"phone"`
 	CreatedAt    string `json:"created_at"`
 	UpdatedAt    string `json:"updated_at"`
@@ -20,7 +21,7 @@ type User struct {
 // Busca os usuários do banco de dados, limitando o número de resultados retornados
 
 func GetUsers(count int) ([]User, error) {
-	rows, err := config.DB.Query("SELECT id, username, email, password_hash, phone, created_at, updated_at FROM users LIMIT ?", count)
+	rows, err := config.DB.Query("SELECT id, username, email, password_hash, cpf, phone, created_at, updated_at FROM users LIMIT ?", count)
 	if err != nil {
 		return nil, err
 	}
@@ -30,7 +31,7 @@ func GetUsers(count int) ([]User, error) {
 
 	for rows.Next() {
 		singleUser := User{}
-		err := rows.Scan(&singleUser.ID, &singleUser.Username, &singleUser.Email, &singleUser.PasswordHash, &singleUser.Phone, &singleUser.CreatedAt, &singleUser.UpdatedAt)
+		err := rows.Scan(&singleUser.ID, &singleUser.Username, &singleUser.Email, &singleUser.PasswordHash, &singleUser.CPF, &singleUser.Phone, &singleUser.CreatedAt, &singleUser.UpdatedAt)
 
 		if err != nil {
 			return nil, err
@@ -48,7 +49,7 @@ func GetUsers(count int) ([]User, error) {
 // Busca um usuário pelo ID no banco de dados
 
 func GetUserByID(id string) (User, error) {
-	stmt, err := config.DB.Prepare("SELECT id, username, email, password_hash, phone, created_at, updated_at FROM users WHERE id = ?")
+	stmt, err := config.DB.Prepare("SELECT id, username, email, password_hash, cpf, phone, created_at, updated_at FROM users WHERE id = ?")
 
 	if err != nil {
 		return User{}, err
@@ -56,7 +57,7 @@ func GetUserByID(id string) (User, error) {
 
 	user := User{}
 
-	sqlErr := stmt.QueryRow(id).Scan(&user.ID, &user.Username, &user.Email, &user.PasswordHash, &user.Phone, &user.CreatedAt, &user.UpdatedAt)
+	sqlErr := stmt.QueryRow(id).Scan(&user.ID, &user.Username, &user.Email, &user.PasswordHash, &user.CPF, &user.Phone, &user.CreatedAt, &user.UpdatedAt)
 
 	if sqlErr != nil {
 		if sqlErr == sql.ErrNoRows {
@@ -76,14 +77,14 @@ func AddUser(newUser User) (bool, error) {
 		return false, err
 	}
 
-	stmt, err := config.DB.Prepare("INSERT INTO users (username, email, password_hash, phone, created_at, updated_at) VALUES (?, ?, ?, ?, datetime('now'), datetime('now'))")
+	stmt, err := config.DB.Prepare("INSERT INTO users (username, email, password_hash, cpf, phone, created_at, updated_at) VALUES (?, ?, ?, ?, ?, datetime('now'), datetime('now'))")
 
 	if err != nil {
 		return false, err
 	}
 	defer stmt.Close()
 
-	_, err = stmt.Exec(newUser.Username, newUser.Email, newUser.PasswordHash, newUser.Phone)
+	_, err = stmt.Exec(newUser.Username, newUser.Email, newUser.PasswordHash, newUser.CPF, newUser.Phone)
 
 	if err != nil {
 		return false, err
@@ -103,14 +104,14 @@ func UpdateUser(ourUser User, id int64) (bool, error) {
 		return false, err
 	}
 
-	stmt, err := config.DB.Prepare("UPDATE users SET username = ?, email = ?, password_hash = ?, phone = ?, updated_at = datetime('now') WHERE id = ?")
+	stmt, err := config.DB.Prepare("UPDATE users SET username = ?, email = ?, password_hash = ?, cpf = ?, phone = ?, updated_at = datetime('now') WHERE id = ?")
 
 	if err != nil {
 		return false, err
 	}
 	defer stmt.Close()
 
-	_, err = stmt.Exec(ourUser.Username, ourUser.Email, ourUser.PasswordHash, ourUser.Phone, id)
+	_, err = stmt.Exec(ourUser.Username, ourUser.Email, ourUser.PasswordHash, ourUser.CPF, ourUser.Phone, id)
 
 	if err != nil {
 		return false, err
