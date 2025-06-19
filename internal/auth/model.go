@@ -2,27 +2,18 @@ package auth
 
 import (
 	"berry_bet/config"
+	"berry_bet/internal/users"
 	"database/sql"
 
 	"golang.org/x/crypto/bcrypt"
 )
 
-type User struct {
-	ID           int64  `json:"id"`
-	Username     string `json:"username"`
-	Email        string `json:"email"`
-	PasswordHash string `json:"-"`
-	Phone        string `json:"phone"`
-	CreatedAt    string `json:"created_at"`
-	UpdatedAt    string `json:"updated_at"`
-}
-
-func GetUserByUsernameOrEmail(identifier string) (*User, error) {
+func GetUserByUsernameOrEmail(identifier string) (*users.User, error) {
 	row := config.DB.QueryRow(
 		"SELECT id, username, email, password_hash, phone, created_at, updated_at FROM users WHERE username = ? OR email = ?",
 		identifier, identifier,
 	)
-	var user User
+	var user users.User
 	err := row.Scan(&user.ID, &user.Username, &user.Email, &user.PasswordHash, &user.Phone, &user.CreatedAt, &user.UpdatedAt)
 	if err == sql.ErrNoRows {
 		return nil, nil
