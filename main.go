@@ -1,9 +1,7 @@
 package main
 
 import (
-	"berry_bet/api/auth"
-	"berry_bet/api/bets"
-	"berry_bet/api/users"
+	"berry_bet/api"
 	"berry_bet/config"
 
 	"github.com/gin-gonic/gin"
@@ -12,9 +10,7 @@ import (
 func main() {
 	config.SetupDatabase()
 
-	router := gin.Default()
-	auth.RegisterAuthRoutes(router)
-	users.RegisterUserRoutes(router)
-	bets.RegisterBetRoutes(router)
-	router.Run(":8080")
+	r := gin.Default()
+	api.RegisterRoutes(r)
+	r.Run(":8080")
 }

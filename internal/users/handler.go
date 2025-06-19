@@ -1,7 +1,6 @@
 package users
 
 import (
-	"berry_bet/internal/utils"
 	"net/http"
 	"strconv"
 
@@ -11,28 +10,29 @@ import (
 
 func GetUsersHandler(c *gin.Context) {
 	users, err := GetUsers(10)
-	utils.CheckError(err)
-
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 	if users == nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "No Records found"})
 		return
-	} else {
-		c.JSON(http.StatusOK, gin.H{"data": users})
 	}
+	c.JSON(http.StatusOK, gin.H{"data": users})
 }
 
 func GetUserByIDHandler(c *gin.Context) {
 	id := c.Param("id")
-
 	user, err := GetUserByID(id)
-	utils.CheckError(err)
-
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 	if user.Username == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "No Record Found"})
 		return
-	} else {
-		c.JSON(http.StatusOK, gin.H{"data": user})
 	}
+	c.JSON(http.StatusOK, gin.H{"data": user})
 }
 
 func AddUserHandler(c *gin.Context) {
@@ -61,10 +61,14 @@ func AddUserHandler(c *gin.Context) {
 	}
 
 	success, err := AddUser(user)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 	if success {
 		c.JSON(http.StatusOK, gin.H{"message": "Success"})
 	} else {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to add user"})
 	}
 }
 
@@ -103,10 +107,14 @@ func UpdateUserHandler(c *gin.Context) {
 	}
 
 	success, err := UpdateUser(user, int64(userId))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 	if success {
 		c.JSON(http.StatusOK, gin.H{"message": "Success"})
 	} else {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to update user"})
 	}
 }
 
@@ -114,13 +122,17 @@ func DeleteUserHandler(c *gin.Context) {
 	userId, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
+		return
 	}
 	success, err := DeleteUser(userId)
-
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 	if success {
 		c.JSON(http.StatusOK, gin.H{"message": "Success"})
 	} else {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to delete user"})
 	}
 }
 

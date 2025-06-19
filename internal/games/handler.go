@@ -1,7 +1,6 @@
 package games
 
 import (
-	"berry_bet/internal/utils"
 	"net/http"
 	"strconv"
 
@@ -10,27 +9,29 @@ import (
 
 func GetGamesHandler(c *gin.Context) {
 	games, err := GetGames(10)
-	utils.CheckError(err)
-
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 	if games == nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "No Records found"})
 		return
-	} else {
-		c.JSON(http.StatusOK, gin.H{"data": games})
 	}
+	c.JSON(http.StatusOK, gin.H{"data": games})
 }
 
 func GetGameByIDHandler(c *gin.Context) {
 	id := c.Param("id")
 	game, err := GetGameByID(id)
-	utils.CheckError(err)
-
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 	if game.GameName == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "No Record Found"})
 		return
-	} else {
-		c.JSON(http.StatusOK, gin.H{"data": game})
 	}
+	c.JSON(http.StatusOK, gin.H{"data": game})
 }
 
 func AddGameHandler(c *gin.Context) {
@@ -41,11 +42,14 @@ func AddGameHandler(c *gin.Context) {
 	}
 
 	success, err := AddGame(json)
-
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 	if success {
 		c.JSON(http.StatusOK, gin.H{"message": "Success"})
 	} else {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to add game"})
 	}
 }
 
@@ -57,17 +61,20 @@ func UpdateGameHandler(c *gin.Context) {
 	}
 
 	gameId, err := strconv.Atoi(c.Param("id"))
-
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
+		return
 	}
 
 	success, err := UpdateGame(json, int64(gameId))
-
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 	if success {
 		c.JSON(http.StatusOK, gin.H{"message": "Success"})
 	} else {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to update game"})
 	}
 }
 
@@ -75,14 +82,18 @@ func DeleteGameHandler(c *gin.Context) {
 	gameId, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
+		return
 	}
 
 	success, err := DeleteGame(gameId)
-
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 	if success {
 		c.JSON(http.StatusOK, gin.H{"message": "Success"})
 	} else {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to delete game"})
 	}
 }
 
