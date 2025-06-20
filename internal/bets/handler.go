@@ -41,6 +41,10 @@ func AddBetHandler(c *gin.Context) {
 		utils.RespondError(c, http.StatusBadRequest, "INVALID_INPUT", "Invalid data.", err.Error())
 		return
 	}
+	if err := ValidateBet(json); err != nil {
+		utils.RespondError(c, http.StatusBadRequest, "BUSINESS_RULE", err.Error(), nil)
+		return
+	}
 	success, err := AddBet(json)
 	if err != nil {
 		utils.RespondError(c, http.StatusInternalServerError, "DB_ERROR", "Failed to register bet.", err.Error())
