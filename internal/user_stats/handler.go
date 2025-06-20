@@ -1,6 +1,7 @@
 package user_stats
 
 import (
+	"berry_bet/internal/utils"
 	"net/http"
 	"strconv"
 
@@ -10,45 +11,45 @@ import (
 func GetUserStatsHandler(c *gin.Context) {
 	stats, err := GetUserStats(10)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "data": nil, "message": err.Error()})
+		utils.RespondError(c, http.StatusInternalServerError, "DB_ERROR", "Failed to fetch user stats.", err.Error())
 		return
 	}
 	if stats == nil {
-		c.JSON(http.StatusNotFound, gin.H{"success": false, "data": nil, "message": "No records found"})
+		utils.RespondError(c, http.StatusNotFound, "NOT_FOUND", "No user stats found.", nil)
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"success": true, "data": stats, "message": "Estatísticas encontradas"})
+	utils.RespondSuccess(c, stats, "User stats found")
 }
 
 func GetUserStatsByIDHandler(c *gin.Context) {
 	id := c.Param("id")
 	stats, err := GetUserStatsByID(id)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "data": nil, "message": err.Error()})
+		utils.RespondError(c, http.StatusInternalServerError, "DB_ERROR", "Failed to fetch user stats.", err.Error())
 		return
 	}
 	if stats.ID == 0 {
-		c.JSON(http.StatusNotFound, gin.H{"success": false, "data": nil, "message": "No record found"})
+		utils.RespondError(c, http.StatusNotFound, "NOT_FOUND", "User stats not found.", nil)
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"success": true, "data": stats, "message": "Estatística encontrada"})
+	utils.RespondSuccess(c, stats, "User stats found")
 }
 
 func AddUserStatsHandler(c *gin.Context) {
 	var json UserStats
 	if err := c.ShouldBindJSON(&json); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"success": false, "data": nil, "message": "Invalid request"})
+		utils.RespondError(c, http.StatusBadRequest, "INVALID_INPUT", "Invalid data.", err.Error())
 		return
 	}
 	success, err := AddUserStats(json)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "data": nil, "message": err.Error()})
+		utils.RespondError(c, http.StatusInternalServerError, "DB_ERROR", "Failed to register user stats.", err.Error())
 		return
 	}
 	if success {
-		c.JSON(http.StatusCreated, gin.H{"success": true, "data": nil, "message": "Estatística registrada com sucesso"})
+		utils.RespondSuccess(c, nil, "User stats registered successfully")
 	} else {
-		c.JSON(http.StatusBadRequest, gin.H{"success": false, "data": nil, "message": "Não foi possível registrar a estatística"})
+		utils.RespondError(c, http.StatusBadRequest, "INSERT_FAIL", "Could not register user stats.", nil)
 	}
 }
 
@@ -56,36 +57,36 @@ func UpdateUserStatsHandler(c *gin.Context) {
 	var json UserStats
 	statsId, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
+		utils.RespondError(c, http.StatusBadRequest, "INVALID_ID", "Invalid ID.", err.Error())
 		return
 	}
 	success, err := UpdateUserStats(json, int64(statsId))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.RespondError(c, http.StatusInternalServerError, "DB_ERROR", "Failed to update user stats.", err.Error())
 		return
 	}
 	if success {
-		c.JSON(http.StatusOK, gin.H{"message": "Success"})
+		utils.RespondSuccess(c, nil, "User stats updated successfully")
 	} else {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to update user stats"})
+		utils.RespondError(c, http.StatusBadRequest, "UPDATE_FAIL", "Could not update user stats.", nil)
 	}
 }
 
 func DeleteUserStatsHandler(c *gin.Context) {
 	statsId, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
+		utils.RespondError(c, http.StatusBadRequest, "INVALID_ID", "Invalid ID.", err.Error())
 		return
 	}
 	success, err := DeleteUserStats(statsId)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.RespondError(c, http.StatusInternalServerError, "DB_ERROR", "Failed to delete user stats.", err.Error())
 		return
 	}
 	if success {
-		c.JSON(http.StatusOK, gin.H{"message": "Success"})
+		utils.RespondSuccess(c, nil, "User stats deleted successfully")
 	} else {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to delete user stats"})
+		utils.RespondError(c, http.StatusBadRequest, "DELETE_FAIL", "Could not delete user stats.", nil)
 	}
 }
 

@@ -1,6 +1,7 @@
 package users
 
 import (
+	"berry_bet/internal/utils"
 	"net/http"
 	"strconv"
 
@@ -11,28 +12,28 @@ import (
 func GetUsersHandler(c *gin.Context) {
 	users, err := GetUsers(10)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "data": nil, "message": err.Error()})
+		utils.RespondError(c, http.StatusInternalServerError, "DB_ERROR", "Failed to fetch users.", err.Error())
 		return
 	}
 	if users == nil {
-		c.JSON(http.StatusNotFound, gin.H{"success": false, "data": nil, "message": "No records found"})
+		utils.RespondError(c, http.StatusNotFound, "NOT_FOUND", "No users found.", nil)
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"success": true, "data": users, "message": "Usuários encontrados"})
+	utils.RespondSuccess(c, users, "Users found")
 }
 
 func GetUserByIDHandler(c *gin.Context) {
 	id := c.Param("id")
 	user, err := GetUserByID(id)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "data": nil, "message": err.Error()})
+		utils.RespondError(c, http.StatusInternalServerError, "DB_ERROR", "Failed to fetch user.", err.Error())
 		return
 	}
 	if user.Username == "" {
-		c.JSON(http.StatusNotFound, gin.H{"success": false, "data": nil, "message": "No record found"})
+		utils.RespondError(c, http.StatusNotFound, "NOT_FOUND", "User not found.", nil)
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"success": true, "data": user, "message": "Usuário encontrado"})
+	utils.RespondSuccess(c, user, "User found")
 }
 
 func AddUserHandler(c *gin.Context) {
@@ -44,13 +45,13 @@ func AddUserHandler(c *gin.Context) {
 		Phone    string `json:"phone"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"success": false, "data": nil, "message": err.Error()})
+		utils.RespondError(c, http.StatusBadRequest, "INVALID_INPUT", "Invalid data.", err.Error())
 		return
 	}
 
 	hashed, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "data": nil, "message": "Failed to hash password"})
+		utils.RespondError(c, http.StatusInternalServerError, "HASH_ERROR", "Failed to hash password.", err.Error())
 		return
 	}
 
@@ -66,16 +67,16 @@ func AddUserHandler(c *gin.Context) {
 	if err != nil {
 		errMsg := err.Error()
 		if errMsg == "cpf is already taken" || errMsg == "email is already taken" || errMsg == "username is already taken" {
-			c.JSON(http.StatusConflict, gin.H{"success": false, "data": nil, "message": errMsg})
+			utils.RespondError(c, http.StatusConflict, "CONFLICT", errMsg, nil)
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "data": nil, "message": errMsg})
+		utils.RespondError(c, http.StatusInternalServerError, "DB_ERROR", errMsg, nil)
 		return
 	}
 	if success {
-		c.JSON(http.StatusCreated, gin.H{"success": true, "data": nil, "message": "Usuário criado com sucesso"})
+		utils.RespondSuccess(c, nil, "User created successfully")
 	} else {
-		c.JSON(http.StatusBadRequest, gin.H{"success": false, "data": nil, "message": "Não foi possível criar o usuário"})
+		utils.RespondError(c, http.StatusBadRequest, "INSERT_FAIL", "Could not create user.", nil)
 	}
 }
 
@@ -88,13 +89,13 @@ func UpdateUserHandler(c *gin.Context) {
 		Phone    string `json:"phone"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"success": false, "data": nil, "message": err.Error()})
+		utils.RespondError(c, http.StatusBadRequest, "INVALID_INPUT", "Invalid data.", err.Error())
 		return
 	}
 
 	userId, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"success": false, "data": nil, "message": "Invalid ID"})
+		utils.RespondError(c, http.StatusBadRequest, "INVALID_ID", "Invalid ID.", err.Error())
 		return
 	}
 
@@ -109,7 +110,7 @@ func UpdateUserHandler(c *gin.Context) {
 	if req.Password != "" {
 		hashed, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"success": false, "data": nil, "message": "Failed to hash password"})
+			utils.RespondError(c, http.StatusInternalServerError, "HASH_ERROR", "Failed to hash password.", err.Error())
 			return
 		}
 		user.PasswordHash = string(hashed)
@@ -119,34 +120,34 @@ func UpdateUserHandler(c *gin.Context) {
 	if err != nil {
 		errMsg := err.Error()
 		if errMsg == "cpf is already taken" || errMsg == "email is already taken" || errMsg == "username is already taken" {
-			c.JSON(http.StatusConflict, gin.H{"success": false, "data": nil, "message": errMsg})
+			utils.RespondError(c, http.StatusConflict, "CONFLICT", errMsg, nil)
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "data": nil, "message": errMsg})
+		utils.RespondError(c, http.StatusInternalServerError, "DB_ERROR", errMsg, nil)
 		return
 	}
 	if success {
-		c.JSON(http.StatusOK, gin.H{"success": true, "data": nil, "message": "Usuário atualizado com sucesso"})
+		utils.RespondSuccess(c, nil, "User updated successfully")
 	} else {
-		c.JSON(http.StatusBadRequest, gin.H{"success": false, "data": nil, "message": "Não foi possível atualizar o usuário"})
+		utils.RespondError(c, http.StatusBadRequest, "UPDATE_FAIL", "Could not update user.", nil)
 	}
 }
 
 func DeleteUserHandler(c *gin.Context) {
 	userId, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"success": false, "data": nil, "message": "Invalid ID"})
+		utils.RespondError(c, http.StatusBadRequest, "INVALID_ID", "Invalid ID.", err.Error())
 		return
 	}
 	success, err := DeleteUser(userId)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "data": nil, "message": err.Error()})
+		utils.RespondError(c, http.StatusInternalServerError, "DB_ERROR", "Failed to delete user.", err.Error())
 		return
 	}
 	if success {
-		c.JSON(http.StatusOK, gin.H{"success": true, "data": nil, "message": "Usuário deletado com sucesso"})
+		utils.RespondSuccess(c, nil, "User deleted successfully")
 	} else {
-		c.JSON(http.StatusBadRequest, gin.H{"success": false, "data": nil, "message": "Não foi possível deletar o usuário"})
+		utils.RespondError(c, http.StatusBadRequest, "DELETE_FAIL", "Could not delete user.", nil)
 	}
 }
 
@@ -163,13 +164,13 @@ func OptionsHandler(c *gin.Context) {
 func GetUserBalanceHandler(c *gin.Context) {
 	userId, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"success": false, "data": nil, "message": "Invalid user ID"})
+		utils.RespondError(c, http.StatusBadRequest, "INVALID_ID", "Invalid user ID.", err.Error())
 		return
 	}
 	balance, err := CalculateUserBalance(int64(userId))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "data": nil, "message": err.Error()})
+		utils.RespondError(c, http.StatusInternalServerError, "DB_ERROR", "Failed to fetch balance.", err.Error())
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"success": true, "data": gin.H{"balance": balance}, "message": "Saldo consultado com sucesso"})
+	utils.RespondSuccess(c, gin.H{"balance": balance}, "Balance fetched successfully")
 }

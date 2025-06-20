@@ -3,6 +3,7 @@ package main
 import (
 	"berry_bet/api"
 	"berry_bet/config"
+	"berry_bet/internal/utils"
 	"log"
 
 	"github.com/gin-contrib/cors"
@@ -20,6 +21,7 @@ func main() {
 
 	r := gin.Default()
 	r.Use(cors.Default())
+	r.Use(utils.ErrorHandlingMiddleware())
 	api.RegisterRoutes(r)
 	r.Run(":8080")
 }

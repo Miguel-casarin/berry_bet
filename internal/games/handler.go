@@ -1,6 +1,7 @@
 package games
 
 import (
+	"berry_bet/internal/utils"
 	"net/http"
 	"strconv"
 
@@ -10,90 +11,90 @@ import (
 func GetGamesHandler(c *gin.Context) {
 	games, err := GetGames(10)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "data": nil, "message": err.Error()})
+		utils.RespondError(c, http.StatusInternalServerError, "DB_ERROR", "Failed to fetch games.", err.Error())
 		return
 	}
 	if games == nil {
-		c.JSON(http.StatusNotFound, gin.H{"success": false, "data": nil, "message": "No records found"})
+		utils.RespondError(c, http.StatusNotFound, "NOT_FOUND", "No games found.", nil)
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"success": true, "data": games, "message": "Jogos encontrados"})
+	utils.RespondSuccess(c, games, "Games found")
 }
 
 func GetGameByIDHandler(c *gin.Context) {
 	id := c.Param("id")
 	game, err := GetGameByID(id)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "data": nil, "message": err.Error()})
+		utils.RespondError(c, http.StatusInternalServerError, "DB_ERROR", "Failed to fetch game.", err.Error())
 		return
 	}
 	if game.GameName == "" {
-		c.JSON(http.StatusNotFound, gin.H{"success": false, "data": nil, "message": "No record found"})
+		utils.RespondError(c, http.StatusNotFound, "NOT_FOUND", "Game not found.", nil)
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"success": true, "data": game, "message": "Jogo encontrado"})
+	utils.RespondSuccess(c, game, "Game found")
 }
 
 func AddGameHandler(c *gin.Context) {
 	var json Game
 	if err := c.ShouldBindJSON(&json); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"success": false, "data": nil, "message": err.Error()})
+		utils.RespondError(c, http.StatusBadRequest, "INVALID_INPUT", "Invalid data.", err.Error())
 		return
 	}
 
 	success, err := AddGame(json)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "data": nil, "message": err.Error()})
+		utils.RespondError(c, http.StatusInternalServerError, "DB_ERROR", "Failed to add game.", err.Error())
 		return
 	}
 	if success {
-		c.JSON(http.StatusCreated, gin.H{"success": true, "data": nil, "message": "Jogo adicionado com sucesso"})
+		utils.RespondSuccess(c, nil, "Game added successfully")
 	} else {
-		c.JSON(http.StatusBadRequest, gin.H{"success": false, "data": nil, "message": "Não foi possível adicionar o jogo"})
+		utils.RespondError(c, http.StatusBadRequest, "INSERT_FAIL", "Could not add game.", nil)
 	}
 }
 
 func UpdateGameHandler(c *gin.Context) {
 	var json Game
 	if err := c.ShouldBindJSON(&json); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"success": false, "data": nil, "message": err.Error()})
+		utils.RespondError(c, http.StatusBadRequest, "INVALID_INPUT", "Invalid data.", err.Error())
 		return
 	}
 
 	gameId, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"success": false, "data": nil, "message": "Invalid ID"})
+		utils.RespondError(c, http.StatusBadRequest, "INVALID_ID", "Invalid ID.", err.Error())
 		return
 	}
 
 	success, err := UpdateGame(json, int64(gameId))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "data": nil, "message": err.Error()})
+		utils.RespondError(c, http.StatusInternalServerError, "DB_ERROR", "Failed to update game.", err.Error())
 		return
 	}
 	if success {
-		c.JSON(http.StatusOK, gin.H{"success": true, "data": nil, "message": "Success"})
+		utils.RespondSuccess(c, nil, "Game updated successfully")
 	} else {
-		c.JSON(http.StatusBadRequest, gin.H{"success": false, "data": nil, "message": "Failed to update game"})
+		utils.RespondError(c, http.StatusBadRequest, "UPDATE_FAIL", "Could not update game.", nil)
 	}
 }
 
 func DeleteGameHandler(c *gin.Context) {
 	gameId, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"success": false, "data": nil, "message": "Invalid ID"})
+		utils.RespondError(c, http.StatusBadRequest, "INVALID_ID", "Invalid ID.", err.Error())
 		return
 	}
 
 	success, err := DeleteGame(gameId)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "data": nil, "message": err.Error()})
+		utils.RespondError(c, http.StatusInternalServerError, "DB_ERROR", "Failed to delete game.", err.Error())
 		return
 	}
 	if success {
-		c.JSON(http.StatusOK, gin.H{"success": true, "data": nil, "message": "Success"})
+		utils.RespondSuccess(c, nil, "Game deleted successfully")
 	} else {
-		c.JSON(http.StatusBadRequest, gin.H{"success": false, "data": nil, "message": "Failed to delete game"})
+		utils.RespondError(c, http.StatusBadRequest, "DELETE_FAIL", "Could not delete game.", nil)
 	}
 }
 

@@ -1,6 +1,7 @@
 package sessions
 
 import (
+	"berry_bet/internal/utils"
 	"net/http"
 	"strconv"
 
@@ -10,86 +11,86 @@ import (
 func GetSessionsHandler(c *gin.Context) {
 	sessions, err := GetSessions(10)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "data": nil, "message": err.Error()})
+		utils.RespondError(c, http.StatusInternalServerError, "DB_ERROR", "Failed to fetch sessions.", err.Error())
 		return
 	}
 	if sessions == nil {
-		c.JSON(http.StatusNotFound, gin.H{"success": false, "data": nil, "message": "No records found"})
+		utils.RespondError(c, http.StatusNotFound, "NOT_FOUND", "No sessions found.", nil)
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"success": true, "data": sessions, "message": "Sessões encontradas"})
+	utils.RespondSuccess(c, sessions, "Sessions found")
 }
 
 func GetSessionByIDHandler(c *gin.Context) {
 	id := c.Param("id")
 	session, err := GetSessionByID(id)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "data": nil, "message": err.Error()})
+		utils.RespondError(c, http.StatusInternalServerError, "DB_ERROR", "Failed to fetch session.", err.Error())
 		return
 	}
 	if session.Token == "" {
-		c.JSON(http.StatusNotFound, gin.H{"success": false, "data": nil, "message": "No record found"})
+		utils.RespondError(c, http.StatusNotFound, "NOT_FOUND", "Session not found.", nil)
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"success": true, "data": session, "message": "Sessão encontrada"})
+	utils.RespondSuccess(c, session, "Session found")
 }
 
 func AddSessionHandler(c *gin.Context) {
 	var json Session
 	if err := c.ShouldBindJSON(&json); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"success": false, "data": nil, "message": err.Error()})
+		utils.RespondError(c, http.StatusBadRequest, "INVALID_INPUT", "Invalid data.", err.Error())
 		return
 	}
 	success, err := AddSession(json)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "data": nil, "message": err.Error()})
+		utils.RespondError(c, http.StatusInternalServerError, "DB_ERROR", "Failed to register session.", err.Error())
 		return
 	}
 	if success {
-		c.JSON(http.StatusCreated, gin.H{"success": true, "data": nil, "message": "Sessão criada com sucesso"})
+		utils.RespondSuccess(c, nil, "Session created successfully")
 	} else {
-		c.JSON(http.StatusBadRequest, gin.H{"success": false, "data": nil, "message": "Não foi possível criar a sessão"})
+		utils.RespondError(c, http.StatusBadRequest, "INSERT_FAIL", "Could not create session.", nil)
 	}
 }
 
 func UpdateSessionHandler(c *gin.Context) {
 	var json Session
 	if err := c.ShouldBindJSON(&json); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"success": false, "data": nil, "message": err.Error()})
+		utils.RespondError(c, http.StatusBadRequest, "INVALID_INPUT", "Invalid data.", err.Error())
 		return
 	}
 	sessionId, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"success": false, "data": nil, "message": "Invalid ID"})
+		utils.RespondError(c, http.StatusBadRequest, "INVALID_ID", "Invalid ID.", err.Error())
 		return
 	}
 	success, err := UpdateSession(json, int64(sessionId))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "data": nil, "message": err.Error()})
+		utils.RespondError(c, http.StatusInternalServerError, "DB_ERROR", "Failed to update session.", err.Error())
 		return
 	}
 	if success {
-		c.JSON(http.StatusOK, gin.H{"success": true, "data": nil, "message": "Sessão atualizada com sucesso"})
+		utils.RespondSuccess(c, nil, "Session updated successfully")
 	} else {
-		c.JSON(http.StatusBadRequest, gin.H{"success": false, "data": nil, "message": "Não foi possível atualizar a sessão"})
+		utils.RespondError(c, http.StatusBadRequest, "UPDATE_FAIL", "Could not update session.", nil)
 	}
 }
 
 func DeleteSessionHandler(c *gin.Context) {
 	sessionId, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"success": false, "data": nil, "message": "Invalid ID"})
+		utils.RespondError(c, http.StatusBadRequest, "INVALID_ID", "Invalid ID.", err.Error())
 		return
 	}
 	success, err := DeleteSession(sessionId)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "data": nil, "message": err.Error()})
+		utils.RespondError(c, http.StatusInternalServerError, "DB_ERROR", "Failed to delete session.", err.Error())
 		return
 	}
 	if success {
-		c.JSON(http.StatusOK, gin.H{"success": true, "data": nil, "message": "Sessão deletada com sucesso"})
+		utils.RespondSuccess(c, nil, "Session deleted successfully")
 	} else {
-		c.JSON(http.StatusBadRequest, gin.H{"success": false, "data": nil, "message": "Não foi possível deletar a sessão"})
+		utils.RespondError(c, http.StatusBadRequest, "DELETE_FAIL", "Could not delete session.", nil)
 	}
 }
 

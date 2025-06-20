@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"berry_bet/internal/utils"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -12,45 +13,47 @@ func LoginHandler(c *gin.Context) {
 		Password string `json:"password"`
 	}
 	if err := c.ShouldBindJSON(&creds); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
+		utils.RespondError(c, http.StatusBadRequest, "INVALID_INPUT", "Invalid request.", err.Error())
 		return
 	}
 
 	user, err := GetUserByUsernameOrEmail(creds.Username)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Database error"})
+		utils.RespondError(c, http.StatusInternalServerError, "DB_ERROR", "Failed to fetch user.", err.Error())
 		return
 	}
 	if user == nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		utils.RespondError(c, http.StatusUnauthorized, "UNAUTHORIZED", "Invalid username or password.", nil)
 		return
 	}
 
 	err = CheckPassword(user.PasswordHash, creds.Password)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		utils.RespondError(c, http.StatusUnauthorized, "UNAUTHORIZED", "Invalid username or password.", nil)
 		return
 	}
 
 	token, err := GenerateJWT(user.Username)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not generate token"})
+		utils.RespondError(c, http.StatusInternalServerError, "JWT_ERROR", "Could not generate token.", err.Error())
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"token": token})
+	utils.RespondSuccess(c, gin.H{"token": token}, "Login successful")
 }
 
 func JWTAuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		bearer := c.GetHeader("Authorization")
 		if bearer == "" || len(bearer) < 8 {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Missing token"})
+			utils.RespondError(c, http.StatusUnauthorized, "MISSING_TOKEN", "Token not provided.", nil)
+			c.Abort()
 			return
 		}
 		tokenStr := bearer[7:]
 		claims, err := ParseJWT(tokenStr)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
+			utils.RespondError(c, http.StatusUnauthorized, "INVALID_TOKEN", "Invalid token.", err.Error())
+			c.Abort()
 			return
 		}
 		c.Set("username", claims.Username)

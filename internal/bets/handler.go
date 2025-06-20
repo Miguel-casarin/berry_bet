@@ -1,6 +1,7 @@
 package bets
 
 import (
+	"berry_bet/internal/utils"
 	"net/http"
 	"strconv"
 
@@ -10,86 +11,86 @@ import (
 func GetBetsHandler(c *gin.Context) {
 	bets, err := GetBets(10)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "data": nil, "message": err.Error()})
+		utils.RespondError(c, http.StatusInternalServerError, "DB_ERROR", "Failed to fetch bets.", err.Error())
 		return
 	}
 	if bets == nil {
-		c.JSON(http.StatusNotFound, gin.H{"success": false, "data": nil, "message": "No records found"})
+		utils.RespondError(c, http.StatusNotFound, "NOT_FOUND", "No bets found.", nil)
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"success": true, "data": bets, "message": "Apostas encontradas"})
+	utils.RespondSuccess(c, bets, "Bets found")
 }
 
 func GetBetByIDHandler(c *gin.Context) {
 	id := c.Param("id")
 	bet, err := GetBetByID(id)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "data": nil, "message": err.Error()})
+		utils.RespondError(c, http.StatusInternalServerError, "DB_ERROR", "Failed to fetch bet.", err.Error())
 		return
 	}
 	if bet.BetStatus == "" {
-		c.JSON(http.StatusNotFound, gin.H{"success": false, "data": nil, "message": "No record found"})
+		utils.RespondError(c, http.StatusNotFound, "NOT_FOUND", "Bet not found.", nil)
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"success": true, "data": bet, "message": "Aposta encontrada"})
+	utils.RespondSuccess(c, bet, "Bet found")
 }
 
 func AddBetHandler(c *gin.Context) {
 	var json Bet
 	if err := c.ShouldBindJSON(&json); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"success": false, "data": nil, "message": err.Error()})
+		utils.RespondError(c, http.StatusBadRequest, "INVALID_INPUT", "Invalid data.", err.Error())
 		return
 	}
 	success, err := AddBet(json)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "data": nil, "message": err.Error()})
+		utils.RespondError(c, http.StatusInternalServerError, "DB_ERROR", "Failed to register bet.", err.Error())
 		return
 	}
 	if success {
-		c.JSON(http.StatusCreated, gin.H{"success": true, "data": nil, "message": "Aposta registrada com sucesso"})
+		utils.RespondSuccess(c, nil, "Bet registered successfully")
 	} else {
-		c.JSON(http.StatusBadRequest, gin.H{"success": false, "data": nil, "message": "Não foi possível registrar a aposta"})
+		utils.RespondError(c, http.StatusBadRequest, "INSERT_FAIL", "Could not register bet.", nil)
 	}
 }
 
 func UpdateBetHandler(c *gin.Context) {
 	var json Bet
 	if err := c.ShouldBindJSON(&json); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"success": false, "data": nil, "message": err.Error()})
+		utils.RespondError(c, http.StatusBadRequest, "INVALID_INPUT", "Invalid data.", err.Error())
 		return
 	}
 	betId, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"success": false, "data": nil, "message": "Invalid ID"})
+		utils.RespondError(c, http.StatusBadRequest, "INVALID_ID", "Invalid ID.", err.Error())
 		return
 	}
 	success, err := UpdateBet(json, int64(betId))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "data": nil, "message": err.Error()})
+		utils.RespondError(c, http.StatusInternalServerError, "DB_ERROR", "Failed to update bet.", err.Error())
 		return
 	}
 	if success {
-		c.JSON(http.StatusOK, gin.H{"success": true, "data": nil, "message": "Success"})
+		utils.RespondSuccess(c, nil, "Bet updated successfully")
 	} else {
-		c.JSON(http.StatusBadRequest, gin.H{"success": false, "data": nil, "message": err})
+		utils.RespondError(c, http.StatusBadRequest, "UPDATE_FAIL", "Could not update bet.", nil)
 	}
 }
 
 func DeleteBetHandler(c *gin.Context) {
 	betId, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"success": false, "data": nil, "message": "Invalid ID"})
+		utils.RespondError(c, http.StatusBadRequest, "INVALID_ID", "Invalid ID.", err.Error())
 		return
 	}
 	success, err := DeleteBet(betId)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "data": nil, "message": err.Error()})
+		utils.RespondError(c, http.StatusInternalServerError, "DB_ERROR", "Failed to delete bet.", err.Error())
 		return
 	}
 	if success {
-		c.JSON(http.StatusOK, gin.H{"success": true, "data": nil, "message": "Success"})
+		utils.RespondSuccess(c, nil, "Bet deleted successfully")
 	} else {
-		c.JSON(http.StatusBadRequest, gin.H{"success": false, "data": nil, "message": err})
+		utils.RespondError(c, http.StatusBadRequest, "DELETE_FAIL", "Could not delete bet.", nil)
 	}
 }
 
