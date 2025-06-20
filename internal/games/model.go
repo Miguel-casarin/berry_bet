@@ -3,6 +3,7 @@ package games
 import (
 	"berry_bet/config"
 	"database/sql"
+	"errors"
 	"strconv"
 )
 
@@ -67,72 +68,109 @@ func GetGameByID(id string) (Game, error) {
 	return game, nil
 }
 
+// AddGame adiciona um novo jogo ao banco de dados após validação dos dados.
 func AddGame(newGame Game) (bool, error) {
-	tx, err := config.DB.Begin()
+	if len(newGame.GameName) < 3 {
+		return false, errors.New("nome do jogo deve ter pelo menos 3 caracteres")
+	}
+	if newGame.GameStatus == "" {
+		return false, errors.New("status do jogo não pode ser vazio")
+	}
 
+	tx, err := config.DB.Begin()
 	if err != nil {
 		return false, err
 	}
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		}
+	}()
 
 	stmt, err := config.DB.Prepare("INSERT INTO games (game_name, game_description, start_time, end_time, game_status, created_at) VALUES (?, ?, ?, ?, ?, datetime('now'))")
-
 	if err != nil {
 		return false, err
 	}
-
 	defer stmt.Close()
 
 	_, err = stmt.Exec(newGame.GameName, newGame.GameDescription, newGame.StartTime, newGame.EndTime, newGame.GameStatus)
-
 	if err != nil {
 		return false, err
 	}
-	tx.Commit()
+
+	err = tx.Commit()
+	if err != nil {
+		return false, err
+	}
+
 	return true, nil
 }
 
+// UpdateGame atualiza um jogo existente após validação dos dados.
 func UpdateGame(ourGame Game, id int64) (bool, error) {
-	tx, err := config.DB.Begin()
+	if len(ourGame.GameName) < 3 {
+		return false, errors.New("nome do jogo deve ter pelo menos 3 caracteres")
+	}
+	if ourGame.GameStatus == "" {
+		return false, errors.New("status do jogo não pode ser vazio")
+	}
 
+	tx, err := config.DB.Begin()
 	if err != nil {
 		return false, err
 	}
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		}
+	}()
 
 	stmt, err := config.DB.Prepare("UPDATE games SET game_name = ?, game_description = ?, start_time = ?, end_time = ?, game_status = ? WHERE id = ?")
-
 	if err != nil {
 		return false, err
 	}
-
 	defer stmt.Close()
 
 	_, err = stmt.Exec(ourGame.GameName, ourGame.GameDescription, ourGame.StartTime, ourGame.EndTime, ourGame.GameStatus, id)
-
 	if err != nil {
 		return false, err
 	}
-	tx.Commit()
+
+	err = tx.Commit()
+	if err != nil {
+		return false, err
+	}
+
 	return true, nil
 }
 
+// DeleteGame remove um jogo do banco de dados pelo ID, usando transação e rollback em caso de erro.
 func DeleteGame(gameId int) (bool, error) {
 	tx, err := config.DB.Begin()
-
 	if err != nil {
 		return false, err
 	}
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		}
+	}()
 
 	stmt, err := config.DB.Prepare("DELETE FROM games WHERE id = ?")
-
 	if err != nil {
 		return false, err
 	}
+	defer stmt.Close()
 
 	_, err = stmt.Exec(gameId)
-
 	if err != nil {
 		return false, err
 	}
-	tx.Commit()
+
+	err = tx.Commit()
+	if err != nil {
+		return false, err
+	}
+
 	return true, nil
 }

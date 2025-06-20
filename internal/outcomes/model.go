@@ -2,6 +2,7 @@ package outcomes
 
 import (
 	"berry_bet/config"
+	"errors"
 	"strconv"
 )
 
@@ -37,7 +38,15 @@ func GetOutcomeByID(id string) (Outcome, error) {
 	return o, nil
 }
 
+// AddOutcome adiciona um novo resultado ao banco de dados após validação dos dados.
 func AddOutcome(newOutcome Outcome) (bool, error) {
+	if newOutcome.GameID <= 0 {
+		return false, errors.New("game_id inválido")
+	}
+	if newOutcome.Result == "" {
+		return false, errors.New("resultado não pode ser vazio")
+	}
+
 	stmt, err := config.DB.Prepare("INSERT INTO outcomes (game_id, outcome) VALUES (?, ?)")
 	if err != nil {
 		return false, err
@@ -50,7 +59,15 @@ func AddOutcome(newOutcome Outcome) (bool, error) {
 	return true, nil
 }
 
+// UpdateOutcome atualiza um resultado existente após validação dos dados.
 func UpdateOutcome(outcome Outcome, id int64) (bool, error) {
+	if outcome.GameID <= 0 {
+		return false, errors.New("game_id inválido")
+	}
+	if outcome.Result == "" {
+		return false, errors.New("resultado não pode ser vazio")
+	}
+
 	stmt, err := config.DB.Prepare("UPDATE outcomes SET game_id = ?, outcome = ? WHERE id = ?")
 	if err != nil {
 		return false, err
@@ -63,6 +80,7 @@ func UpdateOutcome(outcome Outcome, id int64) (bool, error) {
 	return true, nil
 }
 
+// DeleteOutcome remove um resultado do banco de dados pelo ID.
 func DeleteOutcome(outcomeId int) (bool, error) {
 	stmt, err := config.DB.Prepare("DELETE FROM outcomes WHERE id = ?")
 	if err != nil {

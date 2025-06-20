@@ -3,6 +3,7 @@ package bets
 import (
 	"berry_bet/config"
 	"database/sql"
+	"errors"
 	"strconv"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -76,81 +77,115 @@ func GetBetByID(id string) (Bet, error) {
 	return bet, nil
 }
 
-// Adiciona uma nova aposta ao banco de dados
-
+// AddBet adiciona uma nova aposta ao banco de dados após validação dos dados.
 func AddBet(newBet Bet) (bool, error) {
-	tx, err := config.DB.Begin()
+	if newBet.UserID <= 0 {
+		return false, errors.New("user_id inválido")
+	}
+	if newBet.Amount <= 0 {
+		return false, errors.New("valor da aposta deve ser maior que zero")
+	}
+	if newBet.Odds <= 1 {
+		return false, errors.New("odds deve ser maior que 1")
+	}
 
+	tx, err := config.DB.Begin()
 	if err != nil {
 		return false, err
 	}
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		}
+	}()
 
 	stmt, err := config.DB.Prepare("INSERT INTO bets (user_id, amount, odds, bet_status, profit_loss, game_id, rigging_level, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'))")
-
 	if err != nil {
 		return false, err
 	}
 	defer stmt.Close()
 
 	_, err = stmt.Exec(newBet.UserID, newBet.Amount, newBet.Odds, newBet.BetStatus, newBet.ProfitLoss, newBet.GameID, newBet.RiggingLevel)
-
 	if err != nil {
 		return false, err
 	}
 
-	tx.Commit()
+	err = tx.Commit()
+	if err != nil {
+		return false, err
+	}
 
 	return true, nil
 }
 
-// Atualiza uma aposta existente no banco de dados
-
+// UpdateBet atualiza uma aposta existente após validação dos dados.
 func UpdateBet(ourBet Bet, id int64) (bool, error) {
-	tx, err := config.DB.Begin()
+	if ourBet.UserID <= 0 {
+		return false, errors.New("user_id inválido")
+	}
+	if ourBet.Amount <= 0 {
+		return false, errors.New("valor da aposta deve ser maior que zero")
+	}
+	if ourBet.Odds <= 1 {
+		return false, errors.New("odds deve ser maior que 1")
+	}
 
+	tx, err := config.DB.Begin()
 	if err != nil {
 		return false, err
 	}
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		}
+	}()
 
 	stmt, err := config.DB.Prepare("UPDATE bets SET user_id = ?, amount = ?, odds = ?, bet_status = ?, profit_loss = ?, game_id = ?, rigging_level = ? WHERE id = ?")
-
 	if err != nil {
 		return false, err
 	}
 	defer stmt.Close()
 
 	_, err = stmt.Exec(ourBet.UserID, ourBet.Amount, ourBet.Odds, ourBet.BetStatus, ourBet.ProfitLoss, ourBet.GameID, ourBet.RiggingLevel, id)
-
 	if err != nil {
 		return false, err
 	}
 
-	tx.Commit()
+	err = tx.Commit()
+	if err != nil {
+		return false, err
+	}
 
 	return true, nil
 }
 
-// Deleta uma aposta do banco de dados pelo ID
-
+// DeleteBet remove uma aposta do banco de dados pelo ID, usando transação e rollback em caso de erro.
 func DeleteBet(betId int) (bool, error) {
 	tx, err := config.DB.Begin()
-
 	if err != nil {
 		return false, err
 	}
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		}
+	}()
 
 	stmt, err := config.DB.Prepare("DELETE FROM bets WHERE id = ?")
-
 	if err != nil {
 		return false, err
 	}
+	defer stmt.Close()
 
 	_, err = stmt.Exec(betId)
 	if err != nil {
 		return false, err
 	}
 
-	tx.Commit()
+	err = tx.Commit()
+	if err != nil {
+		return false, err
+	}
 
 	return true, nil
 }

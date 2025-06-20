@@ -2,6 +2,7 @@ package user_stats
 
 import (
 	"berry_bet/config"
+	"errors"
 	"strconv"
 )
 
@@ -50,7 +51,11 @@ func GetUserStatsByID(id string) (UserStats, error) {
 	return s, nil
 }
 
+// AddUserStats adiciona estatísticas de usuário ao banco de dados após validação dos dados.
 func AddUserStats(newStats UserStats) (bool, error) {
+	if newStats.UserID <= 0 {
+		return false, errors.New("user_id inválido")
+	}
 	stmt, err := config.DB.Prepare("INSERT INTO user_stats (user_id, total_bets, total_wins, total_losses, total_amount_bet, total_profit, last_bet_at, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))")
 	if err != nil {
 		return false, err
@@ -63,7 +68,11 @@ func AddUserStats(newStats UserStats) (bool, error) {
 	return true, nil
 }
 
+// UpdateUserStats atualiza estatísticas de usuário após validação dos dados.
 func UpdateUserStats(stats UserStats, id int64) (bool, error) {
+	if stats.UserID <= 0 {
+		return false, errors.New("user_id inválido")
+	}
 	stmt, err := config.DB.Prepare("UPDATE user_stats SET total_bets = ?, total_wins = ?, total_losses = ?, total_amount_bet = ?, total_profit = ?, last_bet_at = ?, updated_at = datetime('now') WHERE id = ?")
 	if err != nil {
 		return false, err
@@ -76,6 +85,7 @@ func UpdateUserStats(stats UserStats, id int64) (bool, error) {
 	return true, nil
 }
 
+// DeleteUserStats remove estatísticas de usuário do banco de dados pelo ID.
 func DeleteUserStats(statsId int) (bool, error) {
 	stmt, err := config.DB.Prepare("DELETE FROM user_stats WHERE id = ?")
 	if err != nil {

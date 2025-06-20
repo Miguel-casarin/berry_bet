@@ -27,7 +27,7 @@ func LoginHandler(c *gin.Context) {
 		return
 	}
 
-	err = CheckPassword(user.PasswordHash, creds.Password)
+	err = utils.CheckPassword(user.PasswordHash, creds.Password)
 	if err != nil {
 		utils.RespondError(c, http.StatusUnauthorized, "UNAUTHORIZED", "Invalid username or password.", nil)
 		return

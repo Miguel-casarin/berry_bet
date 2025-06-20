@@ -3,6 +3,7 @@ package sessions
 import (
 	"berry_bet/config"
 	"database/sql"
+	"errors"
 )
 
 type Session struct {
@@ -53,7 +54,18 @@ func GetSessionByID(id string) (Session, error) {
 	return s, nil
 }
 
+// AddSession adiciona uma nova sessão ao banco de dados após validação dos dados.
 func AddSession(newSession Session) (bool, error) {
+	if newSession.UserID <= 0 {
+		return false, errors.New("user_id inválido")
+	}
+	if newSession.Token == "" {
+		return false, errors.New("token não pode ser vazio")
+	}
+	if newSession.ExpiresAt == "" {
+		return false, errors.New("expires_at não pode ser vazio")
+	}
+
 	stmt, err := config.DB.Prepare("INSERT INTO sessions (user_id, token, created_at, expires_at) VALUES (?, ?, datetime('now'), ?)")
 	if err != nil {
 		return false, err
@@ -66,7 +78,18 @@ func AddSession(newSession Session) (bool, error) {
 	return true, nil
 }
 
+// UpdateSession atualiza uma sessão existente após validação dos dados.
 func UpdateSession(session Session, id int64) (bool, error) {
+	if session.UserID <= 0 {
+		return false, errors.New("user_id inválido")
+	}
+	if session.Token == "" {
+		return false, errors.New("token não pode ser vazio")
+	}
+	if session.ExpiresAt == "" {
+		return false, errors.New("expires_at não pode ser vazio")
+	}
+
 	stmt, err := config.DB.Prepare("UPDATE sessions SET user_id = ?, token = ?, expires_at = ? WHERE id = ?")
 	if err != nil {
 		return false, err
@@ -79,6 +102,7 @@ func UpdateSession(session Session, id int64) (bool, error) {
 	return true, nil
 }
 
+// DeleteSession remove uma sessão do banco de dados pelo ID.
 func DeleteSession(sessionId int) (bool, error) {
 	stmt, err := config.DB.Prepare("DELETE FROM sessions WHERE id = ?")
 	if err != nil {

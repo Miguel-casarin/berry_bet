@@ -2,6 +2,7 @@ package transactions
 
 import (
 	"berry_bet/config"
+	"errors"
 	"strconv"
 )
 
@@ -46,7 +47,17 @@ func GetTransactionByID(id string) (Transaction, error) {
 	return t, nil
 }
 
+// AddTransaction adiciona uma nova transação ao banco de dados após validação dos dados.
 func AddTransaction(newT Transaction) (bool, error) {
+	if newT.UserID <= 0 {
+		return false, errors.New("user_id inválido")
+	}
+	if newT.Type == "" {
+		return false, errors.New("tipo da transação não pode ser vazio")
+	}
+	if newT.Amount == 0 {
+		return false, errors.New("valor da transação não pode ser zero")
+	}
 	stmt, err := config.DB.Prepare("INSERT INTO transactions (user_id, type, amount, description, created_at) VALUES (?, ?, ?, ?, datetime('now'))")
 	if err != nil {
 		return false, err
@@ -59,7 +70,17 @@ func AddTransaction(newT Transaction) (bool, error) {
 	return true, nil
 }
 
+// UpdateTransaction atualiza uma transação existente após validação dos dados.
 func UpdateTransaction(t Transaction, id int64) (bool, error) {
+	if t.UserID <= 0 {
+		return false, errors.New("user_id inválido")
+	}
+	if t.Type == "" {
+		return false, errors.New("tipo da transação não pode ser vazio")
+	}
+	if t.Amount == 0 {
+		return false, errors.New("valor da transação não pode ser zero")
+	}
 	stmt, err := config.DB.Prepare("UPDATE transactions SET user_id = ?, type = ?, amount = ?, description = ? WHERE id = ?")
 	if err != nil {
 		return false, err
@@ -72,6 +93,7 @@ func UpdateTransaction(t Transaction, id int64) (bool, error) {
 	return true, nil
 }
 
+// DeleteTransaction remove uma transação do banco de dados pelo ID.
 func DeleteTransaction(transactionId int) (bool, error) {
 	stmt, err := config.DB.Prepare("DELETE FROM transactions WHERE id = ?")
 	if err != nil {
