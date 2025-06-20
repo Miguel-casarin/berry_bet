@@ -13,6 +13,7 @@ const (
 	Vinte   cartinha = "vinte"
 	Master  cartinha = "master"
 	Miseria cartinha = "miseria"
+	Perca   cartinha = "perca"
 )
 
 func EhPrimo(n int) bool {
@@ -32,18 +33,18 @@ func cartinha_aleatoria() cartinha {
 	if EhPrimo(numero_cartinha) {
 		if numero_cartinha <= 90 && numero_cartinha > 70 {
 			return Cinco
-		}
-		if numero_cartinha <= 70 && numero_cartinha > 50 {
+		} else if numero_cartinha <= 70 && numero_cartinha > 50 {
 			return Dez
-		}
-		if numero_cartinha <= 50 && numero_cartinha > 10 {
+		} else if numero_cartinha <= 50 && numero_cartinha > 10 {
 			return Vinte
-		}
-		if numero_cartinha <= 10 {
+		} else if numero_cartinha <= 10 {
 			return Master
+		} else {
+			return Miseria
 		}
+	} else {
+		return Perca
 	}
-	return Miseria
 }
 
 // cálculo da porcentagem para o multiplicador
@@ -51,7 +52,7 @@ func Porcentagem(porcentagem, valor float64) float64 {
 	return (porcentagem / 100) * valor
 }
 
-func op_valor(salddo float64) float64 {
+func op_valor(salddo float64) (float64, *cartinha) {
 	if Randon_fdp() {
 		carta := cartinha_aleatoria()
 		var resultado float64
@@ -68,12 +69,9 @@ func op_valor(salddo float64) float64 {
 		case Master:
 			resultado = Porcentagem(70, salddo)
 		}
-
-		fmt.Printf("Cartinha: %s -> Ganhou R$ %.2f\n", carta, resultado)
-		return resultado
+		return resultado, &carta
 	} else {
-		fmt.Print("Foi jogar no Vasco\n")
-		return 0
+		return 0, nil
 	}
 }
 
@@ -103,8 +101,4 @@ func Randon_fdp() bool {
 		fmt.Printf("NAO ganhou -> numero %d\n", numero_b)
 		return false
 	}
-}
-
-func main() {
-
 }
