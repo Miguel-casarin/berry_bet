@@ -1,7 +1,10 @@
 package user_stats
 
 import (
+	"berry_bet/config"
+	"berry_bet/internal/users"
 	"berry_bet/internal/utils"
+	"database/sql"
 	"net/http"
 	"strconv"
 
@@ -98,4 +101,45 @@ func OptionsHandler(c *gin.Context) {
 		"Access-Control-Allow-Headers: Content-Type\n"
 
 	c.String(200, ourOptions)
+}
+
+func GetMeStatsHandler(c *gin.Context) {
+	username, exists := c.Get("username")
+	if !exists {
+		utils.RespondError(c, http.StatusUnauthorized, "NO_AUTH", "User not authenticated.", nil)
+		return
+	}
+	user, err := users.GetUserByUsername(username.(string))
+	if err != nil || user == nil {
+		utils.RespondError(c, http.StatusInternalServerError, "DB_ERROR", "Failed to fetch user.", nil)
+		return
+	}
+	stats, err := GetUserStatsByUserID(user.ID)
+	if err != nil {
+		utils.RespondError(c, http.StatusInternalServerError, "DB_ERROR", "Failed to fetch user stats.", err.Error())
+		return
+	}
+	if stats == nil {
+		utils.RespondError(c, http.StatusNotFound, "NOT_FOUND", "User stats not found.", nil)
+		return
+	}
+	utils.RespondSuccess(c, stats, "User stats fetched successfully.")
+}
+
+// Busca estatísticas do usuário pelo user_id
+func GetUserStatsByUserID(userID int64) (*UserStats, error) {
+	stmt, err := config.DB.Prepare("SELECT id, user_id, total_bets, total_wins, total_losses, total_amount_bet, total_profit, last_bet_at, created_at, updated_at FROM user_stats WHERE user_id = ?")
+	if err != nil {
+		return nil, err
+	}
+	defer stmt.Close()
+	stats := UserStats{}
+	err = stmt.QueryRow(userID).Scan(&stats.ID, &stats.UserID, &stats.TotalBets, &stats.TotalWins, &stats.TotalLosses, &stats.TotalAmountBet, &stats.TotalProfit, &stats.LastBetAt, &stats.CreatedAt, &stats.UpdatedAt)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &stats, nil
 }
