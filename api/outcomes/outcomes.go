@@ -16,6 +16,5 @@ func RegisterOutcomeRoutes(router *gin.Engine) {
 		v1.POST("/outcomes", outcomes.AddOutcomeHandler)
 		v1.PUT("/outcomes/:id", outcomes.UpdateOutcomeHandler)
 		v1.DELETE("/outcomes/:id", outcomes.DeleteOutcomeHandler)
-		v1.OPTIONS("/outcomes", outcomes.OptionsHandler)
 	}
 }
