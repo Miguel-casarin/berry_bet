@@ -41,10 +41,10 @@ func GetOutcomeByID(id string) (Outcome, error) {
 // AddOutcome adiciona um novo resultado ao banco de dados após validação dos dados.
 func AddOutcome(newOutcome Outcome) (bool, error) {
 	if newOutcome.GameID <= 0 {
-		return false, errors.New("game_id inválido")
+		return false, errors.New("invalid game id")
 	}
 	if newOutcome.Result == "" {
-		return false, errors.New("resultado não pode ser vazio")
+		return false, errors.New("result cannot be empty")
 	}
 
 	stmt, err := config.DB.Prepare("INSERT INTO outcomes (game_id, outcome) VALUES (?, ?)")

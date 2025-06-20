@@ -80,13 +80,13 @@ func GetBetByID(id string) (Bet, error) {
 // AddBet adiciona uma nova aposta ao banco de dados após validação dos dados.
 func AddBet(newBet Bet) (bool, error) {
 	if newBet.UserID <= 0 {
-		return false, errors.New("user_id inválido")
+		return false, errors.New("invalid user id")
 	}
 	if newBet.Amount <= 0 {
-		return false, errors.New("valor da aposta deve ser maior que zero")
+		return false, errors.New("bet amount must be greater than zero")
 	}
 	if newBet.Odds <= 1 {
-		return false, errors.New("odds deve ser maior que 1")
+		return false, errors.New("odds must be greater than 1")
 	}
 
 	tx, err := config.DB.Begin()

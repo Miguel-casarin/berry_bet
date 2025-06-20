@@ -50,13 +50,13 @@ func GetTransactionByID(id string) (Transaction, error) {
 // AddTransaction adiciona uma nova transação ao banco de dados após validação dos dados.
 func AddTransaction(newT Transaction) (bool, error) {
 	if newT.UserID <= 0 {
-		return false, errors.New("user_id inválido")
+		return false, errors.New("invalid user id")
 	}
 	if newT.Type == "" {
-		return false, errors.New("tipo da transação não pode ser vazio")
+		return false, errors.New("transaction type cannot be empty")
 	}
 	if newT.Amount == 0 {
-		return false, errors.New("valor da transação não pode ser zero")
+		return false, errors.New("transaction amount cannot be zero")
 	}
 	stmt, err := config.DB.Prepare("INSERT INTO transactions (user_id, type, amount, description, created_at) VALUES (?, ?, ?, ?, datetime('now'))")
 	if err != nil {

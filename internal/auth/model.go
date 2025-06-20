@@ -30,13 +30,13 @@ func GetUserByUsernameOrEmail(identifier string) (*users.User, error) {
 // CreateUser cria um novo usuário após validação básica dos dados.
 func CreateUser(username, email, password, cpf, phone string) error {
 	if len(username) < 3 {
-		return errors.New("username deve ter pelo menos 3 caracteres")
+		return errors.New("username must have at least 3 characters")
 	}
 	if len(password) < 6 {
-		return errors.New("senha deve ter pelo menos 6 caracteres")
+		return errors.New("password must have at least 6 characters")
 	}
 	if len(email) < 5 || !strings.Contains(email, "@") {
-		return errors.New("email inválido")
+		return errors.New("invalid email")
 	}
 	hashed, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
@@ -48,5 +48,3 @@ func CreateUser(username, email, password, cpf, phone string) error {
 	)
 	return err
 }
-
-

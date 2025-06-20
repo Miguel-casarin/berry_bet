@@ -57,13 +57,13 @@ func GetSessionByID(id string) (Session, error) {
 // AddSession adiciona uma nova sessão ao banco de dados após validação dos dados.
 func AddSession(newSession Session) (bool, error) {
 	if newSession.UserID <= 0 {
-		return false, errors.New("user_id inválido")
+		return false, errors.New("invalid user id")
 	}
 	if newSession.Token == "" {
-		return false, errors.New("token não pode ser vazio")
+		return false, errors.New("token cannot be empty")
 	}
 	if newSession.ExpiresAt == "" {
-		return false, errors.New("expires_at não pode ser vazio")
+		return false, errors.New("expires_at cannot be empty")
 	}
 
 	stmt, err := config.DB.Prepare("INSERT INTO sessions (user_id, token, created_at, expires_at) VALUES (?, ?, datetime('now'), ?)")

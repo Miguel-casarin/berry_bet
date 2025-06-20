@@ -71,10 +71,10 @@ func GetGameByID(id string) (Game, error) {
 // AddGame adiciona um novo jogo ao banco de dados após validação dos dados.
 func AddGame(newGame Game) (bool, error) {
 	if len(newGame.GameName) < 3 {
-		return false, errors.New("nome do jogo deve ter pelo menos 3 caracteres")
+		return false, errors.New("game name must have at least 3 characters")
 	}
 	if newGame.GameStatus == "" {
-		return false, errors.New("status do jogo não pode ser vazio")
+		return false, errors.New("game status cannot be empty")
 	}
 
 	tx, err := config.DB.Begin()

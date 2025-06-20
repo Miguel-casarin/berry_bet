@@ -71,13 +71,13 @@ func GetUserByID(id string) (User, error) {
 // AddUser adiciona um novo usuário ao banco de dados após validação dos dados.
 func AddUser(newUser User) (bool, error) {
 	if len(newUser.Username) < 3 {
-		return false, errors.New("username deve ter pelo menos 3 caracteres")
+		return false, errors.New("username must have at least 3 characters")
 	}
 	if len(newUser.Email) < 5 || !strings.Contains(newUser.Email, "@") {
-		return false, errors.New("email inválido")
+		return false, errors.New("invalid email")
 	}
 	if len(newUser.PasswordHash) < 6 {
-		return false, errors.New("hash da senha inválido")
+		return false, errors.New("invalid password hash")
 	}
 	tx, err := config.DB.Begin()
 	if err != nil {
