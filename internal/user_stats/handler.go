@@ -11,6 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// GetUserStatsHandler returns a list of user stats (DTO response).
 func GetUserStatsHandler(c *gin.Context) {
 	stats, err := GetUserStats(10)
 	if err != nil {
@@ -21,9 +22,14 @@ func GetUserStatsHandler(c *gin.Context) {
 		utils.RespondError(c, http.StatusNotFound, "NOT_FOUND", "No user stats found.", nil)
 		return
 	}
-	utils.RespondSuccess(c, stats, "User stats found")
+	responses := make([]UserStatsResponse, 0, len(stats))
+	for _, s := range stats {
+		responses = append(responses, ToUserStatsResponse(&s))
+	}
+	utils.RespondSuccess(c, responses, "User stats found")
 }
 
+// GetUserStatsByIDHandler returns user stats by ID (DTO response).
 func GetUserStatsByIDHandler(c *gin.Context) {
 	id := c.Param("id")
 	stats, err := GetUserStatsByID(id)
@@ -35,16 +41,26 @@ func GetUserStatsByIDHandler(c *gin.Context) {
 		utils.RespondError(c, http.StatusNotFound, "NOT_FOUND", "User stats not found.", nil)
 		return
 	}
-	utils.RespondSuccess(c, stats, "User stats found")
+	utils.RespondSuccess(c, ToUserStatsResponse(&stats), "User stats found")
 }
 
+// AddUserStatsHandler creates new user stats (DTO request/response).
 func AddUserStatsHandler(c *gin.Context) {
-	var json UserStats
-	if err := c.ShouldBindJSON(&json); err != nil {
+	var req UserStatsRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
 		utils.RespondError(c, http.StatusBadRequest, "INVALID_INPUT", "Invalid data.", err.Error())
 		return
 	}
-	success, err := AddUserStats(json)
+	stats := UserStats{
+		UserID:         req.UserID,
+		TotalBets:      req.TotalBets,
+		TotalWins:      req.TotalWins,
+		TotalLosses:    req.TotalLosses,
+		TotalAmountBet: req.TotalAmountBet,
+		TotalProfit:    req.TotalProfit,
+		LastBetAt:      req.LastBetAt,
+	}
+	success, err := AddUserStats(stats)
 	if err != nil {
 		utils.RespondError(c, http.StatusInternalServerError, "DB_ERROR", "Failed to register user stats.", err.Error())
 		return
@@ -56,14 +72,29 @@ func AddUserStatsHandler(c *gin.Context) {
 	}
 }
 
+// UpdateUserStatsHandler updates user stats (DTO request/response).
 func UpdateUserStatsHandler(c *gin.Context) {
-	var json UserStats
+	var req UserStatsRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		utils.RespondError(c, http.StatusBadRequest, "INVALID_INPUT", "Invalid data.", err.Error())
+		return
+	}
 	statsId, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		utils.RespondError(c, http.StatusBadRequest, "INVALID_ID", "Invalid ID.", err.Error())
 		return
 	}
-	success, err := UpdateUserStats(json, int64(statsId))
+	stats := UserStats{
+		ID:             int64(statsId),
+		UserID:         req.UserID,
+		TotalBets:      req.TotalBets,
+		TotalWins:      req.TotalWins,
+		TotalLosses:    req.TotalLosses,
+		TotalAmountBet: req.TotalAmountBet,
+		TotalProfit:    req.TotalProfit,
+		LastBetAt:      req.LastBetAt,
+	}
+	success, err := UpdateUserStats(stats, int64(statsId))
 	if err != nil {
 		utils.RespondError(c, http.StatusInternalServerError, "DB_ERROR", "Failed to update user stats.", err.Error())
 		return
@@ -75,6 +106,7 @@ func UpdateUserStatsHandler(c *gin.Context) {
 	}
 }
 
+// DeleteUserStatsHandler deletes user stats by ID.
 func DeleteUserStatsHandler(c *gin.Context) {
 	statsId, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -83,11 +115,11 @@ func DeleteUserStatsHandler(c *gin.Context) {
 	}
 	success, err := DeleteUserStats(statsId)
 	if err != nil {
-		utils.RespondError(c, http.StatusInternalServerError, "DB_ERROR", "Failed to delete user stats.", err.Error())
+		utils.RespondError(c, http.StatusInternalServerError, "DELETE_FAIL", "Could not delete user stats.", err.Error())
 		return
 	}
 	if success {
-		utils.RespondSuccess(c, nil, "User stats deleted successfully")
+		utils.RespondSuccess(c, nil, "User stats deleted successfully.")
 	} else {
 		utils.RespondError(c, http.StatusBadRequest, "DELETE_FAIL", "Could not delete user stats.", nil)
 	}
