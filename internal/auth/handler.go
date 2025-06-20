@@ -41,6 +41,30 @@ func LoginHandler(c *gin.Context) {
 	utils.RespondSuccess(c, gin.H{"token": token}, "Login successful")
 }
 
+func RegisterHandler(c *gin.Context) {
+	var req struct {
+		Username string `json:"username"`
+		Email    string `json:"email"`
+		Password string `json:"password"`
+		CPF      string `json:"cpf"`
+		Phone    string `json:"phone"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		utils.RespondError(c, http.StatusBadRequest, "INVALID_INPUT", "Invalid request.", err.Error())
+		return
+	}
+	if req.Username == "" || req.Email == "" || req.Password == "" || req.CPF == "" {
+		utils.RespondError(c, http.StatusBadRequest, "MISSING_FIELDS", "Username, email, password and cpf are required.", nil)
+		return
+	}
+	err := CreateUser(req.Username, req.Email, req.Password, req.CPF, req.Phone)
+	if err != nil {
+		utils.RespondError(c, http.StatusBadRequest, "REGISTER_FAIL", "Could not register user.", err.Error())
+		return
+	}
+	utils.RespondSuccess(c, nil, "User registered successfully.")
+}
+
 func JWTAuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		bearer := c.GetHeader("Authorization")

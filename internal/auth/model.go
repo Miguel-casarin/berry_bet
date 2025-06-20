@@ -24,14 +24,14 @@ func GetUserByUsernameOrEmail(identifier string) (*users.User, error) {
 	return &user, nil
 }
 
-func CreateUser(username, email, password, phone string) error {
+func CreateUser(username, email, password, cpf, phone string) error {
 	hashed, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return err
 	}
 	_, err = config.DB.Exec(
-		"INSERT INTO users (username, email, password_hash, phone) VALUES (?, ?, ?, ?)",
-		username, email, string(hashed), phone,
+		"INSERT INTO users (username, email, password_hash, cpf, phone) VALUES (?, ?, ?, ?, ?)",
+		username, email, string(hashed), cpf, phone,
 	)
 	return err
 }
