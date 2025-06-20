@@ -26,6 +26,7 @@ func SetupDatabase() {
 		"./migrations/005_create_outcomes.sql",
 		"./migrations/006_create_sessions.sql",
 		"./migrations/007_create_user_stats.sql",
+		"./migrations/008_create_bet_limits.sql",
 	}
 
 	for _, migrationFile := range migrations {
