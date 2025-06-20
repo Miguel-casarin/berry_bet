@@ -145,3 +145,20 @@ func DeleteUser(userId int) (bool, error) {
 	tx.Commit()
 	return true, nil
 }
+
+func GetUserByUsername(username string) (*User, error) {
+	stmt, err := config.DB.Prepare("SELECT id, username, email, password_hash, cpf, phone, created_at, updated_at FROM users WHERE username = ?")
+	if err != nil {
+		return nil, err
+	}
+	defer stmt.Close()
+	user := User{}
+	sqlErr := stmt.QueryRow(username).Scan(&user.ID, &user.Username, &user.Email, &user.PasswordHash, &user.CPF, &user.Phone, &user.CreatedAt, &user.UpdatedAt)
+	if sqlErr != nil {
+		if sqlErr == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, sqlErr
+	}
+	return &user, nil
+}

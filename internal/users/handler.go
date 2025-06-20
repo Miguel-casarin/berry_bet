@@ -174,3 +174,91 @@ func GetUserBalanceHandler(c *gin.Context) {
 	}
 	utils.RespondSuccess(c, gin.H{"balance": balance}, "Balance fetched successfully")
 }
+
+func GetMeHandler(c *gin.Context) {
+	username, exists := c.Get("username")
+	if !exists {
+		utils.RespondError(c, http.StatusUnauthorized, "NO_AUTH", "User not authenticated.", nil)
+		return
+	}
+	user, err := GetUserByUsername(username.(string))
+	if err != nil {
+		utils.RespondError(c, http.StatusInternalServerError, "DB_ERROR", "Failed to fetch user.", err.Error())
+		return
+	}
+	if user == nil {
+		utils.RespondError(c, http.StatusNotFound, "NOT_FOUND", "User not found.", nil)
+		return
+	}
+	user.PasswordHash = ""
+	utils.RespondSuccess(c, user, "User data fetched successfully.")
+}
+
+func UpdateMeHandler(c *gin.Context) {
+	username, exists := c.Get("username")
+	if !exists {
+		utils.RespondError(c, http.StatusUnauthorized, "NO_AUTH", "User not authenticated.", nil)
+		return
+	}
+	user, err := GetUserByUsername(username.(string))
+	if err != nil || user == nil {
+		utils.RespondError(c, http.StatusInternalServerError, "DB_ERROR", "Failed to fetch user.", nil)
+		return
+	}
+	var req struct {
+		Username string `json:"username"`
+		Email    string `json:"email"`
+		Password string `json:"password,omitempty"`
+		CPF      string `json:"cpf"`
+		Phone    string `json:"phone"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		utils.RespondError(c, http.StatusBadRequest, "INVALID_INPUT", "Invalid data.", err.Error())
+		return
+	}
+	if req.Username != "" {
+		user.Username = req.Username
+	}
+	if req.Email != "" {
+		user.Email = req.Email
+	}
+	if req.CPF != "" {
+		user.CPF = req.CPF
+	}
+	if req.Phone != "" {
+		user.Phone = req.Phone
+	}
+	if req.Password != "" {
+		hashed, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
+		if err != nil {
+			utils.RespondError(c, http.StatusInternalServerError, "HASH_ERROR", "Failed to hash password.", err.Error())
+			return
+		}
+		user.PasswordHash = string(hashed)
+	}
+	success, err := UpdateUser(*user, user.ID)
+	if err != nil || !success {
+		utils.RespondError(c, http.StatusInternalServerError, "UPDATE_FAIL", "Could not update user.", err.Error())
+		return
+	}
+	utils.RespondSuccess(c, nil, "User updated successfully.")
+}
+
+func GetMeBalanceHandler(c *gin.Context) {
+	username, exists := c.Get("username")
+	if !exists {
+		utils.RespondError(c, http.StatusUnauthorized, "NO_AUTH", "User not authenticated.", nil)
+		return
+	}
+	user, err := GetUserByUsername(username.(string))
+	if err != nil || user == nil {
+		utils.RespondError(c, http.StatusInternalServerError, "DB_ERROR", "Failed to fetch user.", nil)
+		return
+	}
+	balance, err := CalculateUserBalance(user.ID)
+	if err != nil {
+		utils.RespondError(c, http.StatusInternalServerError, "DB_ERROR", "Failed to fetch balance.", err.Error())
+		return
+	}
+	utils.RespondSuccess(c, gin.H{"balance": balance}, "Balance fetched successfully.")
+}
