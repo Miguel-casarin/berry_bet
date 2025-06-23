@@ -75,6 +75,21 @@ func op_valor(salddo float64) (float64, *cartinha) {
 	}
 }
 
+func Give_low(saldo_aposta float64) float64 {
+	var resultado float64 = saldo_aposta + Porcentagem(0.5, saldo_aposta)
+	return resultado
+}
+
+func Haddad(saldo_aposta float64) float64 {
+	numero := rand.Intn(99) + 1
+	if EhPrimo(numero) && numero <= 5 {
+		saldo_aposta = saldo_aposta + Give_low(saldo_aposta)
+		return saldo_aposta
+	} else {
+		return 0
+	}
+}
+
 func Randon_inicial(saldo float64) float64 {
 	var numero_inicial int = 0
 	var resultado float64
