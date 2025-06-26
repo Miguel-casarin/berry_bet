@@ -1,5 +1,34 @@
 package roleta
 
+import (
+	"berry_bet/User"
+)
+
+var saldo float64 = CalculateUserBalance(User.ID)
+
+func Discount(value, solado float64) (float64, error) {
+	if value <= saldo {
+		saldo -= value
+		// fazer o updat no banco depois
+		credit := value
+		return credit
+	}
+	return credit
+}
+
+func Update_saldo(saldo, credit float64) (float64, error) {
+	if credit > 0 {
+		saldo += credit
+		return saldo, nil
+	} else {
+		return saldo, fmt.Errorf("crédito inválido: %.2f", credit)
+	}
+}
+
+
+// Criar uma função para acessar essa querry no banco
+var numero_rodadas int = 0
+
 func Start(saldo_aposta float64) float64 {
 	saldo_aposta = saldo_aposta + Randon_inicial(saldo_aposta)
 	return saldo_aposta
@@ -48,12 +77,18 @@ func Final(saldo_aposta float64) Dados_rodadas {
 	}
 
 	if data.historical_value >= data.limit {
-		Haddad(data.valor_aposta)
+		Governo(data.valor_aposta)
 	}
 
 	if data.victory >= 5 {
-		Haddad(data.valor_aposta)
+		Governo(data.valor_aposta)
 	}
 
 	return data
+}
+
+if numero_rodadas <= 5 {
+	Start()
+} else {
+	Final()
 }
