@@ -13,6 +13,7 @@ type Dados_rodadas struct {
 	statistical_loser int
 	limit             float64
 	victory           int
+	cartinha_sorteada *cartinha
 }
 
 func Final(saldo_aposta float64) Dados_rodadas {
@@ -23,6 +24,7 @@ func Final(saldo_aposta float64) Dados_rodadas {
 		statistical_loser: 0,
 		limit:             1000.00,
 		victory:           0,
+		cartinha_sorteada: nil,
 	}
 
 	if Randon_fdp() {
@@ -30,11 +32,13 @@ func Final(saldo_aposta float64) Dados_rodadas {
 		data.valor_aposta = data.valor_aposta + new_value
 		data.historical_value = data.historical_value + Count_money(data.historical_value, data.valor_aposta)
 		data.victory = data.victory + 1
+		data.cartinha_sorteada = carta
 	} else {
 		data.valor_aposta = 0
 		data.historical_value = data.historical_value + Count_money(data.historical_value, data.valor_aposta)
 		data.loser_count = Loser_count(data.loser_count)
 		data.victory = 0
+		data.cartinha_sorteada = nil
 	}
 
 	if data.loser_count == 3 {
