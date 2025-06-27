@@ -29,6 +29,15 @@ func Update_saldo(saldo, credit float64) (float64, error) {
 // Criar uma função para acessar essa querry no banco
 var numero_rodadas int = 0
 
+// retorna as cartinhas 
+func (d Dados_rodadas) CartinhaSorteada() *string {
+	if d.cartinha_sorteada == nil {
+		return nil
+	}
+	c := string(*d.cartinha_sorteada)
+	return &c
+}
+
 func Start(saldo_aposta float64) float64 {
 	saldo_aposta = saldo_aposta + Randon_inicial(saldo_aposta)
 	return saldo_aposta
@@ -86,6 +95,8 @@ func Final(saldo_aposta float64) Dados_rodadas {
 
 	return data
 }
+
+// Retorno da cartinha para o font 
 
 if numero_rodadas <= 5 {
 	Start()
