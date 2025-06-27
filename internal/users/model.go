@@ -157,19 +157,81 @@ func DeleteUser(userId int) (bool, error) {
 	return true, nil
 }
 
+// GetUserByUsername busca um usuário pelo username
 func GetUserByUsername(username string) (*User, error) {
-	stmt, err := config.DB.Prepare("SELECT id, username, email, password_hash, cpf, phone, created_at, updated_at FROM users WHERE username = ?")
+	row := config.DB.QueryRow(`
+		SELECT id, username, email, password_hash, cpf, phone, created_at, updated_at 
+		FROM users 
+		WHERE username = ?`, username)
+
+	var user User
+	err := row.Scan(&user.ID, &user.Username, &user.Email, &user.PasswordHash, &user.CPF, &user.Phone, &user.CreatedAt, &user.UpdatedAt)
+
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
 	if err != nil {
 		return nil, err
 	}
-	defer stmt.Close()
-	user := User{}
-	sqlErr := stmt.QueryRow(username).Scan(&user.ID, &user.Username, &user.Email, &user.PasswordHash, &user.CPF, &user.Phone, &user.CreatedAt, &user.UpdatedAt)
-	if sqlErr != nil {
-		if sqlErr == sql.ErrNoRows {
-			return nil, nil
-		}
-		return nil, sqlErr
-	}
+
 	return &user, nil
+}
+
+// GetUserByEmail busca um usuário pelo email
+func GetUserByEmail(email string) (*User, error) {
+	row := config.DB.QueryRow(`
+		SELECT id, username, email, password_hash, cpf, phone, created_at, updated_at 
+		FROM users 
+		WHERE email = ?`, email)
+
+	var user User
+	err := row.Scan(&user.ID, &user.Username, &user.Email, &user.PasswordHash, &user.CPF, &user.Phone, &user.CreatedAt, &user.UpdatedAt)
+
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	return &user, nil
+}
+
+// UpdateUserPassword atualiza apenas a senha de um usuário
+func UpdateUserPassword(userID int64, newPasswordHash string) error {
+	tx, err := config.DB.Begin()
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		}
+	}()
+
+	_, err = tx.Exec(`
+		UPDATE users 
+		SET password_hash = ?, updated_at = datetime('now') 
+		WHERE id = ?`, newPasswordHash, userID)
+
+	if err != nil {
+		return err
+	}
+
+	return tx.Commit()
+}
+
+// CheckUserExists verifica se um usuário existe por username ou email
+func CheckUserExists(username, email string) (bool, error) {
+	var count int
+	err := config.DB.QueryRow(`
+		SELECT COUNT(*) 
+		FROM users 
+		WHERE username = ? OR email = ?`, username, email).Scan(&count)
+
+	if err != nil {
+		return false, err
+	}
+
+	return count > 0, nil
 }

@@ -4,7 +4,6 @@ import (
 	"berry_bet/config"
 	"database/sql"
 	"errors"
-	"strconv"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -25,7 +24,7 @@ type Bet struct {
 // Busca as apostas do banco de dados, limitando o número de resultados retornados
 
 func GetBets(count int) ([]Bet, error) {
-	rows, err := config.DB.Query("SELECT id, user_id, amount, odds, bet_status, profit_loss, game_id, rigging_level, created_at FROM bets LIMIT " + strconv.Itoa(count))
+	rows, err := config.DB.Query("SELECT id, user_id, amount, odds, bet_status, profit_loss, game_id, rigging_level, created_at FROM bets LIMIT ?", count)
 
 	if err != nil {
 		return nil, err
@@ -188,4 +187,165 @@ func DeleteBet(betId int) (bool, error) {
 	}
 
 	return true, nil
+}
+
+// GetBetsByUserID busca todas as apostas de um usuário específico
+func GetBetsByUserID(userID int64, limit int) ([]Bet, error) {
+	rows, err := config.DB.Query(`
+		SELECT id, user_id, amount, odds, bet_status, profit_loss, game_id, rigging_level, created_at 
+		FROM bets 
+		WHERE user_id = ? 
+		ORDER BY created_at DESC 
+		LIMIT ?`, userID, limit)
+
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	bets := make([]Bet, 0)
+	for rows.Next() {
+		var bet Bet
+		err := rows.Scan(&bet.ID, &bet.UserID, &bet.Amount, &bet.Odds, &bet.BetStatus, &bet.ProfitLoss, &bet.GameID, &bet.RiggingLevel, &bet.CreatedAt)
+		if err != nil {
+			return nil, err
+		}
+		bets = append(bets, bet)
+	}
+
+	return bets, rows.Err()
+}
+
+// GetBetsByGameID busca todas as apostas de um jogo específico
+func GetBetsByGameID(gameID int64) ([]Bet, error) {
+	rows, err := config.DB.Query(`
+		SELECT id, user_id, amount, odds, bet_status, profit_loss, game_id, rigging_level, created_at 
+		FROM bets 
+		WHERE game_id = ?`, gameID)
+
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	bets := make([]Bet, 0)
+	for rows.Next() {
+		var bet Bet
+		err := rows.Scan(&bet.ID, &bet.UserID, &bet.Amount, &bet.Odds, &bet.BetStatus, &bet.ProfitLoss, &bet.GameID, &bet.RiggingLevel, &bet.CreatedAt)
+		if err != nil {
+			return nil, err
+		}
+		bets = append(bets, bet)
+	}
+
+	return bets, rows.Err()
+}
+
+// GetPendingBetsByGameID busca apostas pendentes de um jogo específico
+func GetPendingBetsByGameID(gameID int64) ([]Bet, error) {
+	rows, err := config.DB.Query(`
+		SELECT id, user_id, amount, odds, bet_status, profit_loss, game_id, rigging_level, created_at 
+		FROM bets 
+		WHERE game_id = ? AND bet_status = 'pending'`, gameID)
+
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	bets := make([]Bet, 0)
+	for rows.Next() {
+		var bet Bet
+		err := rows.Scan(&bet.ID, &bet.UserID, &bet.Amount, &bet.Odds, &bet.BetStatus, &bet.ProfitLoss, &bet.GameID, &bet.RiggingLevel, &bet.CreatedAt)
+		if err != nil {
+			return nil, err
+		}
+		bets = append(bets, bet)
+	}
+
+	return bets, rows.Err()
+}
+
+// UpdateBetStatus atualiza o status de uma aposta e seu lucro/prejuízo
+func UpdateBetStatus(betID int64, status string, profitLoss float64) error {
+	tx, err := config.DB.Begin()
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		}
+	}()
+
+	_, err = tx.Exec(`
+		UPDATE bets 
+		SET bet_status = ?, profit_loss = ? 
+		WHERE id = ?`, status, profitLoss, betID)
+
+	if err != nil {
+		return err
+	}
+
+	return tx.Commit()
+}
+
+// ResolveBetsForGame resolve todas as apostas pendentes para um jogo
+func ResolveBetsForGame(gameID int64, winningOutcome string) error {
+	// Esta função será usada para resolver apostas baseada no resultado do jogo
+	// Por exemplo, em roleta, winningOutcome pode ser "red", "black", número específico, etc.
+
+	tx, err := config.DB.Begin()
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		}
+	}()
+
+	// Buscar apostas pendentes para este jogo
+	rows, err := tx.Query(`
+		SELECT id, user_id, amount, odds, rigging_level 
+		FROM bets 
+		WHERE game_id = ? AND bet_status = 'pending'`, gameID)
+
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var betID, userID, riggingLevel int64
+		var amount, odds float64
+
+		err := rows.Scan(&betID, &userID, &amount, &odds, &riggingLevel)
+		if err != nil {
+			return err
+		}
+
+		// TODO: Implementar lógica específica do jogo para determinar se a aposta ganhou
+		// Por agora, deixamos como estrutura para ser implementada
+		var isWin bool
+		var profitLoss float64
+
+		// Placeholder para lógica do jogo
+		_ = winningOutcome
+		_ = riggingLevel
+
+		if isWin {
+			profitLoss = amount * (odds - 1)
+			_, err = tx.Exec(`UPDATE bets SET bet_status = 'won', profit_loss = ? WHERE id = ?`, profitLoss, betID)
+		} else {
+			profitLoss = -amount
+			_, err = tx.Exec(`UPDATE bets SET bet_status = 'lost', profit_loss = ? WHERE id = ?`, profitLoss, betID)
+		}
+
+		if err != nil {
+			return err
+		}
+	}
+
+	return tx.Commit()
 }

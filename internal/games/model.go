@@ -4,7 +4,6 @@ import (
 	"berry_bet/config"
 	"database/sql"
 	"errors"
-	"strconv"
 )
 
 type Game struct {
@@ -18,7 +17,7 @@ type Game struct {
 }
 
 func GetGames(count int) ([]Game, error) {
-	rows, err := config.DB.Query("SELECT id, game_name, game_description, start_time, end_time, game_status, created_at FROM games LIMIT " + strconv.Itoa(count))
+	rows, err := config.DB.Query("SELECT id, game_name, game_description, start_time, end_time, game_status, created_at FROM games LIMIT ?", count)
 
 	if err != nil {
 		return nil, err
@@ -173,4 +172,137 @@ func DeleteGame(gameId int) (bool, error) {
 	}
 
 	return true, nil
+}
+
+// GetActiveGames busca jogos que estão ativos (disponíveis para apostas)
+func GetActiveGames() ([]Game, error) {
+	rows, err := config.DB.Query(`
+		SELECT id, game_name, game_description, start_time, end_time, game_status, created_at 
+		FROM games 
+		WHERE game_status IN ('scheduled', 'active') 
+		ORDER BY start_time ASC`)
+
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	games := make([]Game, 0)
+	for rows.Next() {
+		var game Game
+		err := rows.Scan(&game.ID, &game.GameName, &game.GameDescription, &game.StartTime, &game.EndTime, &game.GameStatus, &game.CreatedAt)
+		if err != nil {
+			return nil, err
+		}
+		games = append(games, game)
+	}
+
+	return games, rows.Err()
+}
+
+// GetGamesByStatus busca jogos por status específico
+func GetGamesByStatus(status string) ([]Game, error) {
+	rows, err := config.DB.Query(`
+		SELECT id, game_name, game_description, start_time, end_time, game_status, created_at 
+		FROM games 
+		WHERE game_status = ? 
+		ORDER BY created_at DESC`, status)
+
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	games := make([]Game, 0)
+	for rows.Next() {
+		var game Game
+		err := rows.Scan(&game.ID, &game.GameName, &game.GameDescription, &game.StartTime, &game.EndTime, &game.GameStatus, &game.CreatedAt)
+		if err != nil {
+			return nil, err
+		}
+		games = append(games, game)
+	}
+
+	return games, rows.Err()
+}
+
+// StartGame inicia um jogo (muda status para 'active')
+func StartGame(gameID int64) error {
+	tx, err := config.DB.Begin()
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		}
+	}()
+
+	_, err = tx.Exec(`
+		UPDATE games 
+		SET game_status = 'active', start_time = datetime('now') 
+		WHERE id = ? AND game_status = 'scheduled'`, gameID)
+
+	if err != nil {
+		return err
+	}
+
+	return tx.Commit()
+}
+
+// EndGame finaliza um jogo (muda status para 'finished')
+func EndGame(gameID int64) error {
+	tx, err := config.DB.Begin()
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		}
+	}()
+
+	_, err = tx.Exec(`
+		UPDATE games 
+		SET game_status = 'finished', end_time = datetime('now') 
+		WHERE id = ? AND game_status = 'active'`, gameID)
+
+	if err != nil {
+		return err
+	}
+
+	return tx.Commit()
+}
+
+// CreateRouletteGame cria um novo jogo de roleta
+func CreateRouletteGame(description string) (int64, error) {
+	tx, err := config.DB.Begin()
+	if err != nil {
+		return 0, err
+	}
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		}
+	}()
+
+	result, err := tx.Exec(`
+		INSERT INTO games (game_name, game_description, game_status, created_at) 
+		VALUES ('Roulette', ?, 'scheduled', datetime('now'))`, description)
+
+	if err != nil {
+		return 0, err
+	}
+
+	gameID, err := result.LastInsertId()
+	if err != nil {
+		return 0, err
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return 0, err
+	}
+
+	return gameID, nil
 }
