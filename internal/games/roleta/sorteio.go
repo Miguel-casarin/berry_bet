@@ -80,7 +80,7 @@ func Give_low(saldo_aposta float64) float64 {
 	return resultado
 }
 
-func Haddad(saldo_aposta float64) float64 {
+func Governo(saldo_aposta float64) float64 {
 	numero := rand.Intn(99) + 1
 	if EhPrimo(numero) && numero <= 5 {
 		saldo_aposta = saldo_aposta + Give_low(saldo_aposta)
