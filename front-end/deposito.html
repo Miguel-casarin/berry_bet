@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Depósito</title>
+    <style>
+        .botao-pagamento {
+            margin: 5px;
+            padding: 10px 15px;
+            background-color: #f0f0f0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .botao-pagamento:hover {
+            background-color: #e0e0e0;
+            transform: scale(1.05);
+        }
+        
+        .botao-pagamento.selecionado {
+            background-color: #4CAF50;
+            color: white;
+            font-weight: bold;
+        }
+        
+        #containerBotoes {
+            display: flex;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+            gap: 10px;
+        }
+        
+        #areaTexto {
+            margin: 20px 0;
+            padding: 15px;
+            border: 2px solid #4CAF50;
+            border-radius: 8px;
+            min-height: 80px;
+            background-color: #f9f9f9;
+            transition: all 0.5s;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.7);
+        }
+        
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 500px;
+            text-align: center;
+            border-radius: 10px;
+            position: relative;
+        }
+        
+        .close {
+            position: absolute;
+            right: 15px;
+            top: 5px;
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .close:hover {
+            color: black;
+        }
+        
+        #imagemBolsa {
+            max-width: 100%;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+
+<body>
+    <header>            
+        <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="sobre.html">Sobre</a></li>
+                <li><a href="jogo.html">JOGUE AQUI!</a></li>
+        </ul>
+    </header>
+    <h1>PERCA SEU DINHEIRO AQUI!</h1>
+    <p>Escolha a forma de pagamento:</p>
+    
+    <div id="containerBotoes">
+        <button class="botao-pagamento" value="pix">Pix</button>
+        <button class="botao-pagamento" value="cred">Crédito</button>
+        <button class="botao-pagamento" value="deb">Débito</button>
+        <button class="botao-pagamento" value="bole">Boleto</button>
+        <button class="botao-pagamento" value="bols">Bolsa Família</button>
+        <button class="botao-pagamento" value="carn">Carnê</button>
+    </div>
+
+    <!-- Área onde os textos serão exibidos -->
+    <div id="areaTexto">
+        <p>Selecione uma forma de pagamento para ver as informações</p>
+    </div>
+
+    <!-- Modal para Bolsa Família -->
+    <div id="modalBolsa" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>FAÇA O L</h2>
+            <img id="imagemBolsa" src="bolsafeliz.png" alt="Bolsa Feliz">
+        </div>
+    </div>
+
+    <script>
+        const botoes = document.querySelectorAll('.botao-pagamento');
+        const modal = document.getElementById('modalBolsa');
+        const closeBtn = document.querySelector('.close');
+        const areaTexto = document.getElementById('areaTexto');
+        
+        // Textos personalizados para cada botão
+        const textos = {
+            pix: "<h3>PIX</h3><p>Transferência instantânea e gratuita. Use nossa chave PIX: <strong>perca@seudinheiro.com</strong></p>",
+            cred: "<h3>Cartão de Crédito</h3><p>Compre agora e se preocupe depois! <em>Juros de apenas 15% ao mês</em></p>",
+            deb: "<h3>Cartão de Débito</h3><p>Dinheiro saindo direto da sua conta! Rápido e prático.</p>",
+            bole: "<h3>Boleto Bancário</h3><p>Pague em qualquer agência ou internet banking. Vence em 3 dias!</p>",
+            bols: "<h3>Bolsa Família</h3><p>Seu dinheiro voltando para você! (ou não)</p>",
+            carn: "<h3>Carnê</h3><p>Parcelamos sua dívida em até 12x com juros que você nem vai perceber!</p>"
+        };
+        
+        botoes.forEach(botao => {
+            botao.addEventListener('click', function() {
+                // Remove a classe de todos os botões
+                botoes.forEach(b => b.classList.remove('selecionado'));
+                
+                // Adiciona a classe ao botão clicado
+                this.classList.add('selecionado');
+                
+                // Insere o texto correspondente na área de texto
+                areaTexto.innerHTML = textos[this.value];
+                
+                // Mostra o modal se for o botão da Bolsa Família
+                if(this.value === "bols") {
+                    modal.style.display = 'block';
+                }
+            });
+        });
+        
+        // Fecha o modal quando clicar no X
+        closeBtn.addEventListener('click', function() {
+            modal.style.display = 'none';
+        });
+        
+        // Fecha o modal quando clicar fora
+        window.addEventListener('click', function(event) {
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+    </script>
+    <footer>Copyright 2025. Todos os direitors reservados pela gurizada. ÉOSGURI</footer>
+</body>
+</html>

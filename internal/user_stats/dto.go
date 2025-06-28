@@ -7,6 +7,7 @@ type UserStatsRequest struct {
 	TotalLosses    int64   `json:"total_losses"`
 	TotalAmountBet float64 `json:"total_amount_bet"`
 	TotalProfit    float64 `json:"total_profit"`
+	Balance        float64 `json:"balance"`
 	LastBetAt      string  `json:"last_bet_at"`
 }
 
@@ -18,6 +19,7 @@ type UserStatsResponse struct {
 	TotalLosses    int64   `json:"total_losses"`
 	TotalAmountBet float64 `json:"total_amount_bet"`
 	TotalProfit    float64 `json:"total_profit"`
+	Balance        float64 `json:"balance"`
 	LastBetAt      string  `json:"last_bet_at"`
 	CreatedAt      string  `json:"created_at"`
 	UpdatedAt      string  `json:"updated_at"`
@@ -32,6 +34,7 @@ func ToUserStatsResponse(s *UserStats) UserStatsResponse {
 		TotalLosses:    s.TotalLosses,
 		TotalAmountBet: s.TotalAmountBet,
 		TotalProfit:    s.TotalProfit,
+		Balance:        s.Balance,
 		LastBetAt:      s.LastBetAt,
 		CreatedAt:      s.CreatedAt,
 		UpdatedAt:      s.UpdatedAt,

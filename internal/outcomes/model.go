@@ -3,11 +3,10 @@ package outcomes
 import (
 	"berry_bet/config"
 	"errors"
-	"strconv"
 )
 
 func GetOutcomes(count int) ([]Outcome, error) {
-	rows, err := config.DB.Query("SELECT id, game_id, outcome FROM outcomes LIMIT " + strconv.Itoa(count))
+	rows, err := config.DB.Query("SELECT id, game_id, outcome FROM outcomes LIMIT ?", count)
 	if err != nil {
 		return nil, err
 	}

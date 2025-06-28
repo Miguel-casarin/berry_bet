@@ -58,6 +58,7 @@ func AddUserStatsHandler(c *gin.Context) {
 		TotalLosses:    req.TotalLosses,
 		TotalAmountBet: req.TotalAmountBet,
 		TotalProfit:    req.TotalProfit,
+		Balance:        req.Balance,
 		LastBetAt:      req.LastBetAt,
 	}
 	success, err := AddUserStats(stats)
@@ -92,6 +93,7 @@ func UpdateUserStatsHandler(c *gin.Context) {
 		TotalLosses:    req.TotalLosses,
 		TotalAmountBet: req.TotalAmountBet,
 		TotalProfit:    req.TotalProfit,
+		Balance:        req.Balance,
 		LastBetAt:      req.LastBetAt,
 	}
 	success, err := UpdateUserStats(stats, int64(statsId))
@@ -160,13 +162,13 @@ func GetMeStatsHandler(c *gin.Context) {
 
 // Busca estatísticas do usuário pelo user_id
 func GetUserStatsByUserID(userID int64) (*UserStats, error) {
-	stmt, err := config.DB.Prepare("SELECT id, user_id, total_bets, total_wins, total_losses, total_amount_bet, total_profit, last_bet_at, created_at, updated_at FROM user_stats WHERE user_id = ?")
+	stmt, err := config.DB.Prepare("SELECT id, user_id, total_bets, total_wins, total_losses, total_amount_bet, total_profit, balance, last_bet_at, created_at, updated_at FROM user_stats WHERE user_id = ?")
 	if err != nil {
 		return nil, err
 	}
 	defer stmt.Close()
 	stats := UserStats{}
-	err = stmt.QueryRow(userID).Scan(&stats.ID, &stats.UserID, &stats.TotalBets, &stats.TotalWins, &stats.TotalLosses, &stats.TotalAmountBet, &stats.TotalProfit, &stats.LastBetAt, &stats.CreatedAt, &stats.UpdatedAt)
+	err = stmt.QueryRow(userID).Scan(&stats.ID, &stats.UserID, &stats.TotalBets, &stats.TotalWins, &stats.TotalLosses, &stats.TotalAmountBet, &stats.TotalProfit, &stats.Balance, &stats.LastBetAt, &stats.CreatedAt, &stats.UpdatedAt)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, nil
@@ -174,4 +176,35 @@ func GetUserStatsByUserID(userID int64) (*UserStats, error) {
 		return nil, err
 	}
 	return &stats, nil
+}
+
+// GetUserBalanceHandler retorna o saldo de um usuário pelo ID
+func GetUserBalanceHandler(c *gin.Context) {
+	userID := c.Param("id")
+	balance, err := GetUserBalanceByID(userID)
+	if err != nil {
+		utils.RespondError(c, http.StatusInternalServerError, "DB_ERROR", "Failed to fetch user balance.", err.Error())
+		return
+	}
+	utils.RespondSuccess(c, gin.H{"user_id": userID, "balance": balance}, "User balance fetched successfully")
+}
+
+// GetMeBalanceHandler retorna o saldo do usuário autenticado
+func GetMeBalanceHandler(c *gin.Context) {
+	username, exists := c.Get("username")
+	if !exists {
+		utils.RespondError(c, http.StatusUnauthorized, "NO_AUTH", "User not authenticated.", nil)
+		return
+	}
+	user, err := users.GetUserByUsername(username.(string))
+	if err != nil || user == nil {
+		utils.RespondError(c, http.StatusInternalServerError, "DB_ERROR", "Failed to fetch user.", nil)
+		return
+	}
+	balance, err := GetUserBalance(user.ID)
+	if err != nil {
+		utils.RespondError(c, http.StatusInternalServerError, "DB_ERROR", "Failed to fetch balance.", err.Error())
+		return
+	}
+	utils.RespondSuccess(c, gin.H{"user_id": user.ID, "balance": balance}, "Balance fetched successfully")
 }

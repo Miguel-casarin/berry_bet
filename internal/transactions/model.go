@@ -3,7 +3,6 @@ package transactions
 import (
 	"berry_bet/config"
 	"errors"
-	"strconv"
 )
 
 type Transaction struct {
@@ -16,7 +15,7 @@ type Transaction struct {
 }
 
 func GetTransactions(count int) ([]Transaction, error) {
-	rows, err := config.DB.Query("SELECT id, user_id, type, amount, description, created_at FROM transactions LIMIT " + strconv.Itoa(count))
+	rows, err := config.DB.Query("SELECT id, user_id, type, amount, description, created_at FROM transactions LIMIT ?", count)
 	if err != nil {
 		return nil, err
 	}
@@ -105,4 +104,150 @@ func DeleteTransaction(transactionId int) (bool, error) {
 		return false, err
 	}
 	return true, nil
+}
+
+// GetTransactionsByUserID busca transações de um usuário específico
+func GetTransactionsByUserID(userID int64, limit int) ([]Transaction, error) {
+	rows, err := config.DB.Query(`
+		SELECT id, user_id, type, amount, description, created_at 
+		FROM transactions 
+		WHERE user_id = ? 
+		ORDER BY created_at DESC 
+		LIMIT ?`, userID, limit)
+
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	transactions := make([]Transaction, 0)
+	for rows.Next() {
+		var t Transaction
+		err := rows.Scan(&t.ID, &t.UserID, &t.Type, &t.Amount, &t.Description, &t.CreatedAt)
+		if err != nil {
+			return nil, err
+		}
+		transactions = append(transactions, t)
+	}
+
+	return transactions, rows.Err()
+}
+
+// GetTransactionsByType busca transações por tipo
+func GetTransactionsByType(transactionType string, limit int) ([]Transaction, error) {
+	rows, err := config.DB.Query(`
+		SELECT id, user_id, type, amount, description, created_at 
+		FROM transactions 
+		WHERE type = ? 
+		ORDER BY created_at DESC 
+		LIMIT ?`, transactionType, limit)
+
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	transactions := make([]Transaction, 0)
+	for rows.Next() {
+		var t Transaction
+		err := rows.Scan(&t.ID, &t.UserID, &t.Type, &t.Amount, &t.Description, &t.CreatedAt)
+		if err != nil {
+			return nil, err
+		}
+		transactions = append(transactions, t)
+	}
+
+	return transactions, rows.Err()
+}
+
+// CreateBetTransaction cria uma transação de aposta (debita do usuário)
+func CreateBetTransaction(userID int64, amount float64, betID int64) error {
+	tx, err := config.DB.Begin()
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		}
+	}()
+
+	_, err = tx.Exec(`
+		INSERT INTO transactions (user_id, type, amount, description, created_at) 
+		VALUES (?, 'bet', ?, ?, datetime('now'))`, userID, amount, "Bet #"+string(rune(betID)))
+
+	if err != nil {
+		return err
+	}
+
+	return tx.Commit()
+}
+
+// CreateWinTransaction cria uma transação de ganho (credita para o usuário)
+func CreateWinTransaction(userID int64, amount float64, betID int64) error {
+	tx, err := config.DB.Begin()
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		}
+	}()
+
+	_, err = tx.Exec(`
+		INSERT INTO transactions (user_id, type, amount, description, created_at) 
+		VALUES (?, 'win', ?, ?, datetime('now'))`, userID, amount, "Win from Bet #"+string(rune(betID)))
+
+	if err != nil {
+		return err
+	}
+
+	return tx.Commit()
+}
+
+// CreateDepositTransaction cria uma transação de depósito
+func CreateDepositTransaction(userID int64, amount float64, description string) error {
+	tx, err := config.DB.Begin()
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		}
+	}()
+
+	_, err = tx.Exec(`
+		INSERT INTO transactions (user_id, type, amount, description, created_at) 
+		VALUES (?, 'deposit', ?, ?, datetime('now'))`, userID, amount, description)
+
+	if err != nil {
+		return err
+	}
+
+	return tx.Commit()
+}
+
+// CreateWithdrawTransaction cria uma transação de saque
+func CreateWithdrawTransaction(userID int64, amount float64, description string) error {
+	tx, err := config.DB.Begin()
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		}
+	}()
+
+	_, err = tx.Exec(`
+		INSERT INTO transactions (user_id, type, amount, description, created_at) 
+		VALUES (?, 'withdraw', ?, ?, datetime('now'))`, userID, amount, description)
+
+	if err != nil {
+		return err
+	}
+
+	return tx.Commit()
 }
