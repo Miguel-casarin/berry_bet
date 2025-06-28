@@ -54,7 +54,7 @@ func GetUserStatsByID(id string) (UserStats, error) {
 // AddUserStats adiciona estatísticas de usuário ao banco de dados após validação dos dados.
 func AddUserStats(newStats UserStats) (bool, error) {
 	if newStats.UserID <= 0 {
-		return false, errors.New("user_id inválido")
+		return false, errors.New("invalid user id")
 	}
 	stmt, err := config.DB.Prepare("INSERT INTO user_stats (user_id, total_bets, total_wins, total_losses, total_amount_bet, total_profit, last_bet_at, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))")
 	if err != nil {

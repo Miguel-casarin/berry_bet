@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// GetTransactionsHandler returns a list of transactions (DTO response).
 func GetTransactionsHandler(c *gin.Context) {
 	transactions, err := GetTransactions(10)
 	if err != nil {
@@ -18,9 +19,14 @@ func GetTransactionsHandler(c *gin.Context) {
 		utils.RespondError(c, http.StatusNotFound, "NOT_FOUND", "No transactions found.", nil)
 		return
 	}
-	utils.RespondSuccess(c, transactions, "Transactions found")
+	responses := make([]TransactionResponse, 0, len(transactions))
+	for _, t := range transactions {
+		responses = append(responses, ToTransactionResponse(&t))
+	}
+	utils.RespondSuccess(c, responses, "Transactions found")
 }
 
+// GetTransactionByIDHandler returns a transaction by ID (DTO response).
 func GetTransactionByIDHandler(c *gin.Context) {
 	id := c.Param("id")
 	transaction, err := GetTransactionByID(id)
@@ -32,16 +38,23 @@ func GetTransactionByIDHandler(c *gin.Context) {
 		utils.RespondError(c, http.StatusNotFound, "NOT_FOUND", "Transaction not found.", nil)
 		return
 	}
-	utils.RespondSuccess(c, transaction, "Transaction found")
+	utils.RespondSuccess(c, ToTransactionResponse(&transaction), "Transaction found")
 }
 
+// AddTransactionHandler creates a new transaction (DTO request/response).
 func AddTransactionHandler(c *gin.Context) {
-	var json Transaction
-	if err := c.ShouldBindJSON(&json); err != nil {
+	var req TransactionRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
 		utils.RespondError(c, http.StatusBadRequest, "INVALID_INPUT", "Invalid data.", err.Error())
 		return
 	}
-	success, err := AddTransaction(json)
+	transaction := Transaction{
+		UserID:      req.UserID,
+		Type:        req.Type,
+		Amount:      req.Amount,
+		Description: req.Description,
+	}
+	success, err := AddTransaction(transaction)
 	if err != nil {
 		utils.RespondError(c, http.StatusInternalServerError, "DB_ERROR", "Failed to register transaction.", err.Error())
 		return
@@ -53,9 +66,10 @@ func AddTransactionHandler(c *gin.Context) {
 	}
 }
 
+// UpdateTransactionHandler updates an existing transaction (DTO request/response).
 func UpdateTransactionHandler(c *gin.Context) {
-	var json Transaction
-	if err := c.ShouldBindJSON(&json); err != nil {
+	var req TransactionRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
 		utils.RespondError(c, http.StatusBadRequest, "INVALID_INPUT", "Invalid data.", err.Error())
 		return
 	}
@@ -64,7 +78,14 @@ func UpdateTransactionHandler(c *gin.Context) {
 		utils.RespondError(c, http.StatusBadRequest, "INVALID_ID", "Invalid ID.", err.Error())
 		return
 	}
-	success, err := UpdateTransaction(json, int64(transactionId))
+	transaction := Transaction{
+		ID:          int64(transactionId),
+		UserID:      req.UserID,
+		Type:        req.Type,
+		Amount:      req.Amount,
+		Description: req.Description,
+	}
+	success, err := UpdateTransaction(transaction, int64(transactionId))
 	if err != nil {
 		utils.RespondError(c, http.StatusInternalServerError, "DB_ERROR", "Failed to update transaction.", err.Error())
 		return
@@ -76,6 +97,7 @@ func UpdateTransactionHandler(c *gin.Context) {
 	}
 }
 
+// DeleteTransactionHandler deletes a transaction by ID.
 func DeleteTransactionHandler(c *gin.Context) {
 	transactionId, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -84,16 +106,17 @@ func DeleteTransactionHandler(c *gin.Context) {
 	}
 	success, err := DeleteTransaction(transactionId)
 	if err != nil {
-		utils.RespondError(c, http.StatusInternalServerError, "DB_ERROR", "Failed to delete transaction.", err.Error())
+		utils.RespondError(c, http.StatusInternalServerError, "DELETE_FAIL", "Could not delete transaction.", err.Error())
 		return
 	}
 	if success {
-		utils.RespondSuccess(c, nil, "Transaction deleted successfully")
+		utils.RespondSuccess(c, nil, "Transaction deleted successfully.")
 	} else {
 		utils.RespondError(c, http.StatusBadRequest, "DELETE_FAIL", "Could not delete transaction.", nil)
 	}
 }
 
+// OptionsHandler handles preflight requests.
 func OptionsHandler(c *gin.Context) {
 	ourOptions := "HTTP/1.1 200 OK\n" +
 		"Allow: GET, POST, PUT, DELETE, OPTIONS\n" +

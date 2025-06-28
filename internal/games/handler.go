@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// GetGamesHandler returns a list of games (DTO response).
 func GetGamesHandler(c *gin.Context) {
 	games, err := GetGames(10)
 	if err != nil {
@@ -18,9 +19,14 @@ func GetGamesHandler(c *gin.Context) {
 		utils.RespondError(c, http.StatusNotFound, "NOT_FOUND", "No games found.", nil)
 		return
 	}
-	utils.RespondSuccess(c, games, "Games found")
+	responses := make([]GameResponse, 0, len(games))
+	for _, g := range games {
+		responses = append(responses, ToGameResponse(&g))
+	}
+	utils.RespondSuccess(c, responses, "Games found")
 }
 
+// GetGameByIDHandler returns a game by ID (DTO response).
 func GetGameByIDHandler(c *gin.Context) {
 	id := c.Param("id")
 	game, err := GetGameByID(id)
@@ -32,17 +38,24 @@ func GetGameByIDHandler(c *gin.Context) {
 		utils.RespondError(c, http.StatusNotFound, "NOT_FOUND", "Game not found.", nil)
 		return
 	}
-	utils.RespondSuccess(c, game, "Game found")
+	utils.RespondSuccess(c, ToGameResponse(&game), "Game found")
 }
 
+// AddGameHandler creates a new game (DTO request/response).
 func AddGameHandler(c *gin.Context) {
-	var json Game
-	if err := c.ShouldBindJSON(&json); err != nil {
+	var req GameRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
 		utils.RespondError(c, http.StatusBadRequest, "INVALID_INPUT", "Invalid data.", err.Error())
 		return
 	}
-
-	success, err := AddGame(json)
+	game := Game{
+		GameName:        req.GameName,
+		GameDescription: req.GameDescription,
+		StartTime:       req.StartTime,
+		EndTime:         req.EndTime,
+		GameStatus:      req.GameStatus,
+	}
+	success, err := AddGame(game)
 	if err != nil {
 		utils.RespondError(c, http.StatusInternalServerError, "DB_ERROR", "Failed to add game.", err.Error())
 		return
@@ -54,20 +67,27 @@ func AddGameHandler(c *gin.Context) {
 	}
 }
 
+// UpdateGameHandler updates an existing game (DTO request/response).
 func UpdateGameHandler(c *gin.Context) {
-	var json Game
-	if err := c.ShouldBindJSON(&json); err != nil {
+	var req GameRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
 		utils.RespondError(c, http.StatusBadRequest, "INVALID_INPUT", "Invalid data.", err.Error())
 		return
 	}
-
 	gameId, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		utils.RespondError(c, http.StatusBadRequest, "INVALID_ID", "Invalid ID.", err.Error())
 		return
 	}
-
-	success, err := UpdateGame(json, int64(gameId))
+	game := Game{
+		ID:              int64(gameId),
+		GameName:        req.GameName,
+		GameDescription: req.GameDescription,
+		StartTime:       req.StartTime,
+		EndTime:         req.EndTime,
+		GameStatus:      req.GameStatus,
+	}
+	success, err := UpdateGame(game, int64(gameId))
 	if err != nil {
 		utils.RespondError(c, http.StatusInternalServerError, "DB_ERROR", "Failed to update game.", err.Error())
 		return
@@ -79,25 +99,26 @@ func UpdateGameHandler(c *gin.Context) {
 	}
 }
 
+// DeleteGameHandler deletes a game by ID.
 func DeleteGameHandler(c *gin.Context) {
 	gameId, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		utils.RespondError(c, http.StatusBadRequest, "INVALID_ID", "Invalid ID.", err.Error())
 		return
 	}
-
 	success, err := DeleteGame(gameId)
 	if err != nil {
-		utils.RespondError(c, http.StatusInternalServerError, "DB_ERROR", "Failed to delete game.", err.Error())
+		utils.RespondError(c, http.StatusInternalServerError, "DELETE_FAIL", "Could not delete game.", err.Error())
 		return
 	}
 	if success {
-		utils.RespondSuccess(c, nil, "Game deleted successfully")
+		utils.RespondSuccess(c, nil, "Game deleted successfully.")
 	} else {
 		utils.RespondError(c, http.StatusBadRequest, "DELETE_FAIL", "Could not delete game.", nil)
 	}
 }
 
+// OptionsHandler handles preflight requests for CORS.
 func OptionsHandler(c *gin.Context) {
 	ourOptions := "HTTP/1.1 200 OK\n" +
 		"Allow: GET, POST, PUT, DELETE, OPTIONS\n" +

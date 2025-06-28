@@ -9,6 +9,7 @@ import (
 
 func RegisterUserRoutes(router *gin.Engine) {
 	v1 := router.Group("/api/v1")
+	v1.Use(auth.JWTAuthMiddleware())
 	{
 		v1.GET("/users", users.GetUsersHandler)
 		v1.GET("/users/:id", users.GetUserByIDHandler)

@@ -57,6 +57,18 @@ func RegisterHandler(c *gin.Context) {
 		utils.RespondError(c, http.StatusBadRequest, "MISSING_FIELDS", "Username, email, password and cpf are required.", nil)
 		return
 	}
+	if !utils.IsValidEmail(req.Email) {
+		utils.RespondError(c, http.StatusBadRequest, "INVALID_EMAIL", "Invalid email.", nil)
+		return
+	}
+	if !utils.IsValidCPF(req.CPF) {
+		utils.RespondError(c, http.StatusBadRequest, "INVALID_CPF", "Invalid CPF.", nil)
+		return
+	}
+	if req.Phone != "" && !utils.IsValidPhone(req.Phone) {
+		utils.RespondError(c, http.StatusBadRequest, "INVALID_PHONE", "Invalid phone number.", nil)
+		return
+	}
 	err := CreateUser(req.Username, req.Email, req.Password, req.CPF, req.Phone)
 	if err != nil {
 		utils.RespondError(c, http.StatusBadRequest, "REGISTER_FAIL", "Could not register user.", err.Error())
