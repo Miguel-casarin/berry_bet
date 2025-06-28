@@ -1,0 +1,83 @@
+
+* {
+  margin: 0;
+  padding: 0;
+}
+
+a {
+  color: #fff;
+  text-decoration: none;
+  transition: 0.3s;
+}
+
+a:hover {
+  opacity: 0.7;
+}
+
+.logo {
+  font-size: 24px;
+  text-transform: uppercase;
+  letter-spacing: 4px;
+}
+nav {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  font-family: "Poppins", sans-serif;
+  background: #000000;
+  height: 8vh;
+  margin-bottom: 25px;
+}
+
+
+.navlist li {
+  letter-spacing: 3px;
+  margin-left: 32px;
+}
+
+body {
+  background-color: #111;
+  color: white;
+  font-family: sans-serif;
+  text-align: center;
+  padding-top: 40px;
+  min-height: 100vh;
+}
+
+.slot {
+  display: grid;
+  grid-template-columns: repeat(3, 100px);
+  gap: 12px;
+  margin: 30px auto;
+  justify-content: center;
+}
+
+.cell {
+  width: 100px;
+  height: 100px;
+  background-color: #222;
+  border: 2px solid #555;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dog-img {
+  width: 90px;
+  height: 90px;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+button {
+  margin-top: 20px;
+  padding: 10px 24px;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.result {
+  margin-top: 25px;
+  font-size: 20px;
+}
