@@ -1,35 +1,57 @@
 package roleta
 
 import (
-	"berry_bet/User"
+	"berry_bet/api/user_stats"
+	"berry_bet/internal/user_stats"
+	"fmt"
+	"strconv"
 )
 
-var saldo float64 = CalculateUserBalance(User.ID)
-
-func Discount(value, solado float64) (float64, error) {
-	if value <= saldo {
-		saldo -= value
-		// fazer o updat no banco depois
-		credit := value
-		return credit
+// Conagem de ganhos e percas
+func Upadat_wins_losses(userID int64, ganhou bool) error {
+	stats, err := user_stats.GetUserStatsByID(strconv.FormatInt(userID, 10))
+	if err != nil {
+		return err
 	}
-	return credit
-}
-
-func Update_saldo(saldo, credit float64) (float64, error) {
-	if credit > 0 {
-		saldo += credit
-		return saldo, nil
+	if ganhou {
+		stats.TotalWins++
 	} else {
-		return saldo, fmt.Errorf("crédito inválido: %.2f", credit)
+		stats.TotalLosses++
 	}
+	_, err = user_stats.UpdateUserStats(stats, stats.ID)
+	return err
 }
 
+func Get_Saldo_Atual(userID int64) (float64, error) {
+	return user_stats.GetUserBalance(userID)
+}
+
+func Discount(userID int64, value float64) (float64, error) {
+	saldo, err := user_stats.GetUserBalance(userID)
+	if err != nil {
+		return 0, err
+	}
+	if value <= saldo {
+		novoSaldo := saldo - value
+		err = user_stats.UpdateUserBalance(userID, novoSaldo)
+		if err != nil {
+			return 0, err
+		}
+		return value, nil
+	}
+	return 0, fmt.Errorf("saldo insuficiente")
+}
+
+// cona o numero de partidas
+func Count_partidas(num_parttidas int) int {
+	num_partidas = user_stats.UpdateUserStatsAfterBet
+	num_partidas++
+}
 
 // Criar uma função para acessar essa querry no banco
 var numero_rodadas int = 0
 
-// retorna as cartinhas 
+// retorna as cartinhas
 func (d Dados_rodadas) CartinhaSorteada() *string {
 	if d.cartinha_sorteada == nil {
 		return nil
@@ -94,12 +116,4 @@ func Final(saldo_aposta float64) Dados_rodadas {
 	}
 
 	return data
-}
-
-// Retorno da cartinha para o font 
-
-if numero_rodadas <= 5 {
-	Start()
-} else {
-	Final()
 }
