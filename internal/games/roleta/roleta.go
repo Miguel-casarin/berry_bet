@@ -8,7 +8,7 @@ import (
 )
 
 // Conagem de ganhos e percas
-func Upadat_wins_losses(userID int64, ganhou bool) error {
+func Update_wins_losses(userID int64, ganhou bool) error {
 	stats, err := user_stats.GetUserStatsByID(strconv.FormatInt(userID, 10))
 	if err != nil {
 		return err
@@ -62,6 +62,7 @@ func (d Dados_rodadas) CartinhaSorteada() *string {
 
 func Start(saldo_aposta float64) float64 {
 	saldo_aposta = saldo_aposta + Randon_inicial(saldo_aposta)
+	_ = Update_wins_losses(userID, true)
 	return saldo_aposta
 }
 
@@ -93,12 +94,16 @@ func Final(saldo_aposta float64) Dados_rodadas {
 		data.historical_value = data.historical_value + Count_money(data.historical_value, data.valor_aposta)
 		data.victory = data.victory + 1
 		data.cartinha_sorteada = carta
+
+		_ = Update_wins_losses(userID, true)
 	} else {
 		data.valor_aposta = 0
 		data.historical_value = data.historical_value + Count_money(data.historical_value, data.valor_aposta)
 		data.loser_count = Loser_count(data.loser_count)
 		data.victory = 0
 		data.cartinha_sorteada = nil
+
+		_ = Update_wins_losses(userID, false)
 	}
 
 	if data.loser_count == 3 {
