@@ -44,8 +44,45 @@ function Perfil() {
 
     return (
         <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #6a11cb 0%, #2575fc 100%)', padding: 0 }}>
-            <header style={{ padding: 24, textAlign: 'center' }}>
-                <h1 style={{ color: '#fff', fontSize: 40, fontWeight: 900, letterSpacing: 2, textShadow: '0 2px 12px #0008' }}>
+            <header style={{ padding: 24, textAlign: 'center', position: 'relative', minHeight: 60 }}>
+                <button
+                    onClick={() => navigate('/dashboard')}
+                    style={{
+                        position: 'absolute',
+                        left: 24,
+                        top: 24,
+                        width: 56,
+                        height: 56,
+                        background: 'linear-gradient(135deg, #fff 60%, #6a11cb 100%)',
+                        border: '4px solid #2575fc',
+                        borderRadius: '50%',
+                        boxShadow: '0 4px 16px #0003',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: 32,
+                        color: '#2575fc',
+                        cursor: 'pointer',
+                        zIndex: 2,
+                        padding: 0,
+                        lineHeight: 1,
+                        transition: 'box-shadow 0.2s, background 0.2s, color 0.2s',
+                    }}
+                    title="Voltar para o dashboard"
+                    onMouseOver={e => {
+                        e.currentTarget.style.background = 'linear-gradient(135deg, #2575fc 60%, #6a11cb 100%)';
+                        e.currentTarget.style.color = '#fff';
+                        e.currentTarget.style.boxShadow = '0 6px 24px #2575fc66';
+                    }}
+                    onMouseOut={e => {
+                        e.currentTarget.style.background = 'linear-gradient(135deg, #fff 60%, #6a11cb 100%)';
+                        e.currentTarget.style.color = '#2575fc';
+                        e.currentTarget.style.boxShadow = '0 4px 16px #0003';
+                    }}
+                >
+                    <span style={{ fontWeight: 900, fontSize: 36, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>&#8592;</span>
+                </button>
+                <h1 style={{ color: '#fff', fontSize: 40, fontWeight: 900, letterSpacing: 2, textShadow: '0 2px 12px #0008', margin: 0 }}>
                     Perfil do Usuário
                 </h1>
             </header>
@@ -60,7 +97,6 @@ function Perfil() {
                         <div style={{ fontSize: 28, fontWeight: 700, color: '#6a11cb', marginBottom: 8 }}>
                             {user.username}
                         </div>
-                        <div style={{ color: '#888', fontSize: 18 }}>{user.email}</div>
                     </div>
                 )}
                 {stats ? (
@@ -70,7 +106,7 @@ function Perfil() {
                             <StatCard label="Saldo" value={`R$ ${stats.balance?.toFixed(2) ?? '0,00'}`} icon="💰" color="#6a11cb" />
                             <StatCard label="Apostas" value={stats.total_bets ?? 0} icon="🎲" color="#2575fc" />
                             <StatCard label="Vitórias" value={stats.total_wins ?? 0} icon="🏆" color="#43e97b" />
-                            <StatCard label="Berry Bet" value={stats.berry_points ?? 0} icon="🍓" color="#ff4b2b" highlight />
+                            <StatCard label="Derrotas" value={stats.total_losses ?? 0} icon="💔" color="#ff4b2b" />
                         </div>
                     </div>
                 ) : (
