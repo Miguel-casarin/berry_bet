@@ -12,7 +12,7 @@ function Saque() {
         </header>
     <div>
       <h1>Saque</h1>
-      <p>Esta é a página de saque.</p>
+      <p>Esta é a página de saque. MAS VOCÊ NÃO PODE SACAR, VAI FICAR POBRE</p>
       {/* Aqui você pode adicionar mais conteúdo ou componentes relacionados ao saque */}
     </div>
     </body>

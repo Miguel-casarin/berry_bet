@@ -18,7 +18,7 @@ createRoot(document.getElementById('root')).render(
         <Route path="/jogodoTigrinho" element={<JogoDoTigrinho />} />
         <Route path="/deposito" element={<Deposito />} />
         <Route path="/apostaEsportiva" element={<ApostaEsportiva />} />
-        <Route path="/saque" element={Saque} />
+        <Route path="/saque" element={<Saque />} />
       </Routes>
 
     </BrowserRouter>
