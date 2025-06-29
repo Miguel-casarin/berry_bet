@@ -1,0 +1,159 @@
+/* Estilo do fundo escuro quando o popup está aberto */
+.popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+/* Quando o popup está visível */
+.popup-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Estilo do container do popup */
+.popup-container {
+    background-color: #000000;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    width: 90%;
+    max-width: 1800px;
+    padding: 20px;
+    position: relative;
+    transform: scale(0.8);
+    transition: transform 0.3s ease;
+}
+
+.popup-overlay.active .popup-container {
+    transform: scale(1);
+}
+
+/* Estilo do cabeçalho do popup */
+.popup-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.popup-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #aba9a9;
+    margin: 0;
+}
+
+/* Estilo do botão de fechar */
+.popup-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #6b6b6b;
+    transition: color 0.2s;
+}
+
+.popup-close-canto {
+    display: flex;
+    flex-direction: column; /* Adicionei "column" que estava faltando */
+    align-items: flex-start;
+    gap: 50px;
+    min-width: 2100px;
+    max-width: 250px;
+}
+
+.popup-close:hover {
+    color: #ffffff;
+}
+
+/* Estilo do conteúdo do popup */
+.popup-content {
+    margin-bottom: 20px;
+    color: #ffffff;
+    line-height: 1.5;
+}
+
+/* Estilo dos botões de ação */
+.popup-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.popup-btn {
+    padding: 8px 16px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.popup-btn-primary {
+    background-color: #399d58;
+    color: white;
+}
+
+.popup-btn-primary:hover {
+    background-color: #3e8e41;
+}
+
+.popup-btn-secondary {
+    background-color: #f1f1f1;
+    color: #000000;
+}
+
+.popup-btn-secondary:hover {
+    background-color: #ddd;
+}
+
+.botao-pagamento {
+    margin: 8px;
+    padding: 16px 32px;
+    background-color: #222a36;
+    border: 2px solid #4CAF50;
+    border-radius: 30px;
+    font-size: 1.2rem;
+    color: #000000;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    transition: all 0.3s;
+}
+
+.botao-pagamento:hover {
+    background-color: #e0e0e0;
+    transform: scale(1.05);
+}
+
+.botao-pagamento.selecionado {
+    background-color: #4CAF50;
+    color: white;
+    font-weight: bold;
+}
+
+.botoes-pagamento-coluna {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    min-width: 220px;
+    max-width: 250px;
+}
+
+.popup-content-flex {
+    display: flex;
+    flex-direction: row;
+    gap: 32px;
+    align-items: flex-start;
+}

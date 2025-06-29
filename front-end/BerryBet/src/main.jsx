@@ -20,9 +20,11 @@ createRoot(document.getElementById('root')).render(
         <Route path="/jogodoTigrinho" element={<JogoDoTigrinho />} />
         <Route path="/deposito" element={<Deposito />} />
         <Route path="/apostaEsportiva" element={<ApostaEsportiva />} />
+
         <Route path="/saque" element={<Saque/>} />
         <Route path="/perfil" element={<Perfil />} />
         <Route path="/conta" element={<Conta />} />
+
       </Routes>
 
     </BrowserRouter>

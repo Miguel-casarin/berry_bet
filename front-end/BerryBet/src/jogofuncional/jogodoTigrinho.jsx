@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './style.css';
+import "../pages/popup.css";
 
 const NUM_DOGS = 8;
 const getDogImage = id => `/src/assets/melo${id}.png`;
@@ -14,6 +15,7 @@ function jogodoTigrinho() {
   const [grid, setGrid] = useState(createEmptyGrid());
   const [result, setResult] = useState('Clique em Girar');
   const [isSpinning, setIsSpinning] = useState(false);
+  const [popupOpen, setPopupOpen] = useState(false);
   const navigate = useNavigate();
 
   const animateSpin = async (duration = 1500) => {
@@ -56,22 +58,39 @@ function jogodoTigrinho() {
     <>
       <header>
         <nav>
-          <a class="logo" href="/dashboard">Berry.Bet</a>
-          <div class="mobile-menu">
-            <div class="line1"></div>
-            <div class="line2"></div>
-            <div class="line3"></div>
+          <a className="logo" href="/dashboard">Berry.Bet</a>
+          <div className="mobile-menu">
+            <div className="line1"></div>
+            <div className="line2"></div>
+            <div className="line3"></div>
           </div>
-          <ul class="nav-list">
-            <li><a href="/deposito">Depósito</a></li>
+          <ul className="nav-list">
+            <li>
+              <a href="#" onClick={e => { e.preventDefault(); setPopupOpen(true); }}>Depósito</a>
+            </li>
             <li><a href="/saque">Saque</a></li>
             <li><a href="#" onClick={e => { e.preventDefault(); navigate('/'); }}>Sair</a></li>
           </ul>
         </nav>
       </header>
-      <main>
-
-      </main>
+      <main></main>
+      {popupOpen && (
+        <div className={popupOpen ? "popup-overlay active" : "popup-overlay"} onClick={e => { if (e.target.className.includes('popup-overlay')) setPopupOpen(false); }}>
+          <div className="popup-container">
+            <div className="popup-header">
+              <span className="popup-title">Depósito</span>
+              <button className="popup-close" onClick={() => setPopupOpen(false)}>&times;</button>
+            </div>
+            <div className="popup-content">
+              <p>Insira aqui o conteúdo do seu popup de depósito.</p>
+            </div>
+            <div className="popup-actions">
+              <button className="popup-btn popup-btn-secondary" onClick={() => setPopupOpen(false)}>Fechar</button>
+              <button className="popup-btn popup-btn-primary">Confirmar</button>
+            </div>
+          </div>
+        </div>
+      )}
       <div className='jogodoTigrinho'>
         <h1>🐶 Roleta dos Cachorrinhos</h1>
         <div className='slot'>
