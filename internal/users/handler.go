@@ -1,6 +1,7 @@
 package users
 
 import (
+	"berry_bet/internal/token"
 	"berry_bet/internal/utils"
 	"net/http"
 	"strconv"
@@ -237,7 +238,14 @@ func UpdateMeHandler(c *gin.Context) {
 		utils.RespondError(c, http.StatusInternalServerError, "UPDATE_FAIL", "Could not update user.", err.Error())
 		return
 	}
-	utils.RespondSuccess(c, nil, "User updated successfully.")
+
+	// Gerar novo token JWT com o username atualizado
+	tokenStr, err := token.GenerateJWT(user.Username)
+	if err != nil {
+		utils.RespondError(c, http.StatusInternalServerError, "TOKEN_ERROR", "Failed to generate new token.", err.Error())
+		return
+	}
+	utils.RespondSuccess(c, gin.H{"token": tokenStr}, "User updated successfully.")
 }
 
 // GetMeBalanceHandler returns the balance of the authenticated user.

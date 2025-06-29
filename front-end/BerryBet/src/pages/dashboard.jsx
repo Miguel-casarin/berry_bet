@@ -83,7 +83,7 @@ function Dashboard() {
             }}>
               <button style={{ width: '100%', padding: '12px 18px', border: 'none', background: 'none', textAlign: 'left', cursor: 'pointer', fontSize: 16, color: '#222' }} onClick={() => { setShowProfileMenu(false); navigate('/perfil'); }}>Perfil</button>
               <hr style={{ margin: 0, border: 'none', borderTop: '1px solid #eee' }} />
-              <button style={{ width: '100%', padding: '12px 18px', border: 'none', background: 'none', textAlign: 'left', cursor: 'pointer', fontSize: 16, color: '#222' }} onClick={() => alert('Conta')}>Conta</button>
+              <button style={{ width: '100%', padding: '12px 18px', border: 'none', background: 'none', textAlign: 'left', cursor: 'pointer', fontSize: 16, color: '#222' }} onClick={() => { setShowProfileMenu(false); navigate('/conta'); }}>Conta</button>
               <hr style={{ margin: 0, border: 'none', borderTop: '1px solid #eee' }} />
               <button
                 style={{
