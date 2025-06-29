@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom';
 function Perfil() {
     const [user, setUser] = useState(null);
     const [stats, setStats] = useState(null);
+    const [avatarFile, setAvatarFile] = useState(null);
+    const [avatarPreview, setAvatarPreview] = useState(null);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -41,6 +43,41 @@ function Perfil() {
             })
             .catch(() => { });
     }, [navigate]);
+
+    // Função para preview da imagem
+    function onAvatarChange(e) {
+        const file = e.target.files[0];
+        setAvatarFile(file);
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => setAvatarPreview(reader.result);
+            reader.readAsDataURL(file);
+        } else {
+            setAvatarPreview(null);
+        }
+    }
+
+    // Função para upload da imagem
+    async function handleAvatarUpload(e) {
+        e.preventDefault();
+        if (!avatarFile) return;
+        const token = localStorage.getItem('token');
+        const formData = new FormData();
+        formData.append('avatar', avatarFile);
+        const res = await fetch('http://localhost:8080/api/users/avatar', {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${token}` },
+            body: formData,
+        });
+        if (res.ok) {
+            const data = await res.json();
+            setUser((u) => ({ ...u, avatarUrl: data.avatarUrl }));
+            setAvatarPreview(null);
+            alert('Foto atualizada!');
+        } else {
+            alert('Erro ao enviar foto');
+        }
+    }
 
     return (
         <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #6a11cb 0%, #2575fc 100%)', padding: 0 }}>
@@ -97,21 +134,25 @@ function Perfil() {
                         <div style={{ fontSize: 28, fontWeight: 700, color: '#6a11cb', marginBottom: 8 }}>
                             {user.username}
                         </div>
-                    </div>
-                )}
-                {stats ? (
-                    <div>
-                        <h2 style={{ color: '#2575fc', fontWeight: 700, marginBottom: 16 }}>Suas Estatísticas</h2>
-                        <div style={{ display: 'flex', gap: 24, justifyContent: 'center', flexWrap: 'wrap' }}>
-                            <StatCard label="Saldo" value={`R$ ${stats.balance?.toFixed(2) ?? '0,00'}`} icon="💰" color="#6a11cb" />
-                            <StatCard label="Apostas" value={stats.total_bets ?? 0} icon="🎲" color="#2575fc" />
-                            <StatCard label="Vitórias" value={stats.total_wins ?? 0} icon="🏆" color="#43e97b" />
-                            <StatCard label="Derrotas" value={stats.total_losses ?? 0} icon="💔" color="#ff4b2b" />
+                        {/* Apenas exibe o avatar, sem opção de upload */}
+                        <div style={{ marginBottom: 16 }}>
+                            <img
+                                src={user.avatar_url ? `http://localhost:8080${user.avatar_url}` : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.username)}`}
+                                alt="Avatar"
+                                style={{ width: 100, height: 100, borderRadius: '50%', objectFit: 'cover', border: '3px solid #2575fc', marginBottom: 8 }}
+                            />
                         </div>
                     </div>
-                ) : (
-                    <div style={{ textAlign: 'center', color: '#aaa', marginTop: 32 }}>Carregando estatísticas...</div>
                 )}
+                <div>
+                    <h2 style={{ color: '#2575fc', fontWeight: 700, marginBottom: 16 }}>Suas Estatísticas</h2>
+                    <div style={{ display: 'flex', gap: 24, justifyContent: 'center', flexWrap: 'wrap' }}>
+                        <StatCard label="Saldo" value={`R$ ${stats?.balance?.toFixed(2) ?? '0,00'}`} icon="💰" color="#6a11cb" />
+                        <StatCard label="Apostas" value={stats?.total_bets ?? 0} icon="🎲" color="#2575fc" />
+                        <StatCard label="Vitórias" value={stats?.total_wins ?? 0} icon="🏆" color="#43e97b" />
+                        <StatCard label="Derrotas" value={stats?.total_losses ?? 0} icon="💔" color="#ff4b2b" />
+                    </div>
+                </div>
             </main>
         </div>
     );

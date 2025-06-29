@@ -12,10 +12,24 @@ function Dashboard() {
   const [currentIdx, setCurrentIdx] = useState(0);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [isLogged, setIsLogged] = useState(false);
+  const [user, setUser] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
     setIsLogged(!!localStorage.getItem('token'));
+    const token = localStorage.getItem('token');
+    if (token) {
+      fetch('http://localhost:8080/api/users/me', {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+        .then(async (res) => {
+          if (res.ok) {
+            const data = await res.json();
+            setUser(data.data);
+          }
+        })
+        .catch(() => { });
+    }
   }, []);
 
   const handleCardClick = () => {
@@ -96,10 +110,16 @@ function Dashboard() {
                 color: '#555',
                 border: '2px solid #ccc',
                 userSelect: 'none',
+                overflow: 'hidden',
               }}
               title="Perfil"
             >
-              <span role="img" aria-label="perfil">👤</span>
+              {user && (user.avatar_url ? (
+                <img src={`http://localhost:8080${user.avatar_url}`} alt="avatar" style={{ width: 44, height: 44, borderRadius: '50%', objectFit: 'cover' }} />
+              ) : (
+                <img src={`https://ui-avatars.com/api/?name=${encodeURIComponent(user.username)}`} alt="avatar" style={{ width: 44, height: 44, borderRadius: '50%', objectFit: 'cover' }} />
+              ))}
+              {!user && <span role="img" aria-label="perfil">👤</span>}
             </div>
             {showProfileMenu && (
               <div style={{

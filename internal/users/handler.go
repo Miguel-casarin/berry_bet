@@ -267,3 +267,38 @@ func GetMeBalanceHandler(c *gin.Context) {
 	}
 	utils.RespondSuccess(c, gin.H{"balance": balance}, "Balance fetched successfully.")
 }
+
+// UploadAvatarHandler faz upload da foto de perfil do usuário autenticado
+func UploadAvatarHandler(c *gin.Context) {
+	username, exists := c.Get("username")
+	if !exists {
+		utils.RespondError(c, http.StatusUnauthorized, "NO_AUTH", "User not authenticated.", nil)
+		return
+	}
+	user, err := GetUserByUsername(username.(string))
+	if err != nil || user == nil {
+		utils.RespondError(c, http.StatusInternalServerError, "DB_ERROR", "Failed to fetch user.", nil)
+		return
+	}
+	file, err := c.FormFile("avatar")
+	if err != nil {
+		utils.RespondError(c, http.StatusBadRequest, "NO_FILE", "No file uploaded.", err.Error())
+		return
+	}
+	// Cria pasta se não existir
+	dir := "uploads/avatars/"
+	_ = utils.EnsureDir(dir)
+	filename := dir + username.(string) + "_" + file.Filename
+	if err := c.SaveUploadedFile(file, filename); err != nil {
+		utils.RespondError(c, http.StatusInternalServerError, "UPLOAD_FAIL", "Failed to save file.", err.Error())
+		return
+	}
+	avatarURL := "/" + filename
+	user.AvatarURL = avatarURL
+	_, err = UpdateUser(*user, user.ID)
+	if err != nil {
+		utils.RespondError(c, http.StatusInternalServerError, "UPDATE_FAIL", "Failed to update user avatar.", err.Error())
+		return
+	}
+	utils.RespondSuccess(c, gin.H{"avatarUrl": avatarURL}, "Avatar updated successfully.")
+}
