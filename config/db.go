@@ -8,17 +8,25 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
+var DB *sql.DB
+
 func SetupDatabase() {
 	db, err := sql.Open("sqlite3", "./data/berry_bet.db")
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer db.Close()
+
+	DB = db
 
 	migrations := []string{
 		"./migrations/001_create_users.sql",
-		"./migrations/002_create_bets.sql",
-		"./migrations/003_create_games.sql",
+		"./migrations/002_create_games.sql",
+		"./migrations/003_create_bets.sql",
+		"./migrations/004_create_transactions.sql",
+		"./migrations/005_create_outcomes.sql",
+		"./migrations/006_create_sessions.sql",
+		"./migrations/007_create_user_stats.sql",
+		"./migrations/008_create_bet_limits.sql",
 	}
 
 	for _, migrationFile := range migrations {
