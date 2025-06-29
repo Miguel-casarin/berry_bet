@@ -4,6 +4,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ScrollMenu, VisibilityContext } from 'react-horizontal-scrolling-menu';
 import 'react-horizontal-scrolling-menu/dist/styles.css';
+import { useState, useEffect } from 'react';
 
 const cardData = [
   { id: 'element-1', img: apostaTigrinho },
@@ -13,7 +14,13 @@ const cardData = [
 function Dashboard() {
   const [items, setItems] = React.useState(cardData);
   const [selected, setSelected] = React.useState([]);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [isLogged, setIsLogged] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    setIsLogged(!!localStorage.getItem('token'));
+  }, []);
 
   const isItemSelected = (id) => !!selected.find((el) => el === id);
 
@@ -36,6 +43,71 @@ function Dashboard() {
 
   return (
     <div>
+      {/* Ícone de perfil no canto superior direito */}
+      {isLogged && (
+        <div style={{ position: 'absolute', top: 24, right: 32, zIndex: 20 }}>
+          <div
+            onClick={() => setShowProfileMenu((v) => !v)}
+            style={{
+              width: 44,
+              height: 44,
+              borderRadius: '50%',
+              background: '#eee',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+              cursor: 'pointer',
+              fontSize: 24,
+              color: '#555',
+              border: '2px solid #ccc',
+              userSelect: 'none',
+            }}
+            title="Perfil"
+          >
+            <span role="img" aria-label="perfil">👤</span>
+          </div>
+          {showProfileMenu && (
+            <div style={{
+              position: 'fixed',
+              top: 68,
+              right: 32,
+              background: '#fff', // solid background
+              color: '#222', // readable text color
+              border: '1px solid #ddd', // subtle border
+              borderRadius: 8,
+              boxShadow: '0 8px 32px rgba(0,0,0,0.18)', // stronger shadow for contrast
+              minWidth: 140,
+              padding: 0,
+              zIndex: 1000,
+            }}>
+              <button style={{ width: '100%', padding: '12px 18px', border: 'none', background: 'none', textAlign: 'left', cursor: 'pointer', fontSize: 16, color: '#222' }} onClick={() => { setShowProfileMenu(false); navigate('/perfil'); }}>Perfil</button>
+              <hr style={{ margin: 0, border: 'none', borderTop: '1px solid #eee' }} />
+              <button style={{ width: '100%', padding: '12px 18px', border: 'none', background: 'none', textAlign: 'left', cursor: 'pointer', fontSize: 16, color: '#222' }} onClick={() => { setShowProfileMenu(false); navigate('/conta'); }}>Conta</button>
+              <hr style={{ margin: 0, border: 'none', borderTop: '1px solid #eee' }} />
+              <button
+                style={{
+                  width: '100%',
+                  padding: '12px 18px',
+                  border: 'none',
+                  background: 'none',
+                  textAlign: 'left',
+                  cursor: 'pointer',
+                  fontSize: 16,
+                  color: '#d32f2f',
+                  fontWeight: 'bold',
+                }}
+                onClick={() => {
+                  localStorage.removeItem('token');
+                  window.location.href = '/'; // Redirect to login page
+                }}
+              >
+                Sair
+              </button>
+            </div>
+          )}
+        </div>
+      )}
       <header style={{ padding: '20px', fontSize: '24px', fontWeight: 'bold', textAlign: 'center' }}>
         Berry.Bet
       </header>

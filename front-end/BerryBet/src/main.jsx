@@ -8,6 +8,8 @@ import Deposito from './pages/deposito'
 import ApostaEsportiva from './pages/apostaEsportiva'
 import './index.css'
 import Saque from './pages/saque'
+import Perfil from './pages/perfil'
+import Conta from './pages/conta'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -18,7 +20,11 @@ createRoot(document.getElementById('root')).render(
         <Route path="/jogodoTigrinho" element={<JogoDoTigrinho />} />
         <Route path="/deposito" element={<Deposito />} />
         <Route path="/apostaEsportiva" element={<ApostaEsportiva />} />
-        <Route path="/saque" element={<Saque />} />
+
+        <Route path="/saque" element={Saque} />
+        <Route path="/perfil" element={<Perfil />} />
+        <Route path="/conta" element={<Conta />} />
+
       </Routes>
 
     </BrowserRouter>
