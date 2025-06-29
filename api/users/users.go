@@ -26,5 +26,6 @@ func RegisterUserRoutes(router *gin.Engine) {
 		me.PUT("/me", users.UpdateMeHandler)
 		me.GET("/me/balance", users.GetMeBalanceHandler)
 		me.POST("/avatar", users.UploadAvatarHandler)
+		me.POST("/change_password", users.ChangePasswordHandler)
 	}
 }

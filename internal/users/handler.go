@@ -302,3 +302,50 @@ func UploadAvatarHandler(c *gin.Context) {
 	}
 	utils.RespondSuccess(c, gin.H{"avatarUrl": avatarURL}, "Avatar updated successfully.")
 }
+
+// ChangePasswordRequest representa o payload para troca de senha
+type ChangePasswordRequest struct {
+	CurrentPassword string `json:"current_password"`
+	NewPassword     string `json:"new_password"`
+}
+
+// ChangePasswordHandler permite ao usuário autenticado trocar sua senha
+func ChangePasswordHandler(c *gin.Context) {
+	username, exists := c.Get("username")
+	if !exists {
+		utils.RespondError(c, http.StatusUnauthorized, "NO_AUTH", "User not authenticated.", nil)
+		return
+	}
+	var req ChangePasswordRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		utils.RespondError(c, http.StatusBadRequest, "INVALID_INPUT", "Invalid data.", err.Error())
+		return
+	}
+	if len(req.NewPassword) < 6 {
+		utils.RespondError(c, http.StatusBadRequest, "INVALID_PASSWORD", "A nova senha deve ter pelo menos 6 caracteres.", nil)
+		return
+	}
+	user, err := GetUserByUsername(username.(string))
+	if err != nil || user == nil {
+		utils.RespondError(c, http.StatusInternalServerError, "DB_ERROR", "Failed to fetch user.", nil)
+		return
+	}
+	// Verifica senha atual
+	err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(req.CurrentPassword))
+	if err != nil {
+		utils.RespondError(c, http.StatusUnauthorized, "WRONG_PASSWORD", "Senha atual incorreta.", nil)
+		return
+	}
+	// Gera hash da nova senha
+	hashed, err := bcrypt.GenerateFromPassword([]byte(req.NewPassword), bcrypt.DefaultCost)
+	if err != nil {
+		utils.RespondError(c, http.StatusInternalServerError, "HASH_ERROR", "Failed to hash password.", err.Error())
+		return
+	}
+	err = UpdateUserPassword(user.ID, string(hashed))
+	if err != nil {
+		utils.RespondError(c, http.StatusInternalServerError, "UPDATE_FAIL", "Could not update password.", err.Error())
+		return
+	}
+	utils.RespondSuccess(c, gin.H{"message": "Senha alterada com sucesso!"}, "Password changed successfully.")
+}
