@@ -280,26 +280,6 @@ function Conta() {
                     <div style={{ fontSize: 24, fontWeight: 800, color: '#fff', marginBottom: 4, textAlign: 'center', textShadow: '0 2px 8px #43e97b33' }}>{user.username}</div>
                     <div style={{ color: '#b0b8c1', fontSize: 15, marginBottom: 8, textAlign: 'center' }}>{user.email}</div>
                     <div style={{ color: '#43e97b', fontSize: 14, marginBottom: 0, textAlign: 'center', fontWeight: 700 }}>CPF: {user.cpf || '-'}</div>
-                    {/* Popup de troca de avatar */}
-                    {showAvatarPopup && (
-                        <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.35)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            <div style={{ background: '#23272b', borderRadius: 18, boxShadow: '0 8px 32px #43e97b33', padding: 32, minWidth: 320, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 18, position: 'relative', border: '2px solid #43e97b' }}>
-                                <div style={{ fontWeight: 700, fontSize: 20, marginBottom: 8, color: '#fff' }}>Trocar foto de perfil</div>
-                                <div style={{ width: 120, height: 120, borderRadius: '50%', overflow: 'hidden', border: '3px solid #fff700', marginBottom: 8, background: '#23272b' }}>
-                                    <img
-                                        src={avatarPreview || (user.avatar_url ? `http://localhost:8080${user.avatar_url}` : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.username)}`)}
-                                        alt="Preview"
-                                        style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }}
-                                    />
-                                </div>
-                                <input type="file" accept="image/*" onChange={onAvatarChange} style={{ marginBottom: 8, color: '#fff' }} />
-                                <div style={{ display: 'flex', gap: 12, marginTop: 8 }}>
-                                    <button onClick={async (e) => { e.preventDefault(); await handleAvatarUpload(e); setShowAvatarPopup(false); }} style={{ background: '#43e97b', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 28px', fontWeight: 700, fontSize: 16, cursor: 'pointer', boxShadow: '0 2px 8px #43e97b22' }}>Confirmar</button>
-                                    <button onClick={() => { setShowAvatarPopup(false); setAvatarPreview(null); }} style={{ background: '#aaa', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 28px', fontWeight: 700, fontSize: 16, cursor: 'pointer', boxShadow: '0 2px 8px #aaa2' }}>Cancelar</button>
-                                </div>
-                            </div>
-                        </div>
-                    )}
                 </section>
                 {/* Formulário principal */}
                 <section style={{ flex: 1, minWidth: 340, maxWidth: 600, background: 'rgba(16,24,32,0.98)', borderRadius: 20, boxShadow: '0 4px 32px #00ff8577, 0 0 0 2px #fff70055', border: '2px solid #43e97b', padding: '36px 32px 32px 32px', display: 'flex', flexDirection: 'column', gap: 0, position: 'relative', color: '#fff', backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)' }}>
@@ -426,6 +406,82 @@ function Conta() {
                     )}
                 </section>
             </main>
+            {/* Modal de troca de avatar fora do fluxo principal para garantir sobreposição */}
+            {showAvatarPopup && (
+                <div style={{
+                    position: 'fixed',
+                    inset: 0,
+                    width: '100vw',
+                    height: '100vh',
+                    background: 'rgba(16,24,32,0.92)',
+                    zIndex: 9999,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backdropFilter: 'blur(2px)',
+                    WebkitBackdropFilter: 'blur(2px)'
+                }}>
+                    <div style={{
+                        background: 'rgba(16,24,32,0.98)',
+                        borderRadius: 20,
+                        boxShadow: '0 4px 32px #00ff8577, 0 0 0 2px #fff70055',
+                        padding: 38,
+                        minWidth: 340,
+                        maxWidth: 370,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        border: '2px solid #43e97b',
+                        zIndex: 10000,
+                        position: 'relative',
+                        color: '#fff',
+                    }}>
+                        <div style={{ fontWeight: 700, fontSize: 20, marginBottom: 16, color: '#fff', textAlign: 'center', letterSpacing: 1 }}>Trocar foto de perfil</div>
+                        <div style={{ width: 120, height: 120, borderRadius: '50%', overflow: 'hidden', border: '3px solid #fff700', marginBottom: 16, background: '#23272b', boxShadow: '0 0 16px #fff70033, 0 0 0 6px #43e97b33' }}>
+                            <img
+                                src={avatarPreview || (user.avatar_url ? `http://localhost:8080${user.avatar_url}` : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.username)}`)}
+                                alt="Preview"
+                                style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }}
+                            />
+                        </div>
+                        <input type="file" accept="image/*" onChange={onAvatarChange} style={{ marginBottom: 16, color: '#fff', background: 'none', border: '1.5px solid #43e97b', borderRadius: 8, padding: 8, width: '100%' }} />
+                        <div style={{ display: 'flex', gap: 12, marginTop: 8, justifyContent: 'center' }}>
+                            <button onClick={async (e) => { e.preventDefault(); await handleAvatarUpload(e); setShowAvatarPopup(false); }} style={{ background: 'linear-gradient(90deg, #43e97b 0%, #fff700 100%)', color: '#101820', border: 'none', borderRadius: 8, padding: '10px 28px', fontWeight: 800, fontSize: 16, cursor: 'pointer', boxShadow: '0 2px 8px #43e97b22', letterSpacing: 1 }}>Confirmar</button>
+                            <button onClick={() => { setShowAvatarPopup(false); setAvatarPreview(null); }} style={{ background: '#23272b', color: '#fff', border: '1.5px solid #aaa', borderRadius: 8, padding: '10px 28px', fontWeight: 700, fontSize: 16, cursor: 'pointer', boxShadow: '0 2px 8px #aaa2' }}>Cancelar</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {/* Botão de voltar compacto no canto superior esquerdo */}
+            <button
+                onClick={() => navigate('/dashboard')}
+                style={{
+                    position: 'fixed',
+                    top: 20,
+                    left: 20,
+                    zIndex: 1000,
+                    background: 'linear-gradient(90deg, #fff700 0%, #43e97b 100%)',
+                    color: '#101820',
+                    fontWeight: 700,
+                    fontSize: 15,
+                    border: 'none',
+                    borderRadius: 7,
+                    padding: '6px 16px 6px 12px',
+                    minWidth: 0,
+                    minHeight: 0,
+                    height: 36,
+                    lineHeight: '20px',
+                    cursor: 'pointer',
+                    boxShadow: '0 2px 8px #43e97b55',
+                    transition: 'background 0.2s',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 6,
+                    maxWidth: 120,
+                }}
+            >
+                <span style={{ fontSize: 18, fontWeight: 900, marginRight: 2 }}>←</span> Voltar
+            </button>
         </div>
     );
 }

@@ -183,6 +183,36 @@ function Perfil() {
                     </div>
                 </section>
             </main>
+            {/* Botão de voltar compacto no canto superior esquerdo */}
+            <button
+                onClick={() => navigate('/dashboard')}
+                style={{
+                    position: 'fixed',
+                    top: 20,
+                    left: 20,
+                    zIndex: 1000,
+                    background: 'linear-gradient(90deg, #fff700 0%, #43e97b 100%)',
+                    color: '#101820',
+                    fontWeight: 700,
+                    fontSize: 15,
+                    border: 'none',
+                    borderRadius: 7,
+                    padding: '6px 16px 6px 12px',
+                    minWidth: 0,
+                    minHeight: 0,
+                    height: 36,
+                    lineHeight: '20px',
+                    cursor: 'pointer',
+                    boxShadow: '0 2px 8px #43e97b55',
+                    transition: 'background 0.2s',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 6,
+                    maxWidth: 120,
+                }}
+            >
+                <span style={{ fontSize: 18, fontWeight: 900, marginRight: 2 }}>←</span> Voltar
+            </button>
         </div>
     );
 }

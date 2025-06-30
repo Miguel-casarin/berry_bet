@@ -135,13 +135,14 @@ function Ranking() {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    cursor: 'pointer',
                     width: '100%',
                     zIndex: 10
                 }}
-                onClick={() => { navigate('/dashboard'); window.location.reload(); }}
             >
-                <span style={{ fontWeight: 900, fontSize: 32, color: '#fff', letterSpacing: 1, textShadow: '0 2px 8px #43e97b88', userSelect: 'none' }}>BerryBet</span>
+                <span
+                    style={{ fontWeight: 900, fontSize: 32, color: '#fff', letterSpacing: 1, textShadow: '0 2px 8px #43e97b88', userSelect: 'none', cursor: 'pointer' }}
+                    onClick={() => navigate('/dashboard')}
+                >Berry.Bet</span>
             </header>
             {/* Botão de voltar compacto no canto superior esquerdo */}
             <button
@@ -274,7 +275,7 @@ function Ranking() {
                                         }}>
                                             <td style={{ padding: '10px 6px', fontWeight: 900 }}>{startIdx + idx + 1}º</td>
                                             <td style={{ padding: '10px 6px' }}>
-                                                <img src={player.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(player.username || 'Jogador')}`}
+                                                <img src={player.avatar_url ? (player.avatar_url.startsWith('http') ? player.avatar_url : `http://localhost:8080${player.avatar_url}`) : `https://ui-avatars.com/api/?name=${encodeURIComponent(player.username || 'Jogador')}`}
                                                     alt="avatar"
                                                     style={{ width: 38, height: 38, borderRadius: '50%', border: idx === 0 && page === 1 ? '2.5px solid #fff700' : '2px solid #232946', background: '#fff', objectFit: 'cover', boxShadow: idx === 0 && page === 1 ? '0 0 12px #fff70088' : 'none' }}
                                                 />

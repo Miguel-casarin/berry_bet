@@ -56,7 +56,7 @@ function RankingPreview() {
                             }}>
                                 <td style={{ padding: '8px 4px', fontWeight: 900 }}>{idx + 1}º</td>
                                 <td style={{ padding: '8px 4px' }}>
-                                    <img src={player.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(player.username || 'Jogador')}`}
+                                    <img src={player.avatar_url ? (player.avatar_url.startsWith('http') ? player.avatar_url : `http://localhost:8080${player.avatar_url}`) : `https://ui-avatars.com/api/?name=${encodeURIComponent(player.username || 'Jogador')}`}
                                         alt="avatar"
                                         style={{ width: 28, height: 28, borderRadius: '50%', border: idx === 0 ? '2.5px solid #fff700' : '2px solid #232946', background: '#fff', objectFit: 'cover', boxShadow: idx === 0 ? '0 0 12px #fff70088' : 'none' }}
                                     />
