@@ -68,7 +68,7 @@
     flex-direction: column; /* Adicionei "column" que estava faltando */
     align-items: flex-start;
     gap: 50px;
-    min-width: 2100px;
+    min-width: 2160px;
     max-width: 250px;
 }
 
@@ -143,6 +143,7 @@
 }
 
 .botoes-pagamento-coluna {
+    margin-right: 20px;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
