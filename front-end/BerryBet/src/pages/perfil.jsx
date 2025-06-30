@@ -11,7 +11,8 @@ function Perfil() {
     useEffect(() => {
         const token = localStorage.getItem('token');
         if (!token) {
-            navigate('/');
+            navigate('/', { replace: true });
+            window.location.reload();
             return;
         }
         fetch('http://localhost:8080/api/users/me', {
@@ -19,7 +20,9 @@ function Perfil() {
         })
             .then(async (res) => {
                 if (res.status === 401) {
-                    navigate('/');
+                    localStorage.removeItem('token');
+                    navigate('/', { replace: true });
+                    window.location.reload();
                     return;
                 }
                 if (!res.ok) throw new Error('Erro ao buscar usuário');
@@ -27,14 +30,19 @@ function Perfil() {
                 setUser(data.data);
             })
             .catch((err) => {
+                localStorage.removeItem('token');
                 setUser(null);
+                navigate('/', { replace: true });
+                window.location.reload();
             });
         fetch('http://localhost:8080/api/user_stats/me', {
             headers: { Authorization: `Bearer ${token}` },
         })
             .then(async (res) => {
                 if (res.status === 401) {
-                    navigate('/');
+                    localStorage.removeItem('token');
+                    navigate('/', { replace: true });
+                    window.location.reload();
                     return;
                 }
                 if (!res.ok) throw new Error('Erro ao buscar estatísticas');
@@ -80,60 +88,96 @@ function Perfil() {
     }
 
     return (
-        <div style={{ minHeight: '100vh', background: '#f4f7f6', padding: 0 }}>
-            <header style={{ padding: 24, textAlign: 'center', position: 'relative', minHeight: 60, background: '#fff', borderBottom: '1px solid #e0e0e0' }}>
-                <span style={{ fontWeight: 900, fontSize: 28, color: '#222', letterSpacing: 1, position: 'absolute', left: 32, top: 28, cursor: 'pointer', background: '#fff', borderRadius: '50%', border: '1px solid #e0e0e0', width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px #0001' }} onClick={() => navigate('/dashboard')} title="Voltar">
-                    &#8592;
+        <div style={{
+            minHeight: '100vh',
+            background: 'linear-gradient(135deg, #101820 0%, #0a2e12 60%, #fff700 180%)',
+            backgroundAttachment: 'fixed',
+            padding: 0
+        }}>
+            <header
+                style={{
+                    fontSize: '32px',
+                    fontWeight: 'bold',
+                    textAlign: 'center',
+                    flex: 1,
+                    letterSpacing: 2,
+                    color: '#fff',
+                    userSelect: 'none',
+                    lineHeight: '56px',
+                    marginLeft: 0,
+                    marginRight: 0,
+                    textShadow: '0 2px 8px #fff70088, 0 0px 2px #43e97b55',
+                    fontFamily: 'Montserrat, Arial, sans-serif',
+                    filter: 'drop-shadow(0 0 8px #43e97b55)',
+                    background: 'linear-gradient(90deg, #181c2b 0%, #232946 100%)',
+                    borderBottom: '2.5px solid #fff700',
+                    boxShadow: '0 4px 24px 0 #00ff8577, 0 1.5px 0 #fff700',
+                    backdropFilter: 'blur(8px)',
+                    WebkitBackdropFilter: 'blur(8px)',
+                    minHeight: 64,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: '100%',
+                    zIndex: 10,
+                    position: 'relative',
+                    padding: 0,
+                }}
+            >
+                <span
+                    style={{
+                        cursor: 'pointer',
+                        fontWeight: 900,
+                        fontSize: 32,
+                        color: '#fff',
+                        letterSpacing: 1,
+                        textShadow: '0 2px 8px #43e97b88',
+                        userSelect: 'none',
+                    }}
+                    onClick={() => navigate('/dashboard')}
+                >
+                    Berry.Bet
                 </span>
-                <span style={{ fontWeight: 900, fontSize: 28, color: '#222', letterSpacing: 1 }}>BerryBet</span>
             </header>
             <main style={{ maxWidth: 1100, margin: '0 auto', padding: '40px 0 0 0', display: 'flex', gap: 32, justifyContent: 'center', alignItems: 'flex-start', minHeight: 600 }}>
                 {/* Perfil Card */}
-                <section style={{ background: '#fff', borderRadius: 20, boxShadow: '0 4px 24px #0001', padding: 36, minWidth: 340, maxWidth: 360, display: 'flex', flexDirection: 'column', alignItems: 'center', border: '1px solid #e0e0e0' }}>
-                    <div style={{ width: 170, height: 170, borderRadius: '50%', border: '4px solid #e0e0e0', overflow: 'hidden', marginBottom: 18, background: '#f5f6fa' }}>
+                <section style={{ background: 'rgba(16,24,32,0.98)', borderRadius: 20, boxShadow: '0 4px 32px #00ff8577, 0 0 0 2px #fff70055', padding: 38, minWidth: 340, maxWidth: 370, display: 'flex', flexDirection: 'column', alignItems: 'center', border: '2px solid #43e97b', backdropFilter: 'blur(6px)' }}>
+                    <div style={{ width: 170, height: 170, borderRadius: '50%', border: '4px solid #fff700', overflow: 'hidden', marginBottom: 18, background: '#23272b', boxShadow: '0 0 24px #fff70033, 0 0 0 6px #43e97b33', position: 'relative', transition: 'box-shadow 0.3s' }}>
                         <img
                             src={user?.avatar_url ? `http://localhost:8080${user.avatar_url}` : `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.username || '')}`}
                             alt="Avatar"
-                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                            style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'brightness(0.95)', borderRadius: '50%' }}
                         />
                     </div>
-                    <div style={{ fontSize: 28, fontWeight: 800, color: '#222', marginBottom: 6, textAlign: 'center' }}>{user?.username}</div>
-                    <div style={{ color: '#888', fontSize: 16, marginBottom: 8, textAlign: 'center' }}>{user?.email}</div>
-                    <div style={{ color: '#aaa', fontSize: 15, marginBottom: 18, textAlign: 'center' }}>Membro desde: {user?.created_at ? new Date(user.created_at).toLocaleDateString() : '-'}</div>
-                    <div style={{ display: 'flex', gap: 18, justifyContent: 'center', marginTop: 8 }}>
-                        <a href="#" style={{ color: '#222', fontSize: 22, background: '#f4f7f6', borderRadius: '50%', width: 38, height: 38, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #e0e0e0', transition: 'background 0.2s' }} title="Facebook"><i className="fa fa-facebook" /></a>
-                        <a href="#" style={{ color: '#222', fontSize: 22, background: '#f4f7f6', borderRadius: '50%', width: 38, height: 38, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #e0e0e0', transition: 'background 0.2s' }} title="LinkedIn"><i className="fa fa-linkedin" /></a>
-                        <a href="#" style={{ color: '#222', fontSize: 22, background: '#f4f7f6', borderRadius: '50%', width: 38, height: 38, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #e0e0e0', transition: 'background 0.2s' }} title="Instagram"><i className="fa fa-instagram" /></a>
-                    </div>
+                    <div style={{ fontSize: 28, fontWeight: 800, color: '#fff', marginBottom: 6, textAlign: 'center', textShadow: '0 2px 8px #43e97b33' }}>{user?.username}</div>
+                    <div style={{ color: '#b0b8c1', fontSize: 16, marginBottom: 8, textAlign: 'center', fontWeight: 500 }}>{user?.email}</div>
+                    <div style={{ color: '#43e97b', fontSize: 15, marginBottom: 18, textAlign: 'center', fontWeight: 700 }}>Membro desde: {user?.created_at ? new Date(user.created_at).toLocaleDateString() : '-'}</div>
                 </section>
                 {/* Conteúdo principal */}
                 <section style={{ flex: 1, minWidth: 340, maxWidth: 650, display: 'flex', flexDirection: 'column', gap: 24 }}>
-                    <div style={{ background: '#fff', borderRadius: 20, boxShadow: '0 4px 24px #0001', padding: '36px 32px', border: '1px solid #e0e0e0', marginBottom: 0 }}>
-                        <div style={{ color: '#888', fontSize: 18, marginBottom: 8 }}>Olá!</div>
-                        <div style={{ fontWeight: 900, fontSize: 32, color: '#222', marginBottom: 12, lineHeight: 1.2, letterSpacing: 1 }}>
+                    <div style={{ background: 'rgba(16,24,32,0.98)', borderRadius: 20, boxShadow: '0 4px 32px #00ff8577, 0 0 0 2px #fff70055', padding: '38px 34px', border: '2px solid #43e97b', marginBottom: 0, backdropFilter: 'blur(6px)' }}>
+                        <div style={{ color: '#b0b8c1', fontSize: 18, marginBottom: 8 }}>Olá!</div>
+                        <div style={{ fontWeight: 900, fontSize: 32, color: '#fff', marginBottom: 12, lineHeight: 1.2, letterSpacing: 1, textShadow: '0 2px 8px #43e97b33' }}>
                             {user?.username ? `Eu sou ${user.username}, apostador BerryBet!` : 'Perfil do Usuário'}
                         </div>
-                        <div style={{ color: '#666', fontSize: 18, marginBottom: 18 }}>
+                        <div style={{ color: '#b0b8c1', fontSize: 18, marginBottom: 18 }}>
                             {user?.bio || 'Bem-vindo ao seu perfil. Aqui você pode acompanhar suas estatísticas e conquistas!'}
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 18 }}>
-                            <span style={{ color: '#43e97b', fontWeight: 700, fontSize: 16, display: 'flex', alignItems: 'center' }}>
+                            <span style={{ color: '#43e97b', fontWeight: 700, fontSize: 16, display: 'flex', alignItems: 'center', textShadow: '0 2px 8px #43e97b33' }}>
                                 <span style={{ fontSize: 18, marginRight: 6 }}>●</span> Ativo
                             </span>
-                            <span style={{ color: '#2575fc', fontWeight: 700, fontSize: 16, display: 'flex', alignItems: 'center' }}>
+                            <span style={{ color: '#fff700', fontWeight: 700, fontSize: 16, display: 'flex', alignItems: 'center', textShadow: '0 2px 8px #fff70033' }}>
                                 <span style={{ fontSize: 18, marginRight: 6 }}>★</span> Membro desde {user?.created_at ? new Date(user.created_at).toLocaleDateString() : '-'}
                             </span>
                         </div>
-                        <button style={{ background: 'linear-gradient(90deg, #2575fc 0%, #6a11cb 100%)', color: '#fff', border: 'none', borderRadius: 8, padding: '12px 32px', fontWeight: 700, fontSize: 18, cursor: 'pointer', boxShadow: '0 2px 8px #2575fc22', marginTop: 8 }}>
-                            Baixar Extrato
-                        </button>
                     </div>
-                    <div style={{ background: '#fff', borderRadius: 20, boxShadow: '0 4px 24px #0001', padding: '32px 32px', border: '1px solid #e0e0e0' }}>
-                        <h2 style={{ color: '#2575fc', fontWeight: 800, marginBottom: 18, textAlign: 'left', fontSize: 22, letterSpacing: 1 }}>Suas Estatísticas</h2>
+                    <div style={{ background: 'rgba(16,24,32,0.98)', borderRadius: 20, boxShadow: '0 4px 32px #00ff8577, 0 0 0 2px #fff70055', padding: '34px 34px', border: '2px solid #43e97b', backdropFilter: 'blur(6px)' }}>
+                        <h2 style={{ color: '#43e97b', fontWeight: 800, marginBottom: 18, textAlign: 'left', fontSize: 22, letterSpacing: 1, textShadow: '0 2px 8px #fff70033' }}>Suas Estatísticas</h2>
                         <div style={{ display: 'flex', gap: 32, justifyContent: 'flex-start', flexWrap: 'wrap' }}>
-                            <StatCard label="Saldo" value={`R$ ${stats?.balance?.toFixed(2) ?? '0,00'}`} icon="💰" color="#6a11cb" />
+                            <StatCard label="Saldo" value={`R$ ${stats?.balance?.toFixed(2) ?? '0,00'}`} icon="💰" color="#43e97b" highlight />
                             <StatCard label="Apostas" value={stats?.total_bets ?? 0} icon="🎲" color="#2575fc" />
-                            <StatCard label="Vitórias" value={stats?.total_wins ?? 0} icon="🏆" color="#43e97b" />
+                            <StatCard label="Vitórias" value={stats?.total_wins ?? 0} icon="🏆" color="#fff700" />
                             <StatCard label="Derrotas" value={stats?.total_losses ?? 0} icon="💔" color="#ff4b2b" />
                         </div>
                     </div>
@@ -146,10 +190,10 @@ function Perfil() {
 function StatCard({ label, value, icon, color, highlight }) {
     return (
         <div style={{
-            background: highlight ? 'linear-gradient(135deg, #ff4b2b 0%, #ff416c 100%)' : '#f5f6fa',
-            color: highlight ? '#fff' : color,
-            borderRadius: 16,
-            boxShadow: highlight ? '0 4px 24px #ff4b2b44' : '0 2px 8px #0001',
+            background: highlight ? 'linear-gradient(90deg, #23272b 0%, #43e97b 100%)' : 'rgba(24,28,31,0.85)',
+            color: highlight ? '#fff700' : color,
+            borderRadius: 18,
+            boxShadow: highlight ? '0 4px 24px #43e97b77, 0 0 0 2px #fff70055' : '0 2px 8px #0001',
             padding: '24px 32px',
             minWidth: 120,
             textAlign: 'center',
@@ -158,15 +202,13 @@ function StatCard({ label, value, icon, color, highlight }) {
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            border: highlight ? '3px solid #fff' : `2px solid ${color}`,
+            border: highlight ? '2.5px solid #fff700' : `2px solid ${color}`,
             position: 'relative',
+            transition: 'box-shadow 0.2s, border 0.2s',
         }}>
             <span style={{ fontSize: 36, marginBottom: 8 }}>{icon}</span>
-            <span style={{ fontSize: 28, fontWeight: 900 }}>{value}</span>
+            <span style={{ fontSize: 28, fontWeight: 900, textShadow: highlight ? '0 2px 8px #43e97b88, 0 0px 2px #fff70055' : 'none' }}>{value}</span>
             <span style={{ fontSize: 16, marginTop: 4 }}>{label}</span>
-            {highlight && (
-                <span style={{ position: 'absolute', top: 8, right: 12, fontSize: 18, fontWeight: 900, letterSpacing: 1, color: '#fff', textShadow: '0 2px 8px #ff4b2b88' }}>Berry Bet</span>
-            )}
         </div>
     );
 }

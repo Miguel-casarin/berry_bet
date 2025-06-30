@@ -69,7 +69,9 @@ function jogodoTigrinho() {
               <a href="#" onClick={e => { e.preventDefault(); setPopupOpen(true); }}>Depósito</a>
             </li>
             <li><a href="/saque">Saque</a></li>
-            <li><a href="#" onClick={e => { e.preventDefault(); navigate('/'); }}>Sair</a></li>
+            <li>
+              <a href="#" onClick={e => { e.preventDefault(); navigate('/dashboard'); }}>Voltar</a>
+            </li>
           </ul>
         </nav>
       </header>

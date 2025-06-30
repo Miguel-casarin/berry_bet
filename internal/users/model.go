@@ -99,6 +99,23 @@ func AddUser(newUser User) (bool, error) {
 		tx.Rollback()
 		return false, err
 	}
+
+	// Recupera o ID do usuário recém-criado
+	var userID int64
+	row := tx.QueryRow("SELECT id FROM users WHERE username = ?", newUser.Username)
+	err = row.Scan(&userID)
+	if err != nil {
+		tx.Rollback()
+		return false, err
+	}
+
+	// Cria registro em user_stats para o novo usuário
+	_, err = tx.Exec(`INSERT INTO user_stats (user_id, total_bets, total_wins, total_losses, total_amount_bet, total_profit, balance, created_at, updated_at) VALUES (?, 0, 0, 0, 0.0, 0.0, 0.0, datetime('now'), datetime('now'))`, userID)
+	if err != nil {
+		tx.Rollback()
+		return false, err
+	}
+
 	err = tx.Commit()
 	if err != nil {
 		return false, err

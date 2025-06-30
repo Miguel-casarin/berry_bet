@@ -42,9 +42,13 @@ func CreateUser(username, email, password, cpf, phone string) error {
 	if err != nil {
 		return err
 	}
-	_, err = config.DB.Exec(
-		"INSERT INTO users (username, email, password_hash, cpf, phone) VALUES (?, ?, ?, ?, ?)",
-		username, email, string(hashed), cpf, phone,
-	)
+	newUser := users.User{
+		Username:     username,
+		Email:        email,
+		PasswordHash: string(hashed),
+		CPF:          cpf,
+		Phone:        phone,
+	}
+	_, err = users.AddUser(newUser)
 	return err
 }

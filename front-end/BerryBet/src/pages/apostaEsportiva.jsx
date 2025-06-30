@@ -60,13 +60,13 @@ function ApostaEsportiva() {
           <ul className="nav-list">
             <li><a href="#" onClick={e => { e.preventDefault(); setPopupOpen(true); }}>Depósito</a></li>
             <li><a href="/saque">Saque</a></li>
-            <li><a href="#" onClick={e => { e.preventDefault(); navigate('/'); }}>Sair</a></li>
+            <li><a href="#" onClick={e => { e.preventDefault(); navigate('/dashboard'); }}>Voltar</a></li>
           </ul>
         </nav>
       </header>
       <main>
         {popupOpen && (
-          <div className={popupOpen ? "popup-overlay active" : "popup-overlay"} onClick={e => {e.target.className.includes('popup-overlay') && setPopupOpen(false);}}>
+          <div className={popupOpen ? "popup-overlay active" : "popup-overlay"} onClick={e => { e.target.className.includes('popup-overlay') && setPopupOpen(false); }}>
             <div className="popup-container" onClick={e => e.stopPropagation()}>
               <div className="popup-header">
                 <div className="popup-close-canto">
@@ -85,7 +85,7 @@ function ApostaEsportiva() {
                     <button className={`botao-pagamento${selecionado === "carn" ? " selecionado" : ""}`} value="carn" onClick={() => setSelecionado("carn")}>Carnê</button>
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{marginLeft: 16}}>
+                    <div style={{ marginLeft: 16 }}>
                       {selecionado ? textos[selecionado] : <p>Selecione uma forma de pagamento para ver as informações</p>}
                     </div>
                     {/* Aqui você pode adicionar campos de valor, inputs, etc. */}

@@ -25,7 +25,8 @@ function Conta() {
     useEffect(() => {
         const token = localStorage.getItem('token');
         if (!token) {
-            navigate('/');
+            navigate('/', { replace: true });
+            window.location.reload();
             return;
         }
         fetch('http://localhost:8080/api/users/me', {
@@ -33,7 +34,9 @@ function Conta() {
         })
             .then(async (res) => {
                 if (res.status === 401) {
-                    navigate('/');
+                    localStorage.removeItem('token');
+                    navigate('/', { replace: true });
+                    window.location.reload();
                     return;
                 }
                 if (!res.ok) throw new Error('Erro ao buscar usuário');
@@ -46,7 +49,12 @@ function Conta() {
                     cpf: data.data.cpf || '',
                 });
             })
-            .catch(() => setUser(null));
+            .catch(() => {
+                localStorage.removeItem('token');
+                setUser(null);
+                navigate('/', { replace: true });
+                window.location.reload();
+            });
     }, [navigate]);
 
     const handleChange = (e) => {
@@ -199,50 +207,94 @@ function Conta() {
     }
 
     return (
-        <div style={{ minHeight: '100vh', background: '#f4f7f6', padding: 0 }}>
-            <header style={{ padding: 24, textAlign: 'center', position: 'relative', minHeight: 60, background: '#fff', borderBottom: '1px solid #e0e0e0' }}>
-                <span style={{ fontWeight: 900, fontSize: 28, color: '#222', letterSpacing: 1, position: 'absolute', left: 32, top: 28, cursor: 'pointer', background: '#fff', borderRadius: '50%', border: '1px solid #e0e0e0', width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px #0001' }} onClick={() => navigate('/dashboard')} title="Voltar">
-                    &#8592;
+        <div style={{
+            minHeight: '100vh',
+            background: 'linear-gradient(135deg, #101820 0%, #0a2e12 60%, #fff700 180%)',
+            backgroundAttachment: 'fixed',
+            padding: 0
+        }}>
+            <header
+                style={{
+                    fontSize: '32px',
+                    fontWeight: 'bold',
+                    textAlign: 'center',
+                    flex: 1,
+                    letterSpacing: 2,
+                    color: '#fff',
+                    userSelect: 'none',
+                    lineHeight: '56px',
+                    marginLeft: 0,
+                    marginRight: 0,
+                    textShadow: '0 2px 8px #fff70088, 0 0px 2px #43e97b55',
+                    fontFamily: 'Montserrat, Arial, sans-serif',
+                    filter: 'drop-shadow(0 0 8px #43e97b55)',
+                    background: 'linear-gradient(90deg, #181c2b 0%, #232946 100%)',
+                    borderBottom: '2.5px solid #fff700',
+                    boxShadow: '0 4px 24px 0 #00ff8577, 0 1.5px 0 #fff700',
+                    backdropFilter: 'blur(8px)',
+                    WebkitBackdropFilter: 'blur(8px)',
+                    minHeight: 64,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: '100%',
+                    zIndex: 10,
+                    position: 'relative',
+                    padding: 0,
+                }}
+            >
+                <span
+                    style={{
+                        cursor: 'pointer',
+                        fontWeight: 900,
+                        fontSize: 32,
+                        color: '#fff',
+                        letterSpacing: 1,
+                        textShadow: '0 2px 8px #43e97b88',
+                        userSelect: 'none',
+                    }}
+                    onClick={() => navigate('/dashboard')}
+                >
+                    Berry.Bet
                 </span>
-                <span style={{ fontWeight: 900, fontSize: 28, color: '#222', letterSpacing: 1 }}>BerryBet</span>
             </header>
             <main style={{ maxWidth: 1000, margin: '0 auto', padding: '40px 0 0 0', display: 'flex', gap: 32, justifyContent: 'center', alignItems: 'flex-start', minHeight: 600 }}>
                 {/* Avatar e info */}
-                <section style={{ background: '#fff', borderRadius: 20, boxShadow: '0 4px 24px #0001', padding: 36, minWidth: 320, maxWidth: 340, display: 'flex', flexDirection: 'column', alignItems: 'center', border: '1px solid #e0e0e0', position: 'relative' }}>
+                <section style={{ background: 'rgba(16,24,32,0.98)', borderRadius: 20, boxShadow: '0 4px 32px #00ff8577, 0 0 0 2px #fff70055', padding: 38, minWidth: 320, maxWidth: 340, display: 'flex', flexDirection: 'column', alignItems: 'center', border: '2px solid #43e97b', position: 'relative', backdropFilter: 'blur(6px)' }}>
                     <div
-                        style={{ width: 110, height: 110, borderRadius: '50%', border: '4px solid #e0e0e0', overflow: 'hidden', marginBottom: 18, background: '#f5f6fa', position: 'relative', cursor: editing ? 'pointer' : 'default', transition: 'box-shadow 0.2s' }}
+                        style={{ width: 110, height: 110, borderRadius: '50%', border: '4px solid #fff700', overflow: 'hidden', marginBottom: 18, background: '#23272b', position: 'relative', cursor: editing ? 'pointer' : 'default', transition: 'box-shadow 0.2s' }}
                         onClick={() => editing && setShowAvatarPopup(true)}
                         title={editing ? 'Clique para trocar a foto' : ''}
                     >
                         <img
                             src={avatarPreview || (user.avatar_url ? `http://localhost:8080${user.avatar_url}` : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.username)}`)}
                             alt="Avatar"
-                            style={{ width: '100%', height: '100%', objectFit: 'cover', filter: editing ? 'brightness(0.95)' : 'none' }}
+                            style={{ width: '100%', height: '100%', objectFit: 'cover', filter: editing ? 'brightness(0.95)' : 'none', borderRadius: '50%' }}
                         />
                         {editing && (
-                            <span style={{ position: 'absolute', bottom: 8, right: 8, background: '#2575fc', borderRadius: '50%', width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 16, boxShadow: '0 2px 8px #0002', zIndex: 2 }}>
+                            <span style={{ position: 'absolute', bottom: 8, right: 8, background: '#43e97b', borderRadius: '50%', width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 16, boxShadow: '0 2px 8px #43e97b33', zIndex: 2 }}>
                                 ✏️
                             </span>
                         )}
                     </div>
-                    <div style={{ fontSize: 24, fontWeight: 800, color: '#222', marginBottom: 4, textAlign: 'center' }}>{user.username}</div>
-                    <div style={{ color: '#888', fontSize: 15, marginBottom: 8, textAlign: 'center' }}>{user.email}</div>
-                    <div style={{ color: '#aaa', fontSize: 14, marginBottom: 0, textAlign: 'center' }}>CPF: {user.cpf || '-'}</div>
+                    <div style={{ fontSize: 24, fontWeight: 800, color: '#fff', marginBottom: 4, textAlign: 'center', textShadow: '0 2px 8px #43e97b33' }}>{user.username}</div>
+                    <div style={{ color: '#b0b8c1', fontSize: 15, marginBottom: 8, textAlign: 'center' }}>{user.email}</div>
+                    <div style={{ color: '#43e97b', fontSize: 14, marginBottom: 0, textAlign: 'center', fontWeight: 700 }}>CPF: {user.cpf || '-'}</div>
                     {/* Popup de troca de avatar */}
                     {showAvatarPopup && (
                         <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.35)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            <div style={{ background: '#fff', borderRadius: 18, boxShadow: '0 8px 32px #0003', padding: 32, minWidth: 320, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 18, position: 'relative' }}>
-                                <div style={{ fontWeight: 700, fontSize: 20, marginBottom: 8 }}>Trocar foto de perfil</div>
-                                <div style={{ width: 120, height: 120, borderRadius: '50%', overflow: 'hidden', border: '3px solid #2575fc', marginBottom: 8, background: '#f5f6fa' }}>
+                            <div style={{ background: '#23272b', borderRadius: 18, boxShadow: '0 8px 32px #43e97b33', padding: 32, minWidth: 320, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 18, position: 'relative', border: '2px solid #43e97b' }}>
+                                <div style={{ fontWeight: 700, fontSize: 20, marginBottom: 8, color: '#fff' }}>Trocar foto de perfil</div>
+                                <div style={{ width: 120, height: 120, borderRadius: '50%', overflow: 'hidden', border: '3px solid #fff700', marginBottom: 8, background: '#23272b' }}>
                                     <img
                                         src={avatarPreview || (user.avatar_url ? `http://localhost:8080${user.avatar_url}` : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.username)}`)}
                                         alt="Preview"
-                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                        style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }}
                                     />
                                 </div>
-                                <input type="file" accept="image/*" onChange={onAvatarChange} style={{ marginBottom: 8 }} />
+                                <input type="file" accept="image/*" onChange={onAvatarChange} style={{ marginBottom: 8, color: '#fff' }} />
                                 <div style={{ display: 'flex', gap: 12, marginTop: 8 }}>
-                                    <button onClick={async (e) => { e.preventDefault(); await handleAvatarUpload(e); setShowAvatarPopup(false); }} style={{ background: '#2575fc', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 28px', fontWeight: 700, fontSize: 16, cursor: 'pointer', boxShadow: '0 2px 8px #2575fc22' }}>Confirmar</button>
+                                    <button onClick={async (e) => { e.preventDefault(); await handleAvatarUpload(e); setShowAvatarPopup(false); }} style={{ background: '#43e97b', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 28px', fontWeight: 700, fontSize: 16, cursor: 'pointer', boxShadow: '0 2px 8px #43e97b22' }}>Confirmar</button>
                                     <button onClick={() => { setShowAvatarPopup(false); setAvatarPreview(null); }} style={{ background: '#aaa', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 28px', fontWeight: 700, fontSize: 16, cursor: 'pointer', boxShadow: '0 2px 8px #aaa2' }}>Cancelar</button>
                                 </div>
                             </div>
@@ -250,55 +302,55 @@ function Conta() {
                     )}
                 </section>
                 {/* Formulário principal */}
-                <section style={{ flex: 1, minWidth: 340, maxWidth: 600, background: '#fff', borderRadius: 20, boxShadow: '0 4px 24px #0001', border: '1px solid #e0e0e0', padding: '36px 32px 32px 32px', display: 'flex', flexDirection: 'column', gap: 0, position: 'relative' }}>
+                <section style={{ flex: 1, minWidth: 340, maxWidth: 600, background: 'rgba(16,24,32,0.98)', borderRadius: 20, boxShadow: '0 4px 32px #00ff8577, 0 0 0 2px #fff70055', border: '2px solid #43e97b', padding: '36px 32px 32px 32px', display: 'flex', flexDirection: 'column', gap: 0, position: 'relative', color: '#fff', backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)' }}>
                     <form onSubmit={e => e.preventDefault()} style={{ width: '100%', marginTop: 0 }}>
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, marginBottom: 24 }}>
                             <div>
-                                <label style={{ fontWeight: 700, marginBottom: 4, display: 'block', color: '#222' }}>Nome de usuário</label>
+                                <label style={{ fontWeight: 700, marginBottom: 4, display: 'block', color: '#fff' }}>Nome de usuário</label>
                                 <input
                                     type="text"
                                     name="username"
                                     value={form.username}
                                     onChange={handleChange}
                                     disabled={!editing}
-                                    style={{ width: '100%', padding: 12, borderRadius: 10, border: '1.5px solid #bdbdbd', marginTop: 4, fontSize: 16, background: editing ? '#f8faff' : '#f5f6fa', transition: 'background 0.2s' }}
+                                    style={{ width: '100%', padding: 12, borderRadius: 10, border: '1.5px solid #43e97b', marginTop: 4, fontSize: 16, background: editing ? '#23272b' : '#181c1f', color: '#fff', transition: 'background 0.2s, border 0.2s' }}
                                 />
                             </div>
                             <div>
-                                <label style={{ fontWeight: 700, marginBottom: 4, display: 'block', color: '#222' }}>Email</label>
+                                <label style={{ fontWeight: 700, marginBottom: 4, display: 'block', color: '#fff' }}>Email</label>
                                 <input
                                     type="email"
                                     name="email"
                                     value={form.email}
                                     onChange={handleChange}
                                     disabled={!editing}
-                                    style={{ width: '100%', padding: 12, borderRadius: 10, border: '1.5px solid #bdbdbd', marginTop: 4, fontSize: 16, background: editing ? '#f8faff' : '#f5f6fa', transition: 'background 0.2s' }}
+                                    style={{ width: '100%', padding: 12, borderRadius: 10, border: '1.5px solid #43e97b', marginTop: 4, fontSize: 16, background: editing ? '#23272b' : '#181c1f', color: '#fff', transition: 'background 0.2s, border 0.2s' }}
                                 />
                             </div>
                             <div>
-                                <label style={{ fontWeight: 700, marginBottom: 4, display: 'block', color: '#222' }}>Telefone</label>
+                                <label style={{ fontWeight: 700, marginBottom: 4, display: 'block', color: '#fff' }}>Telefone</label>
                                 <input
                                     type="text"
                                     name="phone"
                                     value={form.phone}
                                     onChange={handleChange}
                                     disabled={!editing}
-                                    style={{ width: '100%', padding: 12, borderRadius: 10, border: '1.5px solid #bdbdbd', marginTop: 4, fontSize: 16, background: editing ? '#f8faff' : '#f5f6fa', transition: 'background 0.2s' }}
+                                    style={{ width: '100%', padding: 12, borderRadius: 10, border: '1.5px solid #43e97b', marginTop: 4, fontSize: 16, background: editing ? '#23272b' : '#181c1f', color: '#fff', transition: 'background 0.2s, border 0.2s' }}
                                 />
                             </div>
                             <div>
-                                <label style={{ fontWeight: 700, marginBottom: 4, display: 'block', color: '#222' }}>CPF</label>
+                                <label style={{ fontWeight: 700, marginBottom: 4, display: 'block', color: '#fff' }}>CPF</label>
                                 <input
                                     type="text"
                                     name="cpf"
                                     value={form.cpf}
                                     onChange={handleChange}
                                     disabled
-                                    style={{ width: '100%', padding: 12, borderRadius: 10, border: '1.5px solid #bdbdbd', marginTop: 4, fontSize: 16, background: '#f5f6fa', color: '#888', cursor: 'not-allowed' }}
+                                    style={{ width: '100%', padding: 12, borderRadius: 10, border: '1.5px solid #43e97b', marginTop: 4, fontSize: 16, background: '#181c1f', color: '#888', cursor: 'not-allowed' }}
                                 />
                             </div>
                         </div>
-                        {message && <div style={{ color: message.includes('sucesso') ? 'green' : 'red', marginBottom: 16, textAlign: 'center', fontWeight: 600 }}>{message}</div>}
+                        {message && <div style={{ color: message.includes('sucesso') ? '#43e97b' : '#ff4b2b', marginBottom: 16, textAlign: 'center', fontWeight: 600 }}>{message}</div>}
                         <div style={{ display: 'flex', justifyContent: 'center', marginTop: 16 }}>
                             <button
                                 type="button"
@@ -339,15 +391,15 @@ function Conta() {
                     )}
                     {/* Modal de troca de senha */}
                     {showPasswordChange && (
-                        <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.35)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            <form onSubmit={handlePasswordChange} style={{ background: '#fff', borderRadius: 18, boxShadow: '0 8px 32px #0003', padding: 32, minWidth: 340, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, position: 'relative' }}>
-                                <div style={{ fontWeight: 700, fontSize: 20, marginBottom: 8 }}>Alterar senha</div>
+                        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.35)', zIndex: 2000, display: 'flex', alignItems: 'flex-start', justifyContent: 'center', paddingTop: 60, paddingLeft: 0, paddingRight: 0 }}>
+                            <form onSubmit={handlePasswordChange} style={{ background: 'linear-gradient(120deg, #23272b 60%, #181c1f 100%)', borderRadius: 18, boxShadow: '0 8px 32px #43e97b33', padding: 24, minWidth: 320, maxWidth: 380, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14, position: 'relative', border: '2px solid #43e97b', color: '#fff' }}>
+                                <div style={{ fontWeight: 700, fontSize: 20, marginBottom: 8, color: '#fff', textAlign: 'center' }}>Alterar senha</div>
                                 <input
                                     type="password"
                                     placeholder="Senha atual"
                                     value={currentPassword}
                                     onChange={e => setCurrentPassword(e.target.value)}
-                                    style={{ width: '100%', padding: 12, borderRadius: 10, border: '1.5px solid #bdbdbd', fontSize: 16 }}
+                                    style={{ width: '100%', padding: 10, borderRadius: 10, border: '1.5px solid #43e97b', fontSize: 15, background: '#23272b', color: '#fff', marginBottom: 4 }}
                                     autoFocus
                                 />
                                 <input
@@ -355,19 +407,19 @@ function Conta() {
                                     placeholder="Nova senha"
                                     value={newPasswordField}
                                     onChange={e => setNewPasswordField(e.target.value)}
-                                    style={{ width: '100%', padding: 12, borderRadius: 10, border: '1.5px solid #bdbdbd', fontSize: 16 }}
+                                    style={{ width: '100%', padding: 10, borderRadius: 10, border: '1.5px solid #43e97b', fontSize: 15, background: '#23272b', color: '#fff', marginBottom: 4 }}
                                 />
                                 <input
                                     type="password"
                                     placeholder="Confirmar nova senha"
                                     value={confirmNewPassword}
                                     onChange={e => setConfirmNewPassword(e.target.value)}
-                                    style={{ width: '100%', padding: 12, borderRadius: 10, border: '1.5px solid #bdbdbd', fontSize: 16 }}
+                                    style={{ width: '100%', padding: 10, borderRadius: 10, border: '1.5px solid #43e97b', fontSize: 15, background: '#23272b', color: '#fff', marginBottom: 4 }}
                                 />
-                                {passwordChangeMsg && <div style={{ color: passwordChangeMsg.includes('sucesso') ? 'green' : 'red', marginBottom: 8, textAlign: 'center', fontWeight: 600 }}>{passwordChangeMsg}</div>}
-                                <div style={{ display: 'flex', gap: 12, marginTop: 8 }}>
-                                    <button type="submit" disabled={loading} style={{ background: '#43e97b', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 28px', fontWeight: 700, fontSize: 16, cursor: 'pointer', boxShadow: '0 2px 8px #43e97b22' }}>Salvar</button>
-                                    <button type="button" onClick={() => { setShowPasswordChange(false); setCurrentPassword(''); setNewPasswordField(''); setConfirmNewPassword(''); setPasswordChangeMsg(''); }} style={{ background: '#aaa', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 28px', fontWeight: 700, fontSize: 16, cursor: 'pointer', boxShadow: '0 2px 8px #aaa2' }}>Cancelar</button>
+                                {passwordChangeMsg && <div style={{ color: passwordChangeMsg.includes('sucesso') ? '#43e97b' : '#ff4b2b', marginBottom: 8, textAlign: 'center', fontWeight: 600 }}>{passwordChangeMsg}</div>}
+                                <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
+                                    <button type="submit" disabled={loading} style={{ background: '#43e97b', color: '#181c1f', border: 'none', borderRadius: 8, padding: '10px 22px', fontWeight: 700, fontSize: 15, cursor: 'pointer', boxShadow: '0 2px 8px #43e97b22', transition: 'background 0.2s' }}>Salvar</button>
+                                    <button type="button" onClick={() => { setShowPasswordChange(false); setCurrentPassword(''); setNewPasswordField(''); setConfirmNewPassword(''); setPasswordChangeMsg(''); }} style={{ background: '#23272b', color: '#fff', border: '1.5px solid #aaa', borderRadius: 8, padding: '10px 22px', fontWeight: 700, fontSize: 15, cursor: 'pointer', boxShadow: '0 2px 8px #aaa2', transition: 'background 0.2s, border 0.2s' }}>Cancelar</button>
                                 </div>
                             </form>
                         </div>
