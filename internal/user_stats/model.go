@@ -370,3 +370,14 @@ func GetUserBalanceByID(userIDStr string) (float64, error) {
 	}
 	return balance, nil
 }
+
+// IncrementUserTotalBets incrementa o número de partidas (TotalBets) do usuário em 1
+func IncrementUserTotalBets(userID int64) error {
+	stmt, err := config.DB.Prepare("UPDATE user_stats SET total_bets = total_bets + 1, updated_at = datetime('now') WHERE user_id = ?")
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+	_, err = stmt.Exec(userID)
+	return err
+}
