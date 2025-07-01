@@ -29,5 +29,8 @@ func main() {
 	}))
 	r.Use(utils.ErrorHandlingMiddleware())
 	api.RegisterRoutes(r)
+
+	r.Static("/uploads", "./uploads")
+
 	r.Run(":8080")
 }
