@@ -1,6 +1,7 @@
 package users
 
 import (
+	"berry_bet/internal/token"
 	"berry_bet/internal/utils"
 	"net/http"
 	"strconv"
@@ -237,7 +238,14 @@ func UpdateMeHandler(c *gin.Context) {
 		utils.RespondError(c, http.StatusInternalServerError, "UPDATE_FAIL", "Could not update user.", err.Error())
 		return
 	}
-	utils.RespondSuccess(c, nil, "User updated successfully.")
+
+	// Gerar novo token JWT com o username atualizado
+	tokenStr, err := token.GenerateJWT(user.Username)
+	if err != nil {
+		utils.RespondError(c, http.StatusInternalServerError, "TOKEN_ERROR", "Failed to generate new token.", err.Error())
+		return
+	}
+	utils.RespondSuccess(c, gin.H{"token": tokenStr}, "User updated successfully.")
 }
 
 // GetMeBalanceHandler returns the balance of the authenticated user.
@@ -258,4 +266,86 @@ func GetMeBalanceHandler(c *gin.Context) {
 		return
 	}
 	utils.RespondSuccess(c, gin.H{"balance": balance}, "Balance fetched successfully.")
+}
+
+// UploadAvatarHandler faz upload da foto de perfil do usuário autenticado
+func UploadAvatarHandler(c *gin.Context) {
+	username, exists := c.Get("username")
+	if !exists {
+		utils.RespondError(c, http.StatusUnauthorized, "NO_AUTH", "User not authenticated.", nil)
+		return
+	}
+	user, err := GetUserByUsername(username.(string))
+	if err != nil || user == nil {
+		utils.RespondError(c, http.StatusInternalServerError, "DB_ERROR", "Failed to fetch user.", nil)
+		return
+	}
+	file, err := c.FormFile("avatar")
+	if err != nil {
+		utils.RespondError(c, http.StatusBadRequest, "NO_FILE", "No file uploaded.", err.Error())
+		return
+	}
+	// Cria pasta se não existir
+	dir := "uploads/avatars/"
+	_ = utils.EnsureDir(dir)
+	filename := dir + username.(string) + "_" + file.Filename
+	if err := c.SaveUploadedFile(file, filename); err != nil {
+		utils.RespondError(c, http.StatusInternalServerError, "UPLOAD_FAIL", "Failed to save file.", err.Error())
+		return
+	}
+	avatarURL := "/" + filename
+	user.AvatarURL = avatarURL
+	_, err = UpdateUser(*user, user.ID)
+	if err != nil {
+		utils.RespondError(c, http.StatusInternalServerError, "UPDATE_FAIL", "Failed to update user avatar.", err.Error())
+		return
+	}
+	utils.RespondSuccess(c, gin.H{"avatarUrl": avatarURL}, "Avatar updated successfully.")
+}
+
+// ChangePasswordRequest representa o payload para troca de senha
+type ChangePasswordRequest struct {
+	CurrentPassword string `json:"current_password"`
+	NewPassword     string `json:"new_password"`
+}
+
+// ChangePasswordHandler permite ao usuário autenticado trocar sua senha
+func ChangePasswordHandler(c *gin.Context) {
+	username, exists := c.Get("username")
+	if !exists {
+		utils.RespondError(c, http.StatusUnauthorized, "NO_AUTH", "User not authenticated.", nil)
+		return
+	}
+	var req ChangePasswordRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		utils.RespondError(c, http.StatusBadRequest, "INVALID_INPUT", "Invalid data.", err.Error())
+		return
+	}
+	if len(req.NewPassword) < 6 {
+		utils.RespondError(c, http.StatusBadRequest, "INVALID_PASSWORD", "A nova senha deve ter pelo menos 6 caracteres.", nil)
+		return
+	}
+	user, err := GetUserByUsername(username.(string))
+	if err != nil || user == nil {
+		utils.RespondError(c, http.StatusInternalServerError, "DB_ERROR", "Failed to fetch user.", nil)
+		return
+	}
+	// Verifica senha atual
+	err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(req.CurrentPassword))
+	if err != nil {
+		utils.RespondError(c, http.StatusUnauthorized, "WRONG_PASSWORD", "Senha atual incorreta.", nil)
+		return
+	}
+	// Gera hash da nova senha
+	hashed, err := bcrypt.GenerateFromPassword([]byte(req.NewPassword), bcrypt.DefaultCost)
+	if err != nil {
+		utils.RespondError(c, http.StatusInternalServerError, "HASH_ERROR", "Failed to hash password.", err.Error())
+		return
+	}
+	err = UpdateUserPassword(user.ID, string(hashed))
+	if err != nil {
+		utils.RespondError(c, http.StatusInternalServerError, "UPDATE_FAIL", "Could not update password.", err.Error())
+		return
+	}
+	utils.RespondSuccess(c, gin.H{"message": "Senha alterada com sucesso!"}, "Password changed successfully.")
 }
