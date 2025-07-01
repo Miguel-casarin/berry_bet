@@ -26,31 +26,30 @@ func Get_Saldo_Atual(userID int64) (float64, error) {
 	return user_stats.GetUserBalance(userID)
 }
 
-// rever
-func Discount(userID int64, value float64) (float64, error) {
-	saldo, err := user_stats.GetUserBalance(userID)
-	if err != nil {
-		return 0, err
-	}
-	if value <= saldo {
-		novoSaldo := saldo - value
-		err = user_stats.UpdateUserBalance(userID, novoSaldo)
-		if err != nil {
-			return 0, err
-		}
-		return value, nil
-	}
-	return 0, fmt.Errorf("saldo insuficiente")
+func Inclement_amount(userID int64, valor float64) (float64, error) {
+	balance := user_stats.GetUserBalance(userID)
+	new_balance := balance + valor
+	user_stats.UpdateUserBalance(userID, new_balance)
+
+	return new_balance, nil
 }
 
-// cona o numero de partidas
+func Value_aport(userID int64, valor float64) (float64, error) {
+	balance := user_stats.GetUserBalance(userID)
+	if balance < valor {
+		return 0, fmt.Errorf("saldo insuficiente")
+	} else {
+		new_balance := balance - valor
+		err := user_stats.UpdateUserBalance(userID, new_balance)
+		return valor, nil
+	}
+}
+
+// conta o numero de partidas
 func Count_partidas(num_parttidas int) int {
 	num_partidas = user_stats.UpdateUserStatsAfterBet
 	num_partidas++
 }
-
-// Criar uma função para acessar essa querry no banco
-var numero_rodadas int = 0
 
 // retorna as cartinhas
 func (d Dados_rodadas) CartinhaSorteada() *string {
@@ -128,4 +127,23 @@ func Final(valor_aposta float64) Dados_rodadas {
 	}
 
 	return data
+}
+
+func ExecutaRoleta(userID int64, valor_aposta float64) interface{} {
+	stats, err := user_stats.GetUserStatsByID(strconv.FormatInt(userID, 10))
+	if err != nil {
+		// Trate o erro conforme necessário
+		return nil
+	}
+
+	if stats.TotalBets < 3 {
+		// Executa Start
+		resultado := Start(valor_aposta)
+		// Você pode retornar o resultado ou fazer outras ações aqui
+		return resultado
+	} else {
+		// Executa Final
+		resultado := Final(valor_aposta)
+		return resultado
+	}
 }
