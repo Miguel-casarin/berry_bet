@@ -2,6 +2,7 @@ package roleta
 
 import (
 	"berry_bet/api/user_stats"
+	"berry_bet/config"
 	"berry_bet/internal/user_stats"
 	"fmt"
 	"strconv"
@@ -60,6 +61,28 @@ func (d Dados_rodadas) CartinhaSorteada() *string {
 	return &c
 }
 
+// Atualiza o total de apostas do usuário
+func UpdateUserTotalBets(userID int64, totalBets int64) error {
+	stmt, err := config.DB.Prepare("UPDATE user_stats SET total_bets = ?, updated_at = datetime('now') WHERE user_id = ?")
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+	_, err = stmt.Exec(totalBets, userID)
+	return err
+}
+
+// Atualiza o lucro do usuário
+func UpdateUserTotalProfit(userID int64, totalProfit float64) error {
+	stmt, err := config.DB.Prepare("UPDATE user_stats SET total_profit = ?, updated_at = datetime('now') WHERE user_id = ?")
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+	_, err = stmt.Exec(totalProfit, userID)
+	return err
+}
+
 func Start(valor_aposta float64) float64 {
 	valor_aposta = valor_aposta + Randon_inicial(valor_aposta)
 	_ = Update_wins_losses(userID, true)
@@ -78,25 +101,42 @@ type Dados_rodadas struct {
 	cartinha_sorteada *cartinha
 }
 
-func Final(valor_aposta float64) Dados_rodadas {
+func Final(userID int64, valor_aposta float64) Dados_rodadas {
+	stats, err := user_stats.GetUserStatsByID(strconv.FormatInt(userID, 10))
+	if err != nil {
+		return Dados_rodadas{}
+	}
+
+	aposta, err := Value_aport(userID, valor_aposta)
+	if err != nil {
+		return Dados_rodadas{}
+	}
+
 	data := Dados_rodadas{
-		valor_aposta:      valor_aposta,
-		historical_value:  0,
-		loser_count:       0,
-		statistical_loser: 0,
+		valor_aposta:      aposta,
+		historical_value:  stats.TotalAmountBet,
+		loser_count:       0, // local
+		statistical_loser: stats.TotalLosses,
 		limit:             1000.00,
-		victory:           0,
+		victory:           0, // local
 		cartinha_sorteada: nil,
+
+		tatal_apostas:  stats.TotalBets,
+		tatal_vitorias: stats.TotalWins,
+
+		// ver como vou colocar
+		lucro: stats.TotalProfit,
 	}
 
 	if Randon_fdp() {
 		new_value := op_valor(data.valor_aposta)
-		data.valor_aposta = data.valor_aposta + new_value
-		data.historical_value = data.historical_value + Count_money(data.historical_value, data.valor_aposta)
-		data.victory = data.victory + 1
+		data.valor_aposta += new_value
+		data.historical_value += Count_money(data.historical_value, data.valor_aposta)
+		data.victory++
 		data.cartinha_sorteada = carta
 
-		_ = Update_wins_losses(userID, true)
+		novoStatisticalLoser, _ := Update_wins_losses(userID, true)
+		data.statistical_loser = novoStatisticalLoser
 		user_stats.IncrementUserTotalBets(userID)
 	} else {
 		data.valor_aposta = 0
@@ -105,7 +145,8 @@ func Final(valor_aposta float64) Dados_rodadas {
 		data.victory = 0
 		data.cartinha_sorteada = nil
 
-		_ = Update_wins_losses(userID, false)
+		novoStatisticalLoser, _ := Update_wins_losses(userID, false)
+		data.statistical_loser = novoStatisticalLoser
 		user_stats.IncrementUserTotalBets(userID)
 	}
 
