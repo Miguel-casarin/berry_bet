@@ -1,0 +1,55 @@
+@charset "UTF-8";
+
+* {
+    font-family: Arial, Helvetica, sans-serif; 
+}
+
+.container {
+    background-color: #fff;
+    border-radius: 25px;
+    box-shadow: 5px 5px 15px gray;
+    width: 80%;
+    max-width: 1000px;
+    margin: 40px auto;
+    padding: 30px 20px;
+    box-sizing: border-box;
+}
+
+/* Remova ou ajuste o estilo de main se não for mais necessário */
+main {
+    background: none;
+    border-radius: 0;
+    box-shadow: none;
+    width: auto;
+    padding: 0;
+    margin: 0;
+}
+
+h1 {
+    text-align: center;
+}
+
+h2 {
+    color: gray;
+}
+
+
+p {
+    text-align: justify;
+}
+
+
+p {
+    text-indent: 30px;
+}
+
+.cabecalho {
+    background-color: #049DBF;
+    color: #fff;
+    border-radius: 20px;
+    padding: 30px 0;
+    text-align: center;
+    margin: 40px auto 20px auto;
+    max-width: 1000px;
+    box-shadow: 5px 5px 15px gray;
+}
