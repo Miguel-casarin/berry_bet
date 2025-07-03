@@ -9,11 +9,12 @@ type UserRequest struct {
 }
 
 type UserResponse struct {
-	ID       int64  `json:"id"`
-	Username string `json:"username"`
-	Email    string `json:"email"`
-	CPF      string `json:"cpf"`
-	Phone    string `json:"phone"`
+	ID       int64   `json:"id"`
+	Username string  `json:"username"`
+	Email    string  `json:"email"`
+	CPF      string  `json:"cpf"`
+	Phone    string  `json:"phone"`
+	Balance  float64 `json:"balance"`
 }
 
 func ToUserResponse(u *User) UserResponse {
@@ -23,5 +24,6 @@ func ToUserResponse(u *User) UserResponse {
 		Email:    u.Email,
 		CPF:      u.CPF,
 		Phone:    u.Phone,
+		Balance:  u.Balance, // novo campo
 	}
 }

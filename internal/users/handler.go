@@ -186,8 +186,15 @@ func GetMeHandler(c *gin.Context) {
 		utils.RespondError(c, http.StatusNotFound, "NOT_FOUND", "User not found.", nil)
 		return
 	}
+	// Calcula o saldo do usuário
+	balance, err := CalculateUserBalance(user.ID)
+	if err != nil {
+		utils.RespondError(c, http.StatusInternalServerError, "DB_ERROR", "Failed to fetch balance.", err.Error())
+		return
+	}
+	user.Balance = balance
 	user.PasswordHash = ""
-	utils.RespondSuccess(c, user, "User data fetched successfully.")
+	utils.RespondSuccess(c, ToUserResponse(user), "User data fetched successfully.")
 }
 
 // UpdateMeHandler updates the authenticated user's data.

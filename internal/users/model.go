@@ -8,15 +8,16 @@ import (
 )
 
 type User struct {
-	ID           int64  `json:"id"`
-	Username     string `json:"username"`
-	Email        string `json:"email"`
-	PasswordHash string `json:"password_hash"`
-	CPF          string `json:"cpf"`
-	Phone        string `json:"phone"`
-	AvatarURL    string `json:"avatar_url"`
-	CreatedAt    string `json:"created_at"`
-	UpdatedAt    string `json:"updated_at"`
+	ID           int64   `json:"id"`
+	Username     string  `json:"username"`
+	Email        string  `json:"email"`
+	PasswordHash string  `json:"password_hash"`
+	CPF          string  `json:"cpf"`
+	Phone        string  `json:"phone"`
+	AvatarURL    string  `json:"avatar_url"`
+	CreatedAt    string  `json:"created_at"`
+	UpdatedAt    string  `json:"updated_at"`
+	Balance      float64 `json:"balance"` // novo campo
 }
 
 // Função auxiliar para lidar com avatar_url nulo
