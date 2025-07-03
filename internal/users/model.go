@@ -8,16 +8,15 @@ import (
 )
 
 type User struct {
-	ID           int64   `json:"id"`
-	Username     string  `json:"username"`
-	Email        string  `json:"email"`
-	PasswordHash string  `json:"password_hash"`
-	CPF          string  `json:"cpf"`
-	Phone        string  `json:"phone"`
-	AvatarURL    string  `json:"avatar_url"`
-	CreatedAt    string  `json:"created_at"`
-	UpdatedAt    string  `json:"updated_at"`
-	Balance      float64 `json:"balance"` // novo campo
+	ID           int64  `json:"id"`
+	Username     string `json:"username"`
+	Email        string `json:"email"`
+	PasswordHash string `json:"password_hash"`
+	CPF          string `json:"cpf"`
+	Phone        string `json:"phone"`
+	AvatarURL    string `json:"avatar_url"`
+	CreatedAt    string `json:"created_at"`
+	UpdatedAt    string `json:"updated_at"`
 }
 
 // Função auxiliar para lidar com avatar_url nulo
@@ -181,21 +180,7 @@ func DeleteUser(userId int) (bool, error) {
 }
 
 // GetUserByUsername busca um usuário pelo username
-func GetUserByUsername(username string) (*User, error) {
-	row := config.DB.QueryRow(`
-		SELECT id, username, email, password_hash, cpf, phone, avatar_url, created_at, updated_at 
-		FROM users 
-		WHERE username = ?`, username)
-
-	u, err := scanUser(row)
-	if err == sql.ErrNoRows {
-		return nil, nil
-	}
-	if err != nil {
-		return nil, err
-	}
-	return &u, nil
-}
+// GetUserByUsername moved to internal/common/user_lookup.go to break import cycle
 
 // GetUserByEmail busca um usuário pelo email
 func GetUserByEmail(email string) (*User, error) {
@@ -230,6 +215,30 @@ func UpdateUserPassword(userID int64, newPasswordHash string) error {
 		UPDATE users 
 		SET password_hash = ?, updated_at = datetime('now') 
 		WHERE id = ?`, newPasswordHash, userID)
+
+	if err != nil {
+		return err
+	}
+
+	return tx.Commit()
+}
+
+// UpdateUserBalance atualiza apenas o saldo do usuário em user_stats
+func UpdateUserBalance(userID int64, newBalance float64) error {
+	tx, err := config.DB.Begin()
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		}
+	}()
+
+	_, err = tx.Exec(`
+			   UPDATE user_stats 
+			   SET balance = ?, updated_at = datetime('now') 
+			   WHERE user_id = ?`, newBalance, userID)
 
 	if err != nil {
 		return err
