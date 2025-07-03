@@ -1,4 +1,4 @@
-package sorteio
+package roleta
 
 import (
 	"fmt"

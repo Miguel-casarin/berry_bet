@@ -1,4 +1,4 @@
-package controle
+package roleta
 
 // função para atualizar a quantidade de percas
 func Loser_count(value int) int {
