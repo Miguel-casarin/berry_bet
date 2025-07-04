@@ -10,6 +10,7 @@ import (
 	"berry_bet/api/transactions"
 	"berry_bet/api/user_stats"
 	"berry_bet/api/users"
+	"berry_bet/api/roleta"
 
 	"github.com/gin-gonic/gin"
 )
@@ -24,4 +25,5 @@ func RegisterRoutes(router *gin.Engine) {
 	transactions.RegisterTransactionRoutes(router)
 	outcomes.RegisterOutcomeRoutes(router)
 	ranking.RegisterRankingRoutes(router)
+	roleta.RegisterRoletaRoutes(router)
 }

@@ -182,8 +182,8 @@ func UpdateUserStatsAfterBet(userID int64, betAmount float64, isWin bool, profit
 	return tx.Commit()
 }
 
-// UpdateUserBalance atualiza apenas o balance do usuário baseado nas transações
-func UpdateUserBalance(userID int64) error {
+// UpdateUserBalance atualiza o balance do usuário para o valor informado
+func UpdateUserBalance(userID int64, balance float64) error {
 	tx, err := config.DB.Begin()
 	if err != nil {
 		return err
@@ -193,28 +193,6 @@ func UpdateUserBalance(userID int64) error {
 			tx.Rollback()
 		}
 	}()
-
-	// Calcular o balance atual do usuário baseado nas transações
-	var balance float64
-	rows, err := tx.Query(`SELECT type, amount FROM transactions WHERE user_id = ?`, userID)
-	if err != nil {
-		return err
-	}
-	for rows.Next() {
-		var ttype string
-		var amount float64
-		if err := rows.Scan(&ttype, &amount); err != nil {
-			rows.Close()
-			return err
-		}
-		switch ttype {
-		case "deposit", "win", "bonus":
-			balance += amount
-		case "bet", "withdraw":
-			balance -= amount
-		}
-	}
-	rows.Close()
 
 	// Verificar se já existem estatísticas para o usuário
 	var exists bool
