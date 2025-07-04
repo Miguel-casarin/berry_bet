@@ -170,7 +170,7 @@ function Dashboard() {
     <div
       style={{
         minHeight: '100vh',
-        background: 'linear-gradient(135deg, #101820 0%, #0a2e12 60%, #fff700 180%)',
+        background: '#6F7D8C',
         backgroundAttachment: 'fixed',
         paddingBottom: 40,
       }}
@@ -178,52 +178,38 @@ function Dashboard() {
       {/* Cabeçalho */}
       <div
         style={{
+          width: '100vw',
+          background: '#181818',
+          borderBottom: '2.5px solid #444',
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'space-between',
+          justifyContent: 'flex-start',
+          minHeight: 64,
+          margin: 0,
+          padding: 0,
           position: 'sticky',
           top: 0,
-          background: 'linear-gradient(90deg, #181c2b 0%, #232946 100%)', // fundo gradiente escuro Brasilcore
-          height: 64,
-          marginBottom: 20,
           zIndex: 200,
-          boxShadow: '0 4px 24px 0 #00ff8577, 0 1.5px 0 #fff700', // sombra colorida
-          borderBottom: '2.5px solid #fff700',
-          backdropFilter: 'blur(8px)',
-          WebkitBackdropFilter: 'blur(8px)',
         }}
       >
-        <header
+        <a
+          className="logo"
+          href="/dashboard"
           style={{
-            fontSize: '32px',
-            fontWeight: 'bold',
-            textAlign: 'center',
-            flex: 1,
-            letterSpacing: 2,
-            color: '#fff',
-            userSelect: 'none',
-            lineHeight: '56px',
-            marginLeft: 24,
-            textShadow: '0 2px 8px #fff70088, 0 0px 2px #43e97b55',
-            fontFamily: 'Montserrat, Arial, sans-serif',
-            filter: 'drop-shadow(0 0 8px #43e97b55)',
+            marginLeft: 18,
+            color: '#e0e0e0',
+            fontWeight: 400,
+            fontSize: 32,
+            textDecoration: 'none',
+            letterSpacing: 1,
+            fontFamily: 'Poppins',
+            flexShrink: 0,
           }}
         >
-          <span
-            style={{
-              cursor: 'pointer',
-              fontWeight: 900,
-              fontSize: 32,
-              color: '#fff',
-              letterSpacing: 1,
-              textShadow: '0 2px 8px #43e97b88',
-              userSelect: 'none',
-            }}
-            onClick={() => { navigate('/dashboard'); window.location.reload(); }}
-          >
-            Berry.Bet
-          </span>
-        </header>
+          Berry.Bet
+        </a>
+        {/* Mantém o resto do header (saldo, perfil, etc) alinhado à direita */}
+        <div style={{ flex: 1 }} />
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginRight: 24 }}>
           {/* Saldo à esquerda do bloco do perfil */}
           {isLogged && (
@@ -231,12 +217,12 @@ function Dashboard() {
               <span
                 style={{
                   fontWeight: 900,
-                  color: '#101820',
+                  color: '#51F693',
                   fontSize: 20,
-                  background: 'linear-gradient(90deg, #fff700 0%, #43e97b 100%)',
+                  background: 'linear-gradient(90deg,#444 0%,#232323 100%)',
                   borderRadius: 14,
                   padding: '6px 22px',
-                  boxShadow: '0 2px 16px 0 #fff70055, 0 0 0 2px #43e97b55',
+                  boxShadow: '0 2px 8px #222, 0 0 0 2px 	#ffffff',
                   minWidth: 100,
                   textAlign: 'center',
                   height: 42,
@@ -244,13 +230,13 @@ function Dashboard() {
                   alignItems: 'center',
                   marginRight: 16,
                   letterSpacing: 1,
-                  fontFamily: 'Montserrat, Arial, sans-serif',
+                  fontFamily: "Poppins",
                   border: 'none',
                   outline: 'none',
                   transition: 'box-shadow 0.25s, filter 0.25s, background 0.25s',
                   filter: 'brightness(1)',
                   cursor: 'pointer',
-                  textShadow: '0 1px 8px #fff70088, 0 0px 2px #43e97b55',
+                  textShadow: '0 1px 8px #222, 0 0px 2px 	#ffffff',
                 }}
                 title={`R$ ${user.balance?.toFixed(2) ?? '0,00'}`}
                 onClick={() => setPopupOpen(true)}
@@ -266,11 +252,11 @@ function Dashboard() {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                background: 'linear-gradient(90deg, #fff700 0%, #43e97b 100%)',
+                background: 'linear-gradient(90deg,#232323 0%,#444 100%)',
                 borderRadius: 14,
                 marginRight: 16,
                 fontWeight: 900,
-                color: '#101820',
+                color: '#232323',
                 fontSize: 20,
                 opacity: 0.7
               }}>
@@ -289,9 +275,9 @@ function Dashboard() {
                   height: 48,
                   cursor: 'pointer',
                   borderRadius: 24,
-                  background: showProfileMenu ? 'linear-gradient(90deg, #fff700cc 0%, #00ff8599 100%)' : 'rgba(16,24,32,0.85)',
-                  boxShadow: showProfileMenu ? '0 0 0 2px #00ff85, 0 4px 16px #00ff8577' : '0 2px 8px #00ff8577',
-                  border: showProfileMenu ? '2px solid #fff700' : '2px solid #101820',
+                  background: showProfileMenu ? '#444' : '#232323',
+                  boxShadow: showProfileMenu ? '0 0 0 2px #888, 0 4px 16px #222' : '0 2px 8px #222',
+                  border: showProfileMenu ? '2px solid #888' : '2px solid #232323',
                   padding: '2px 18px 2px 12px',
                   transition: 'background 0.25s, box-shadow 0.25s, border 0.25s',
                   gap: 10,
@@ -306,15 +292,15 @@ function Dashboard() {
                 <img
                   src={user.avatar_url ? `http://localhost:8080${user.avatar_url}` : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.username)}`}
                   alt="avatar"
-                  style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', background: '#fff700', boxShadow: '0 0 8px #fff70055', border: 'none' }}
+                  style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', background: '#bbb', boxShadow: '0 0 8px #222', border: 'none' }}
                 />
                 <span
-                  style={{ fontWeight: 700, color: '#fff', fontSize: 18, maxWidth: 140, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', textShadow: '0 1px 8px #43e97b88' }}
+                  style={{ fontWeight: 700, color: '#e0e0e0', fontSize: 18, maxWidth: 140, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', textShadow: '0 1px 8px #222' }}
                   title={user.username}
                 >
                   {user.username}
                 </span>
-                <span style={{ fontSize: 20, color: '#43e97b', marginLeft: 2, display: 'flex', alignItems: 'center', textShadow: '0 1px 8px #fff70088' }}>
+                <span style={{ fontSize: 20, color: '#bbb', marginLeft: 2, display: 'flex', alignItems: 'center', textShadow: '0 1px 8px #222' }}>
                   {showProfileMenu ? '▲' : '▼'}
                 </span>
                 {showProfileMenu && (
@@ -322,11 +308,11 @@ function Dashboard() {
                     position: 'absolute',
                     top: 48,
                     right: 0,
-                    background: 'rgba(16,24,32,0.98)',
-                    color: '#fff',
-                    border: '2px solid #00ff85',
+                    background: '#232323',
+                    color: '#e0e0e0',
+                    border: '2px solid #444',
                     borderRadius: 18,
-                    boxShadow: '0 8px 32px 0 #00ff8577, 0 1.5px 0 #fff700',
+                    boxShadow: '0 8px 32px 0 #222, 0 1.5px 0 #444',
                     minWidth: 180,
                     padding: 0,
                     zIndex: 1000,
@@ -347,16 +333,16 @@ function Dashboard() {
                         textAlign: 'left',
                         cursor: 'pointer',
                         fontSize: 17,
-                        color: '#fff',
+                        color: '#e0e0e0',
                         transition: 'background 0.18s, color 0.18s, transform 0.18s',
                         fontWeight: 600,
                       }}
                       title="Ver seu perfil"
-                      onMouseOver={e => { e.currentTarget.style.background = '#0a2e12'; e.currentTarget.style.transform = 'scale(1.04)'; }}
+                      onMouseOver={e => { e.currentTarget.style.background = '#333'; e.currentTarget.style.transform = 'scale(1.04)'; }}
                       onMouseOut={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.transform = 'none'; }}
                       onClick={e => { e.stopPropagation(); setShowProfileMenu(false); navigate('/perfil'); }}
                     >Perfil</button>
-                    <hr style={{ margin: 0, border: 'none', borderTop: '1px solid #43e97b55' }} />
+                    <hr style={{ margin: 0, border: 'none', borderTop: '1px solid #444' }} />
                     <button
                       style={{
                         width: '100%',
@@ -366,16 +352,16 @@ function Dashboard() {
                         textAlign: 'left',
                         cursor: 'pointer',
                         fontSize: 17,
-                        color: '#fff',
+                        color: '#e0e0e0',
                         transition: 'background 0.18s, color 0.18s, transform 0.18s',
                         fontWeight: 600,
                       }}
                       title="Gerenciar sua conta"
-                      onMouseOver={e => { e.currentTarget.style.background = '#0a2e12'; e.currentTarget.style.transform = 'scale(1.04)'; }}
+                      onMouseOver={e => { e.currentTarget.style.background = '#333'; e.currentTarget.style.transform = 'scale(1.04)'; }}
                       onMouseOut={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.transform = 'none'; }}
                       onClick={e => { e.stopPropagation(); setShowProfileMenu(false); navigate('/conta'); }}
                     >Conta</button>
-                    <hr style={{ margin: 0, border: 'none', borderTop: '1px solid #43e97b55' }} />
+                    <hr style={{ margin: 0, border: 'none', borderTop: '1px solid #444' }} />
                     <button
                       style={{
                         width: '100%',
@@ -385,16 +371,16 @@ function Dashboard() {
                         textAlign: 'left',
                         cursor: 'pointer',
                         fontSize: 17,
-                        color: '#fff',
+                        color: '#e0e0e0',
                         transition: 'background 0.18s, color 0.18s, transform 0.18s',
                         fontWeight: 600,
                       }}
                       title="Ver ranking dos jogadores"
-                      onMouseOver={e => { e.currentTarget.style.background = '#0a2e12'; e.currentTarget.style.transform = 'scale(1.04)'; }}
+                      onMouseOver={e => { e.currentTarget.style.background = '#333'; e.currentTarget.style.transform = 'scale(1.04)'; }}
                       onMouseOut={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.transform = 'none'; }}
                       onClick={e => { e.stopPropagation(); setShowProfileMenu(false); navigate('/ranking'); }}
                     >Ranking</button>
-                    <hr style={{ margin: 0, border: 'none', borderTop: '1px solid #43e97b55' }} />
+                    <hr style={{ margin: 0, border: 'none', borderTop: '1px solid #444' }} />
                     <button
                       style={{
                         width: '100%',
@@ -409,7 +395,7 @@ function Dashboard() {
                         transition: 'background 0.18s, color 0.18s, transform 0.18s',
                       }}
                       title="Sair da sua conta"
-                      onMouseOver={e => { e.currentTarget.style.background = '#2e0a0a'; e.currentTarget.style.transform = 'scale(1.04)'; }}
+                      onMouseOver={e => { e.currentTarget.style.background = '#222'; e.currentTarget.style.transform = 'scale(1.04)'; }}
                       onMouseOut={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.transform = 'none'; }}
                       onClick={e => {
                         e.stopPropagation();
@@ -426,17 +412,17 @@ function Dashboard() {
                 width: 48,
                 height: 48,
                 borderRadius: 24,
-                background: 'rgba(16,24,32,0.85)',
+                background: '#232323',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                boxShadow: '0 2px 8px #00ff8577',
-                border: '2px solid #101820',
+                boxShadow: '0 2px 8px #222',
+                border: '2px solid #232323',
                 marginRight: 0,
                 marginLeft: 0,
                 opacity: 0.7
               }}>
-                <span style={{ fontSize: 28, color: '#fff700' }}>...</span>
+                <span style={{ fontSize: 28, color: '#bbb' }}>...</span>
               </div>
             )
           )}
@@ -449,19 +435,19 @@ function Dashboard() {
             onClick={handlePrev}
             style={{
               fontSize: 36,
-              background: 'linear-gradient(90deg, #fff700 0%, #00ff85 100%)',
+              background: 'linear-gradient(90deg, #444 0%, #232323 100%)',
               border: 'none',
               cursor: 'pointer',
               padding: 18,
               borderRadius: 18,
-              boxShadow: '0 2px 8px #00ff8577',
+              boxShadow: '0 2px 8px #222',
               transition: 'background 0.2s, box-shadow 0.2s',
-              color: '#101820',
+              color: '#e0e0e0',
               fontWeight: 900,
             }}
             aria-label="Anterior"
-            onMouseOver={e => e.currentTarget.style.background = 'linear-gradient(90deg, #00ff85 0%, #fff700 100%)'}
-            onMouseOut={e => e.currentTarget.style.background = 'linear-gradient(90deg, #fff700 0%, #00ff85 100%)'}
+            onMouseOver={e => e.currentTarget.style.background = 'linear-gradient(90deg, #232323 0%, #444 100%)'}
+            onMouseOut={e => e.currentTarget.style.background = 'linear-gradient(90deg, #444 0%, #232323 100%)'}
           >
             ◀
           </button>
@@ -475,15 +461,15 @@ function Dashboard() {
               justifyContent: 'center',
               cursor: 'pointer',
               borderRadius: '22px',
-              boxShadow: '0 4px 32px #00ff8577, 0 0 0 2px #fff70055',
-              background: 'rgba(16,24,32,0.92)',
+              boxShadow: '0 4px 32px #222, 0 0 0 2px #444',
+              background: '#232323',
               padding: 0,
               textAlign: 'center',
               transition: 'box-shadow 0.3s, transform 0.3s',
               overflow: 'hidden',
               margin: '0 10px',
               animation: 'fadein 0.5s',
-              border: '2px solid #43e97b',
+              border: '2px solid #444',
               backdropFilter: 'blur(4px)',
             }}
           >
@@ -497,7 +483,7 @@ function Dashboard() {
                 borderRadius: '22px',
                 display: 'block',
                 background: 'transparent',
-                boxShadow: '0 2px 12px #fff70055',
+                boxShadow: '0 2px 12px #222',
                 transition: 'transform 0.3s',
               }}
             />
@@ -506,19 +492,19 @@ function Dashboard() {
             onClick={handleNext}
             style={{
               fontSize: 36,
-              background: 'linear-gradient(90deg, #fff700 0%, #00ff85 100%)',
+              background: 'linear-gradient(90deg, #444 0%, #232323 100%)',
               border: 'none',
               cursor: 'pointer',
               padding: 18,
               borderRadius: 18,
-              boxShadow: '0 2px 8px #00ff8577',
+              boxShadow: '0 2px 8px #222',
               transition: 'background 0.2s, box-shadow 0.2s',
-              color: '#101820',
+              color: '#e0e0e0',
               fontWeight: 900,
             }}
             aria-label="Próximo"
-            onMouseOver={e => e.currentTarget.style.background = 'linear-gradient(90deg, #00ff85 0%, #fff700 100%)'}
-            onMouseOut={e => e.currentTarget.style.background = 'linear-gradient(90deg, #fff700 0%, #00ff85 100%)'}
+            onMouseOver={e => e.currentTarget.style.background = 'linear-gradient(90deg, #232323 0%, #444 100%)'}
+            onMouseOut={e => e.currentTarget.style.background = 'linear-gradient(90deg, #444 0%, #232323 100%)'}
           >
             ▶
           </button>
@@ -527,7 +513,10 @@ function Dashboard() {
       {/* Ranking dos Melhores Jogadores removido, só RankingPreview */}
       {currentIdx === 0 && (
         <div style={{ display: 'flex', justifyContent: 'center', width: '100%', marginTop: 48 }}>
-          <RankingPreview />
+
+
+            <RankingPreview />
+
         </div>
       )}
 

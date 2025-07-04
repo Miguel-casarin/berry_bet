@@ -72,6 +72,7 @@ function Deposito() {
             <a href="#" onClick={e => { e.preventDefault(); navigate("/"); }}>Sair</a>
           </li>
         </ul>
+        
       </header>
 
       <h1>PERCA SEU DINHEIRO AQUI!!</h1>
