@@ -59,7 +59,7 @@ func AddUserStatsHandler(c *gin.Context) {
 		TotalAmountBet: req.TotalAmountBet,
 		TotalProfit:    req.TotalProfit,
 		Balance:        req.Balance,
-		LastBetAt:      req.LastBetAt,
+		LastBetAt:      sql.NullString{String: req.LastBetAt, Valid: req.LastBetAt != ""},
 	}
 	success, err := AddUserStats(stats)
 	if err != nil {
@@ -94,7 +94,7 @@ func UpdateUserStatsHandler(c *gin.Context) {
 		TotalAmountBet: req.TotalAmountBet,
 		TotalProfit:    req.TotalProfit,
 		Balance:        req.Balance,
-		LastBetAt:      req.LastBetAt,
+		LastBetAt:      sql.NullString{String: req.LastBetAt, Valid: req.LastBetAt != ""},
 	}
 	success, err := UpdateUserStats(stats, int64(statsId))
 	if err != nil {

@@ -26,6 +26,11 @@ type UserStatsResponse struct {
 }
 
 func ToUserStatsResponse(s *UserStats) UserStatsResponse {
+	lastBetAt := ""
+	if s.LastBetAt.Valid {
+		lastBetAt = s.LastBetAt.String
+	}
+
 	return UserStatsResponse{
 		ID:             s.ID,
 		UserID:         s.UserID,
@@ -35,7 +40,7 @@ func ToUserStatsResponse(s *UserStats) UserStatsResponse {
 		TotalAmountBet: s.TotalAmountBet,
 		TotalProfit:    s.TotalProfit,
 		Balance:        s.Balance,
-		LastBetAt:      s.LastBetAt,
+		LastBetAt:      lastBetAt,
 		CreatedAt:      s.CreatedAt,
 		UpdatedAt:      s.UpdatedAt,
 	}

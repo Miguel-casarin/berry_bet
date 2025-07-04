@@ -10,17 +10,27 @@ import (
 )
 
 func GetBetValueHandler(c *gin.Context) {
+	userIDInterface, exists := c.Get("userID")
+	if !exists {
+		utils.RespondError(c, http.StatusUnauthorized, "UNAUTHORIZED", "Usuário não autenticado.", nil)
+		return
+	}
+	userID, ok := userIDInterface.(int64)
+	if !ok {
+		utils.RespondError(c, http.StatusInternalServerError, "SERVER_ERROR", "Erro ao recuperar ID do usuário.", nil)
+		return
+	}
+
 	var req RoletaBetRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		utils.RespondError(c, http.StatusBadRequest, "INVALID_INPUT", "Invalid data.", err.Error())
 		return
 	}
 
-	userID := req.UserID
 	betValue := req.BetValue
 
-	if userID <= 0 || betValue <= 0 {
-		utils.RespondError(c, http.StatusBadRequest, "INVALID_INPUT", "User ID and bet value must be greater than zero.", nil)
+	if betValue <= 0 {
+		utils.RespondError(c, http.StatusBadRequest, "INVALID_INPUT", "Bet value must be greater than zero.", nil)
 		return
 	}
 	user, err := user_stats.GetUserStatsByID(fmt.Sprintf("%d", userID))
@@ -41,14 +51,28 @@ func GetBetValueHandler(c *gin.Context) {
 }
 
 func RoletaBetHandler(c *gin.Context) {
+	userIDInterface, exists := c.Get("userID")
+	if !exists {
+		utils.RespondError(c, http.StatusUnauthorized, "UNAUTHORIZED", "Usuário não autenticado.", nil)
+		return
+	}
+	userID, ok := userIDInterface.(int64)
+	if !ok {
+		utils.RespondError(c, http.StatusInternalServerError, "SERVER_ERROR", "Erro ao recuperar ID do usuário.", nil)
+		return
+	}
+
+	fmt.Println("DEBUG userID passado para GetUserStatsByID:", userID)
+
 	var req RoletaBetRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		utils.RespondError(c, http.StatusBadRequest, "INVALID_INPUT", "Invalid data.", err.Error())
 		return
 	}
 
-	user, err := user_stats.GetUserStatsByID(fmt.Sprintf("%d", req.UserID))
+	user, err := user_stats.GetUserStatsByID(fmt.Sprintf("%d", userID))
 	if err != nil || user.ID == 0 {
+		fmt.Println("DEBUG user_stats.GetUserStatsByID erro ou user.ID == 0:", err, user)
 		utils.RespondError(c, http.StatusNotFound, "NOT_FOUND", "User not found.", nil)
 		return
 	}
@@ -58,24 +82,11 @@ func RoletaBetHandler(c *gin.Context) {
 		return
 	}
 
-	res := ExecutaRoleta(req.UserID, req.BetValue)
+	res := ExecutaRoleta(userID, req.BetValue)
 
 	if res == nil {
 		utils.RespondError(c, http.StatusInternalServerError, "GAME_ERROR", "Failed to execute roleta game.", nil)
 		return
-	}
-
-	type RoletaResult struct {
-		cartinha_sorteada string
-		lucro             int
-	}
-
-	type RoletaBetResponse struct {
-		Result         string  `json:"result"`
-		WinAmount      float64 `json:"win_amount"`
-		Card           string  `json:"card"`
-		CurrentBalance float64 `json:"current_balance"`
-		Message        string  `json:"message"`
 	}
 
 	roletaRes, ok := res.(RoletaResult)
@@ -84,13 +95,13 @@ func RoletaBetHandler(c *gin.Context) {
 		return
 	}
 
-	if roletaRes.cartinha_sorteada != "perca" {
+	if roletaRes.CartinhaSorteada != "perca" {
 		user.TotalBets += 1
 		user.TotalWins += 1
 		user.TotalAmountBet += req.BetValue
-		user.TotalProfit += float64(roletaRes.lucro)
-		user.Balance += float64(roletaRes.lucro) // lucro
-		user.Balance += req.BetValue             //
+		user.TotalProfit += roletaRes.Lucro
+		user.Balance += roletaRes.Lucro // lucro
+		user.Balance += req.BetValue    //
 
 		// Persistir no banco
 		_, err := user_stats.UpdateUserStats(user, user.ID)
@@ -101,8 +112,8 @@ func RoletaBetHandler(c *gin.Context) {
 
 		resp := RoletaBetResponse{
 			Result:         "win",
-			WinAmount:      float64(roletaRes.lucro) + req.BetValue,
-			Card:           roletaRes.cartinha_sorteada, // ajuste tipo se for matriz
+			WinAmount:      roletaRes.Lucro + req.BetValue,
+			Card:           roletaRes.CartinhaSorteada,
 			CurrentBalance: user.Balance,
 			Message:        "Parabéns, você ganhou!",
 		}
@@ -123,7 +134,7 @@ func RoletaBetHandler(c *gin.Context) {
 		resp := RoletaBetResponse{
 			Result:         "lose",
 			WinAmount:      0,
-			Card:           roletaRes.cartinha_sorteada,
+			Card:           roletaRes.CartinhaSorteada,
 			CurrentBalance: user.Balance,
 			Message:        "Que pena, você perdeu.",
 		}
@@ -131,5 +142,3 @@ func RoletaBetHandler(c *gin.Context) {
 		return
 	}
 }
-
-

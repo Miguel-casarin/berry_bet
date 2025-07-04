@@ -58,23 +58,24 @@ function jogodoTigrinho() {
     setIsSpinning(true);
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch('http://localhost:8080/api/v1/roleta/bet', {
+      const res = await fetch('http://localhost:8080/api/v1/roleta/apostar', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`
         },
-        body: JSON.stringify({ amount: Number(valorAposta) })
+        body: JSON.stringify({ valor_aposta: Number(valorApostaConfirmado) })
       });
       const data = await res.json();
       if (!res.ok) {
-        setResult(data.message || 'Erro na aposta');
+        setResult(data.message || data.mensagem || 'Erro na aposta');
         setIsSpinning(false);
         return;
       }
-      setResultadoAposta(data.data);
-      setUserBalance(data.data.balance);
-      setResult(data.data.result === 'win' ? `🎉 Vitória! Você ganhou R$ ${data.data.amount_won.toFixed(2)} (Odd: ${data.data.odd.toFixed(2)}) - Carta: ${data.data.tipo_cartinha}` : '😢 Derrota!');
+      setResultadoAposta(data);
+      setUserBalance(data.saldo_atual || data.current_balance);
+      setGrid(data.cartinha || createEmptyGrid());
+      setResult(data.mensagem || data.message || (data.result === 'win' ? '🎉 Vitória!' : '😢 Derrota!'));
     } catch (err) {
       setResult('Erro ao apostar.');
     }
@@ -189,12 +190,12 @@ function jogodoTigrinho() {
                   <button className={`botao-pagamento${selecionado === "carn" ? " selecionado" : ""}`} value="carn" onClick={() => setSelecionado("carn")}>Carnê</button>
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{marginLeft: 16}}>
+                  <div style={{ marginLeft: 16 }}>
                     {selecionado ? (
                       <>
                         {textos[selecionado]}
-                        <div style={{margin: '16px 0'}}>
-                          <div style={{display: 'flex', gap: 8, marginBottom: 8}}>
+                        <div style={{ margin: '16px 0' }}>
+                          <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
                             {valoresRapidos.map(v => (
                               <button key={v} className="popup-btn popup-btn-secondary" type="button" onClick={() => handleValorRapido(v)}>
                                 +{v}
@@ -206,7 +207,7 @@ function jogodoTigrinho() {
                             placeholder="Valor do depósito"
                             value={valorDeposito}
                             onChange={handleInputChange}
-                            style={{width: '100%', padding: 8, borderRadius: 4, border: '1px solid #ccc'}}
+                            style={{ width: '100%', padding: 8, borderRadius: 4, border: '1px solid #ccc' }}
                           />
                         </div>
                       </>
@@ -266,13 +267,15 @@ function jogodoTigrinho() {
         <div className='result'>{result}</div>
         {resultadoAposta && (
           <div style={{ marginTop: 16, fontWeight: 'bold' }}>
-            Resultado: {resultadoAposta.result === 'win' ? 'Vitória' : 'Derrota'}<br />
-            {resultadoAposta.result === 'win' && (
-              <>
-                Valor ganho: R$ {resultadoAposta.amount_won.toFixed(2)}<br />
-                Odd: {resultadoAposta.odd.toFixed(2)}<br />
-                Carta: {resultadoAposta.tipo_cartinha}
-              </>
+            Resultado: {resultadoAposta.result === 'win' || resultadoAposta.result === 'vitoria' ? 'Vitória' : 'Derrota'}<br />
+            {resultadoAposta.win_amount !== undefined && (
+              <>Valor ganho: R$ {resultadoAposta.win_amount.toFixed(2)}<br /></>
+            )}
+            {resultadoAposta.cartinha && (
+              <>Cartinha: {JSON.stringify(resultadoAposta.cartinha)}<br /></>
+            )}
+            {resultadoAposta.mensagem && (
+              <>{resultadoAposta.mensagem}<br /></>
             )}
           </div>
         )}

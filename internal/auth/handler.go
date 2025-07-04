@@ -33,7 +33,7 @@ func LoginHandler(c *gin.Context) {
 		return
 	}
 
-	token, err := GenerateJWT(user.Username)
+	token, err := GenerateJWT(user.ID, user.Username)
 	if err != nil {
 		utils.RespondError(c, http.StatusInternalServerError, "JWT_ERROR", "Could not generate token.", err.Error())
 		return
@@ -92,6 +92,7 @@ func JWTAuthMiddleware() gin.HandlerFunc {
 			c.Abort()
 			return
 		}
+		c.Set("userID", claims.UserID)
 		c.Set("username", claims.Username)
 		c.Next()
 	}

@@ -7,6 +7,13 @@ import (
 	"strconv"
 )
 
+// Resultado padronizado da roleta para uso no handler e na lógica
+// Use sempre este tipo!
+type RoletaResult struct {
+	CartinhaSorteada string
+	Lucro            float64
+}
+
 // Conagem de ganhos e percas
 func Update_wins_losses(userID int64, ganhou bool) int {
 	stats, err := user_stats.GetUserStatsByID(strconv.FormatInt(userID, 10))
@@ -81,7 +88,6 @@ func UpdateUserTotalBets(userID int64, totalBets int64) error {
 	_, err = stmt.Exec(totalBets, userID)
 	return err
 }
-
 
 // Atualiza o lucro do usuário
 func UpdateUserTotalProfit(userID int64, totalProfit float64) error {
@@ -211,11 +217,22 @@ func ExecutaRoleta(userID int64, valor_aposta float64) interface{} {
 
 	if stats.TotalBets < 3 {
 		// Executa Start
-		resultado := Start(userID, valor_aposta)
-		return resultado
+		valor := Start(userID, valor_aposta)
+		// Para as primeiras rodadas, considere como "win" fictício
+		return RoletaResult{
+			CartinhaSorteada: "win_start",
+			Lucro:            valor, // ou 0, se preferir
+		}
 	} else {
 		// Executa Final
 		resultado := Final(userID, valor_aposta)
-		return resultado
+		cartinha := "perca"
+		if resultado.cartinha_sorteada != nil {
+			cartinha = string(*resultado.cartinha_sorteada)
+		}
+		return RoletaResult{
+			CartinhaSorteada: cartinha,
+			Lucro:            resultado.lucro,
+		}
 	}
 }

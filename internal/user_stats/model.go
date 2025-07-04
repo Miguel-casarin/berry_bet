@@ -2,21 +2,22 @@ package user_stats
 
 import (
 	"berry_bet/config"
+	"database/sql"
 	"errors"
 )
 
 type UserStats struct {
-	ID             int64   `json:"id"`
-	UserID         int64   `json:"user_id"`
-	TotalBets      int64   `json:"total_bets"`
-	TotalWins      int64   `json:"total_wins"`
-	TotalLosses    int64   `json:"total_losses"`
-	TotalAmountBet float64 `json:"total_amount_bet"`
-	TotalProfit    float64 `json:"total_profit"`
-	Balance        float64 `json:"balance"`
-	LastBetAt      string  `json:"last_bet_at"`
-	CreatedAt      string  `json:"created_at"`
-	UpdatedAt      string  `json:"updated_at"`
+	ID             int64          `json:"id"`
+	UserID         int64          `json:"user_id"`
+	TotalBets      int64          `json:"total_bets"`
+	TotalWins      int64          `json:"total_wins"`
+	TotalLosses    int64          `json:"total_losses"`
+	TotalAmountBet float64        `json:"total_amount_bet"`
+	TotalProfit    float64        `json:"total_profit"`
+	Balance        float64        `json:"balance"`
+	LastBetAt      sql.NullString `json:"last_bet_at"`
+	CreatedAt      string         `json:"created_at"`
+	UpdatedAt      string         `json:"updated_at"`
 }
 
 func GetUserStats(count int) ([]UserStats, error) {
@@ -38,7 +39,7 @@ func GetUserStats(count int) ([]UserStats, error) {
 }
 
 func GetUserStatsByID(id string) (UserStats, error) {
-	stmt, err := config.DB.Prepare("SELECT id, user_id, total_bets, total_wins, total_losses, total_amount_bet, total_profit, balance, last_bet_at, created_at, updated_at FROM user_stats WHERE id = ?")
+	stmt, err := config.DB.Prepare("SELECT id, user_id, total_bets, total_wins, total_losses, total_amount_bet, total_profit, balance, last_bet_at, created_at, updated_at FROM user_stats WHERE user_id = ?")
 	if err != nil {
 		return UserStats{}, err
 	}
