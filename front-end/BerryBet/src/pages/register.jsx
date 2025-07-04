@@ -2,13 +2,17 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 function Register() {
-  const [form, setForm] = useState({ username: '', email: '', password: '', cpf: '', phone: '' });
+  const [form, setForm] = useState({ username: '', email: '', password: '123456', cpf: '', phone: '' });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const navigate = useNavigate();
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    if (e.target.name === 'password') {
+      setForm({ ...form, password: '123456' });
+    } else {
+      setForm({ ...form, [e.target.name]: e.target.value });
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -36,7 +40,7 @@ function Register() {
       <form onSubmit={handleSubmit}>
         <input name="username" placeholder="Usuário" value={form.username} onChange={handleChange} required style={{ width: '100%', marginBottom: 8 }} />
         <input name="email" placeholder="Email" value={form.email} onChange={handleChange} required style={{ width: '100%', marginBottom: 8 }} />
-        <input name="password" type="password" placeholder="Senha" value={form.password} onChange={handleChange} required style={{ width: '100%', marginBottom: 8 }} />
+        <input name="password" type="password" placeholder="Senha" value={form.password} readOnly required style={{ width: '100%', marginBottom: 8, background: '#f5f5f5', color: '#888' }} />
         <input name="cpf" placeholder="CPF" value={form.cpf} onChange={handleChange} required style={{ width: '100%', marginBottom: 8 }} />
         <input name="phone" placeholder="Telefone (opcional)" value={form.phone} onChange={handleChange} style={{ width: '100%', marginBottom: 8 }} />
         <button type="submit" style={{ width: '100%', padding: 8 }}>Registrar</button>
