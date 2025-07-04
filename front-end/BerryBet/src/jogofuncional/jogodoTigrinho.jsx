@@ -132,17 +132,50 @@ function jogodoTigrinho() {
       // Para vitória, mostra um padrão com a carta vencedora
       const grid = Array(3).fill(0).map(() => Array(3).fill(0));
       
-      // Coloca a carta vencedora em posições específicas para formar um padrão
-      if (card === 'master') {
-        // Padrão especial para master (linha diagonal)
-        grid[0][0] = cardId;
-        grid[1][1] = cardId;
-        grid[2][2] = cardId;
-      } else {
-        // Padrão de linha para outras cartas
-        grid[1][0] = cardId;
-        grid[1][1] = cardId;
-        grid[1][2] = cardId;
+      // Escolhe aleatoriamente um tipo de padrão vencedor
+      const patterns = [
+        'horizontal-top',    // linha superior
+        'horizontal-middle', // linha do meio
+        'horizontal-bottom', // linha inferior
+        'vertical-left',     // coluna esquerda
+        'vertical-middle',   // coluna do meio
+        'vertical-right'     // coluna direita
+      ];
+      
+      const selectedPattern = patterns[Math.floor(Math.random() * patterns.length)];
+      
+      // Aplica o padrão selecionado
+      switch (selectedPattern) {
+        case 'horizontal-top':
+          grid[0][0] = cardId;
+          grid[0][1] = cardId;
+          grid[0][2] = cardId;
+          break;
+        case 'horizontal-middle':
+          grid[1][0] = cardId;
+          grid[1][1] = cardId;
+          grid[1][2] = cardId;
+          break;
+        case 'horizontal-bottom':
+          grid[2][0] = cardId;
+          grid[2][1] = cardId;
+          grid[2][2] = cardId;
+          break;
+        case 'vertical-left':
+          grid[0][0] = cardId;
+          grid[1][0] = cardId;
+          grid[2][0] = cardId;
+          break;
+        case 'vertical-middle':
+          grid[0][1] = cardId;
+          grid[1][1] = cardId;
+          grid[2][1] = cardId;
+          break;
+        case 'vertical-right':
+          grid[0][2] = cardId;
+          grid[1][2] = cardId;
+          grid[2][2] = cardId;
+          break;
       }
       
       // Preenche o resto com imagens aleatórias
