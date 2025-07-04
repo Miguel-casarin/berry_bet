@@ -1,6 +1,7 @@
 package transactions
 
 import (
+	"berry_bet/internal/common"
 	"berry_bet/internal/utils"
 	"net/http"
 	"strconv"
@@ -125,7 +126,57 @@ func DeleteTransactionHandler(c *gin.Context) {
 	}
 }
 
-// OptionsHandler handles preflight requests.
+// GetMeTransactionsHandler returns transactions for the authenticated user
+func GetMeTransactionsHandler(c *gin.Context) {
+	username, exists := c.Get("username")
+	if !exists {
+		utils.RespondError(c, http.StatusUnauthorized, "NO_AUTH", "User not authenticated.", nil)
+		return
+	}
+
+	// Get user ID from username
+	userCommon, err := common.GetUserByUsername(username.(string))
+	if err != nil {
+		utils.RespondError(c, http.StatusInternalServerError, "DB_ERROR", "Failed to fetch user.", err.Error())
+		return
+	}
+	if userCommon == nil {
+		utils.RespondError(c, http.StatusNotFound, "NOT_FOUND", "User not found.", nil)
+		return
+	}
+
+	// Get pagination parameters
+	page := 1
+	limit := 20
+	if pageStr := c.Query("page"); pageStr != "" {
+		if p, err := strconv.Atoi(pageStr); err == nil && p > 0 {
+			page = p
+		}
+	}
+	if limitStr := c.Query("limit"); limitStr != "" {
+		if l, err := strconv.Atoi(limitStr); err == nil && l > 0 && l <= 100 {
+			limit = l
+		}
+	}
+
+	// Get filter parameters
+	typeFilter := c.Query("type") // Filtro por tipo de transação
+
+	transactions, err := GetTransactionsByUserIDWithFilter(userCommon.ID, page, limit, typeFilter)
+	if err != nil {
+		utils.RespondError(c, http.StatusInternalServerError, "DB_ERROR", "Failed to fetch transactions.", err.Error())
+		return
+	}
+
+	responses := make([]TransactionResponse, 0, len(transactions))
+	for _, t := range transactions {
+		responses = append(responses, ToTransactionResponse(&t))
+	}
+
+	utils.RespondSuccess(c, responses, "Transactions found")
+}
+
+// OptionsHandler handles preflight requests for transactions
 func OptionsHandler(c *gin.Context) {
 	ourOptions := "HTTP/1.1 200 OK\n" +
 		"Allow: GET, POST, PUT, DELETE, OPTIONS\n" +

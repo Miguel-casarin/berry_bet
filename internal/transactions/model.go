@@ -46,6 +46,78 @@ func GetTransactionByID(id string) (Transaction, error) {
 	return t, nil
 }
 
+// GetTransactionsByUserIDWithFilter returns transactions for a specific user with pagination and type filter
+func GetTransactionsByUserIDWithFilter(userID int64, page, limit int, typeFilter string) ([]Transaction, error) {
+	offset := (page - 1) * limit
+
+	var query string
+	var args []interface{}
+
+	if typeFilter != "" {
+		query = `
+			SELECT id, user_id, type, amount, description, created_at 
+			FROM transactions 
+			WHERE user_id = ? AND type = ?
+			ORDER BY created_at DESC 
+			LIMIT ? OFFSET ?`
+		args = []interface{}{userID, typeFilter, limit, offset}
+	} else {
+		query = `
+			SELECT id, user_id, type, amount, description, created_at 
+			FROM transactions 
+			WHERE user_id = ? 
+			ORDER BY created_at DESC 
+			LIMIT ? OFFSET ?`
+		args = []interface{}{userID, limit, offset}
+	}
+
+	rows, err := config.DB.Query(query, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	transactions := make([]Transaction, 0)
+	for rows.Next() {
+		var t Transaction
+		err := rows.Scan(&t.ID, &t.UserID, &t.Type, &t.Amount, &t.Description, &t.CreatedAt)
+		if err != nil {
+			return nil, err
+		}
+		transactions = append(transactions, t)
+	}
+	return transactions, nil
+}
+
+// GetTransactionsByUserID returns transactions for a specific user with pagination
+func GetTransactionsByUserID(userID int64, page, limit int) ([]Transaction, error) {
+	offset := (page - 1) * limit
+
+	rows, err := config.DB.Query(`
+		SELECT id, user_id, type, amount, description, created_at 
+		FROM transactions 
+		WHERE user_id = ? 
+		ORDER BY created_at DESC 
+		LIMIT ? OFFSET ?`,
+		userID, limit, offset)
+
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	transactions := make([]Transaction, 0)
+	for rows.Next() {
+		var t Transaction
+		err := rows.Scan(&t.ID, &t.UserID, &t.Type, &t.Amount, &t.Description, &t.CreatedAt)
+		if err != nil {
+			return nil, err
+		}
+		transactions = append(transactions, t)
+	}
+	return transactions, nil
+}
+
 // AddTransaction adiciona uma nova transação ao banco de dados após validação dos dados.
 func AddTransaction(newT Transaction) (bool, error) {
 	if newT.UserID <= 0 {
@@ -104,33 +176,6 @@ func DeleteTransaction(transactionId int) (bool, error) {
 		return false, err
 	}
 	return true, nil
-}
-
-// GetTransactionsByUserID busca transações de um usuário específico
-func GetTransactionsByUserID(userID int64, limit int) ([]Transaction, error) {
-	rows, err := config.DB.Query(`
-		SELECT id, user_id, type, amount, description, created_at 
-		FROM transactions 
-		WHERE user_id = ? 
-		ORDER BY created_at DESC 
-		LIMIT ?`, userID, limit)
-
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	transactions := make([]Transaction, 0)
-	for rows.Next() {
-		var t Transaction
-		err := rows.Scan(&t.ID, &t.UserID, &t.Type, &t.Amount, &t.Description, &t.CreatedAt)
-		if err != nil {
-			return nil, err
-		}
-		transactions = append(transactions, t)
-	}
-
-	return transactions, rows.Err()
 }
 
 // GetTransactionsByType busca transações por tipo

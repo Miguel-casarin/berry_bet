@@ -20,6 +20,11 @@ function Conta() {
     const [newPasswordField, setNewPasswordField] = useState('');
     const [confirmNewPassword, setConfirmNewPassword] = useState('');
     const [passwordChangeMsg, setPasswordChangeMsg] = useState('');
+    const [activeTab, setActiveTab] = useState('profile'); // 'profile' ou 'transactions'
+    const [transactions, setTransactions] = useState([]);
+    const [transactionsLoading, setTransactionsLoading] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [typeFilter, setTypeFilter] = useState(''); // Filtro por tipo
     const navigate = useNavigate();
 
     const formatDateForInput = (dateString) => {
@@ -57,6 +62,78 @@ function Conta() {
         } catch (e) {
             return '';
         }
+    };
+
+    const fetchTransactions = async (page = 1, filter = typeFilter) => {
+        setTransactionsLoading(true);
+        const token = localStorage.getItem('token');
+        try {
+            let url = `http://localhost:8080/api/transactions/me?page=${page}&limit=20`;
+            if (filter) {
+                url += `&type=${encodeURIComponent(filter)}`;
+            }
+            
+            const res = await fetch(url, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            if (res.status === 401) {
+                localStorage.removeItem('token');
+                navigate('/', { replace: true });
+                return;
+            }
+            if (!res.ok) throw new Error('Erro ao buscar transações');
+            const data = await res.json();
+            setTransactions(data.data || []);
+            setCurrentPage(page);
+        } catch (err) {
+            console.error('Erro ao buscar transações:', err);
+        } finally {
+            setTransactionsLoading(false);
+        }
+    };
+
+    const handleFilterChange = (newFilter) => {
+        setTypeFilter(newFilter);
+        setCurrentPage(1);
+        fetchTransactions(1, newFilter);
+    };
+
+    const formatDate = (dateString) => {
+        try {
+            return new Date(dateString).toLocaleString('pt-BR');
+        } catch (e) {
+            return dateString;
+        }
+    };
+
+    const formatAmount = (amount) => {
+        return new Intl.NumberFormat('pt-BR', {
+            style: 'currency',
+            currency: 'BRL'
+        }).format(Math.abs(amount));
+    };
+
+    const getTransactionTypeLabel = (type) => {
+        const types = {
+            'bet': 'Aposta',
+            'win': 'Ganho',
+            'deposit': 'Depósito',
+            'withdrawal': 'Saque',
+            'bonus': 'Bônus'
+        };
+        return types[type] || type;
+    };
+
+    const getTransactionColor = (type, amount) => {
+        const typeColors = {
+            'bet': '#ff6b6b',      // Vermelho para apostas
+            'win': '#43e97b',      // Verde para ganhos
+            'deposit': '#4ecdc4',  // Azul-verde para depósitos
+            'withdrawal': '#ffa726', // Laranja para saques
+            'bonus': '#9c27b0'     // Roxo para bônus
+        };
+        
+        return typeColors[type] || (amount > 0 ? '#43e97b' : '#ff6b6b');
     };
 
     useEffect(() => {
@@ -326,6 +403,49 @@ function Conta() {
                 </section>
                 {/* Formulário principal */}
                 <section style={{ flex: 1, minWidth: 340, maxWidth: 600, background: 'rgba(16,24,32,0.98)', borderRadius: 20, boxShadow: '0 4px 32px #00ff8577, 0 0 0 2px #fff70055', border: '2px solid #43e97b', padding: '36px 32px 32px 32px', display: 'flex', flexDirection: 'column', gap: 0, position: 'relative', color: '#fff', backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)' }}>
+                    {/* Abas */}
+                    <div style={{ display: 'flex', marginBottom: 24, borderBottom: '1px solid #43e97b' }}>
+                        <button
+                            onClick={() => setActiveTab('profile')}
+                            style={{
+                                padding: '12px 24px',
+                                background: activeTab === 'profile' ? '#43e97b' : 'transparent',
+                                color: activeTab === 'profile' ? '#000' : '#fff',
+                                border: 'none',
+                                borderRadius: '10px 10px 0 0',
+                                cursor: 'pointer',
+                                fontWeight: 700,
+                                fontSize: 16,
+                                transition: 'all 0.2s'
+                            }}
+                        >
+                            Perfil
+                        </button>
+                        <button
+                            onClick={() => {
+                                setActiveTab('transactions');
+                                if (transactions.length === 0) {
+                                    fetchTransactions(1);
+                                }
+                            }}
+                            style={{
+                                padding: '12px 24px',
+                                background: activeTab === 'transactions' ? '#43e97b' : 'transparent',
+                                color: activeTab === 'transactions' ? '#000' : '#fff',
+                                border: 'none',
+                                borderRadius: '10px 10px 0 0',
+                                cursor: 'pointer',
+                                fontWeight: 700,
+                                fontSize: 16,
+                                transition: 'all 0.2s'
+                            }}
+                        >
+                            Histórico
+                        </button>
+                    </div>
+                    
+                    {/* Conteúdo baseado na aba ativa */}
+                    {activeTab === 'profile' && (
                     <form onSubmit={e => e.preventDefault()} style={{ width: '100%', marginTop: 0 }}>
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, marginBottom: 24 }}>
                             <div>
@@ -412,6 +532,294 @@ function Conta() {
                             </button>
                         </div>
                     </form>
+                    )}
+
+                    {/* Aba de Histórico de Transações */}
+                    {activeTab === 'transactions' && (
+                        <div style={{ width: '100%' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+                                <h3 style={{ color: '#fff', margin: 0, fontSize: 20, fontWeight: 700 }}>Histórico de Transações</h3>
+                                {typeFilter && (
+                                    <div style={{ 
+                                        fontSize: 12, 
+                                        color: '#43e97b', 
+                                        background: '#43e97b22', 
+                                        padding: '4px 8px', 
+                                        borderRadius: '12px',
+                                        border: '1px solid #43e97b33'
+                                    }}>
+                                        Filtro: {getTransactionTypeLabel(typeFilter)}
+                                    </div>
+                                )}
+                            </div>
+                            
+                            {/* Filtros */}
+                            <div style={{ marginBottom: 20, display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+                                <label style={{ color: '#fff', fontSize: 14, fontWeight: 600 }}>Filtrar por tipo:</label>
+                                <select
+                                    value={typeFilter}
+                                    onChange={(e) => handleFilterChange(e.target.value)}
+                                    style={{
+                                        padding: '8px 12px',
+                                        borderRadius: '6px',
+                                        border: '1px solid #43e97b',
+                                        background: '#23272b',
+                                        color: '#fff',
+                                        fontSize: 14,
+                                        cursor: 'pointer'
+                                    }}
+                                >
+                                    <option value="">Todos os tipos</option>
+                                    <option value="bet">Apostas</option>
+                                    <option value="win">Ganhos</option>
+                                    <option value="deposit">Depósitos</option>
+                                    <option value="withdrawal">Saques</option>
+                                    <option value="bonus">Bônus</option>
+                                </select>
+                                
+                                {/* Botões de filtro rápido */}
+                                <div style={{ display: 'flex', gap: 8, marginLeft: 12 }}>
+                                    <button
+                                        onClick={() => handleFilterChange('')}
+                                        style={{
+                                            padding: '6px 12px',
+                                            borderRadius: '20px',
+                                            border: typeFilter === '' ? '2px solid #43e97b' : '1px solid #555',
+                                            background: typeFilter === '' ? '#43e97b22' : 'transparent',
+                                            color: typeFilter === '' ? '#43e97b' : '#aaa',
+                                            fontSize: 12,
+                                            cursor: 'pointer',
+                                            fontWeight: 600,
+                                            transition: 'all 0.2s'
+                                        }}
+                                    >
+                                        Todos
+                                    </button>
+                                    <button
+                                        onClick={() => handleFilterChange('bet')}
+                                        style={{
+                                            padding: '6px 12px',
+                                            borderRadius: '20px',
+                                            border: typeFilter === 'bet' ? '2px solid #ff6b6b' : '1px solid #555',
+                                            background: typeFilter === 'bet' ? '#ff6b6b22' : 'transparent',
+                                            color: typeFilter === 'bet' ? '#ff6b6b' : '#aaa',
+                                            fontSize: 12,
+                                            cursor: 'pointer',
+                                            fontWeight: 600,
+                                            transition: 'all 0.2s'
+                                        }}
+                                    >
+                                        Apostas
+                                    </button>
+                                    <button
+                                        onClick={() => handleFilterChange('win')}
+                                        style={{
+                                            padding: '6px 12px',
+                                            borderRadius: '20px',
+                                            border: typeFilter === 'win' ? '2px solid #43e97b' : '1px solid #555',
+                                            background: typeFilter === 'win' ? '#43e97b22' : 'transparent',
+                                            color: typeFilter === 'win' ? '#43e97b' : '#aaa',
+                                            fontSize: 12,
+                                            cursor: 'pointer',
+                                            fontWeight: 600,
+                                            transition: 'all 0.2s'
+                                        }}
+                                    >
+                                        Ganhos
+                                    </button>
+                                    <button
+                                        onClick={() => handleFilterChange('deposit')}
+                                        style={{
+                                            padding: '6px 12px',
+                                            borderRadius: '20px',
+                                            border: typeFilter === 'deposit' ? '2px solid #4ecdc4' : '1px solid #555',
+                                            background: typeFilter === 'deposit' ? '#4ecdc422' : 'transparent',
+                                            color: typeFilter === 'deposit' ? '#4ecdc4' : '#aaa',
+                                            fontSize: 12,
+                                            cursor: 'pointer',
+                                            fontWeight: 600,
+                                            transition: 'all 0.2s'
+                                        }}
+                                    >
+                                        Depósitos
+                                    </button>
+                                    <button
+                                        onClick={() => handleFilterChange('withdrawal')}
+                                        style={{
+                                            padding: '6px 12px',
+                                            borderRadius: '20px',
+                                            border: typeFilter === 'withdrawal' ? '2px solid #ffa726' : '1px solid #555',
+                                            background: typeFilter === 'withdrawal' ? '#ffa72622' : 'transparent',
+                                            color: typeFilter === 'withdrawal' ? '#ffa726' : '#aaa',
+                                            fontSize: 12,
+                                            cursor: 'pointer',
+                                            fontWeight: 600,
+                                            transition: 'all 0.2s'
+                                        }}
+                                    >
+                                        Saques
+                                    </button>
+                                    <button
+                                        onClick={() => handleFilterChange('bonus')}
+                                        style={{
+                                            padding: '6px 12px',
+                                            borderRadius: '20px',
+                                            border: typeFilter === 'bonus' ? '2px solid #9c27b0' : '1px solid #555',
+                                            background: typeFilter === 'bonus' ? '#9c27b022' : 'transparent',
+                                            color: typeFilter === 'bonus' ? '#9c27b0' : '#aaa',
+                                            fontSize: 12,
+                                            cursor: 'pointer',
+                                            fontWeight: 600,
+                                            transition: 'all 0.2s'
+                                        }}
+                                    >
+                                        Bônus
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            {transactionsLoading ? (
+                                <div style={{ textAlign: 'center', color: '#fff', padding: 40 }}>
+                                    Carregando transações...
+                                </div>
+                ) : transactions.length === 0 ? (
+                <div style={{ textAlign: 'center', color: '#888', padding: 40 }}>
+                    {typeFilter ? (
+                        <div>
+                            <div style={{ fontSize: 18, marginBottom: 10 }}>🔍</div>
+                            <div>Nenhuma transação do tipo <strong style={{ color: '#43e97b' }}>{getTransactionTypeLabel(typeFilter)}</strong> encontrada.</div>
+                            <button
+                                onClick={() => handleFilterChange('')}
+                                style={{
+                                    marginTop: 16,
+                                    padding: '8px 16px',
+                                    background: '#43e97b',
+                                    color: '#000',
+                                    border: 'none',
+                                    borderRadius: '6px',
+                                    cursor: 'pointer',
+                                    fontSize: 14,
+                                    fontWeight: 600
+                                }}
+                            >
+                                Ver todas as transações
+                            </button>
+                        </div>
+                    ) : (
+                        <div>
+                            <div style={{ fontSize: 18, marginBottom: 10 }}>📊</div>
+                            <div>Nenhuma transação encontrada.</div>
+                        </div>
+                    )}
+                </div>
+                            ) : (
+                                <div style={{ maxHeight: 400, overflowY: 'auto' }}>
+                                    {transactions.map((transaction, index) => (
+                                        <div
+                                            key={transaction.id}
+                                            style={{
+                                                display: 'flex',
+                                                justifyContent: 'space-between',
+                                                alignItems: 'flex-start',
+                                                padding: '16px',
+                                                marginBottom: '12px',
+                                                background: 'rgba(35, 39, 43, 0.8)',
+                                                borderRadius: '10px',
+                                                border: '1px solid #43e97b33',
+                                                transition: 'background 0.2s',
+                                                minHeight: '60px',
+                                                flexDirection: window.innerWidth <= 768 ? 'column' : 'row',
+                                                gap: window.innerWidth <= 768 ? '8px' : '16px',
+                                                width: '100%',
+                                                boxSizing: 'border-box'
+                                            }}
+                                        >
+                                            <div style={{ flex: 1, minWidth: 0, marginRight: 16 }}>
+                                                <div style={{ 
+                                                    fontSize: 16, 
+                                                    fontWeight: 700, 
+                                                    color: getTransactionColor(transaction.type, transaction.amount),
+                                                    marginBottom: 4 
+                                                }}>
+                                                    {getTransactionTypeLabel(transaction.type)}
+                                                </div>
+                                                <div 
+                                                    title={transaction.description}
+                                                    style={{ 
+                                                        fontSize: 14, 
+                                                        color: '#bbb', 
+                                                        marginBottom: 2,
+                                                        wordWrap: 'break-word',
+                                                        overflowWrap: 'anywhere',
+                                                        whiteSpace: 'normal',
+                                                        lineHeight: '1.4',
+                                                        cursor: transaction.description.length > 50 ? 'help' : 'default',
+                                                        width: '100%',
+                                                        boxSizing: 'border-box',
+                                                        maxWidth: 'none',
+                                                        overflow: 'visible'
+                                                    }}
+                                                >
+                                                    {transaction.description}
+                                                </div>
+                                                <div style={{ fontSize: 12, color: '#888' }}>
+                                                    {formatDate(transaction.created_at)}
+                                                </div>
+                                            </div>
+                                            <div style={{
+                                                fontSize: 18,
+                                                fontWeight: 700,
+                                                color: getTransactionColor(transaction.type, transaction.amount),
+                                                textAlign: window.innerWidth <= 768 ? 'left' : 'right',
+                                                minWidth: window.innerWidth <= 768 ? 'auto' : '120px',
+                                                flexShrink: 0
+                                            }}>
+                                                {transaction.amount > 0 ? '+' : ''}{formatAmount(transaction.amount)}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                            
+                            {/* Paginação */}
+                            <div style={{ display: 'flex', justifyContent: 'center', marginTop: 20, gap: 10 }}>
+                                <button
+                                    onClick={() => fetchTransactions(currentPage - 1)}
+                                    disabled={currentPage <= 1 || transactionsLoading}
+                                    style={{
+                                        padding: '10px 20px',
+                                        background: currentPage <= 1 ? '#555' : '#43e97b',
+                                        color: currentPage <= 1 ? '#888' : '#000',
+                                        border: 'none',
+                                        borderRadius: '8px',
+                                        cursor: currentPage <= 1 ? 'not-allowed' : 'pointer',
+                                        fontWeight: 600
+                                    }}
+                                >
+                                    Anterior
+                                </button>
+                                <span style={{ color: '#fff', padding: '10px 20px', fontSize: 16 }}>
+                                    Página {currentPage}
+                                </span>
+                                <button
+                                    onClick={() => fetchTransactions(currentPage + 1)}
+                                    disabled={transactions.length < 20 || transactionsLoading}
+                                    style={{
+                                        padding: '10px 20px',
+                                        background: transactions.length < 20 ? '#555' : '#43e97b',
+                                        color: transactions.length < 20 ? '#888' : '#000',
+                                        border: 'none',
+                                        borderRadius: '8px',
+                                        cursor: transactions.length < 20 ? 'not-allowed' : 'pointer',
+                                        fontWeight: 600
+                                    }}
+                                >
+                                    Próxima
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
                     {showPassword && pendingSave && (
                         <div style={{ marginTop: 24, background: '#f5f6fa', borderRadius: 12, padding: 24, boxShadow: '0 2px 8px #0001', width: '100%' }}>
                             <div style={{ marginBottom: 12, fontWeight: 700, color: '#222' }}>Confirme sua senha para salvar as alterações:</div>

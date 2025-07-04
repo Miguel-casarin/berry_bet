@@ -18,4 +18,11 @@ func RegisterTransactionRoutes(router *gin.Engine) {
 		v1.DELETE("/transactions/:id", transactions.DeleteTransactionHandler)
 		v1.OPTIONS("/transactions", transactions.OptionsHandler)
 	}
+
+	// Rotas específicas do usuário
+	userRoutes := router.Group("/api/transactions")
+	userRoutes.Use(auth.JWTAuthMiddleware())
+	{
+		userRoutes.GET("/me", transactions.GetMeTransactionsHandler)
+	}
 }

@@ -1,6 +1,7 @@
 package roleta
 
 import (
+	"berry_bet/internal/transactions"
 	"berry_bet/internal/user_stats"
 	"berry_bet/internal/utils"
 	"fmt"
@@ -101,12 +102,30 @@ func RoletaBetHandler(c *gin.Context) {
 	user.TotalAmountBet += req.BetValue
 	user.Balance -= req.BetValue // Sempre debita a aposta
 
+	// Cria transação da aposta
+	betTransaction := transactions.Transaction{
+		UserID:      userID,
+		Type:        "bet",
+		Amount:      -req.BetValue,
+		Description: fmt.Sprintf("Aposta na roleta - Valor: R$ %.2f", req.BetValue),
+	}
+	transactions.AddTransaction(betTransaction)
+
 	if isWin {
 		// Vitória
 		user.TotalWins += 1
 		user.TotalProfit += roletaRes.Lucro
 		user.Balance += roletaRes.Lucro + req.BetValue // Retorna a aposta + lucro
 		user.ConsecutiveLosses = 0                     // Reseta perdas consecutivas
+
+		// Cria transação do ganho
+		winTransaction := transactions.Transaction{
+			UserID:      userID,
+			Type:        "win",
+			Amount:      roletaRes.Lucro + req.BetValue,
+			Description: fmt.Sprintf("Ganho na roleta - Carta: %s - Valor: R$ %.2f", roletaRes.CartinhaSorteada, roletaRes.Lucro+req.BetValue),
+		}
+		transactions.AddTransaction(winTransaction)
 	} else {
 		// Perda
 		user.TotalLosses += 1

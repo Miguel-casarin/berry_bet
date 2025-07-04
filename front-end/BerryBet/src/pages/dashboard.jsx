@@ -46,7 +46,7 @@ function Dashboard() {
           user_id: user.id,
           type: 'deposit',
           amount: Number(valorDeposito),
-          description: `Depósito via ${selecionado}`
+          description: `Depósito via ${nomesPagamento[selecionado] || selecionado}`
         })
       });
       if (!res.ok) throw new Error('Erro ao depositar');
@@ -104,6 +104,16 @@ function Dashboard() {
         <p>Parcelamos sua dívida em até 12x com juros que você nem vai perceber!</p>
       </>
     ),
+  };
+
+  // Mapeamento para nomes completos dos métodos de pagamento
+  const nomesPagamento = {
+    pix: "PIX",
+    cred: "Cartão de Crédito",
+    deb: "Cartão de Débito",
+    bole: "Boleto Bancário",
+    bols: "Bolsa Família",
+    carn: "Carnê"
   };
 
   useEffect(() => {
