@@ -1,4 +1,4 @@
-package type_carta
+package roleta
 
 import (
 	"encoding/json"

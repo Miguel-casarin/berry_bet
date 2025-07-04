@@ -1,4 +1,4 @@
-package main
+package roleta
 
 import (
 	"fmt"
@@ -94,7 +94,7 @@ func Randon_inicial(saldo float64) float64 {
 	var numero_inicial int = 0
 	var resultado float64
 
-	for numero_inicial <= 6 {
+	for numero_inicial <= 3 {
 		if numero_inicial == 1 || EhPrimo(numero_inicial) {
 			fmt.Printf("Ganhou -> numero %d\n", numero_inicial)
 			resultado += Porcentagem(10, saldo)

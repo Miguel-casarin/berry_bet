@@ -1,7 +1,9 @@
 package users
 
 import (
+	"berry_bet/internal/common"
 	"berry_bet/internal/token"
+	"berry_bet/internal/user_stats"
 	"berry_bet/internal/utils"
 	"net/http"
 	"strconv"
@@ -23,7 +25,8 @@ func GetUsersHandler(c *gin.Context) {
 	}
 	responses := make([]UserResponse, 0, len(users))
 	for _, u := range users {
-		responses = append(responses, ToUserResponse(&u))
+		balance, _ := user_stats.GetUserBalance(u.ID)
+		responses = append(responses, ToUserResponseWithBalance(&u, balance))
 	}
 	utils.RespondSuccess(c, responses, "Users found")
 }
@@ -40,7 +43,8 @@ func GetUserByIDHandler(c *gin.Context) {
 		utils.RespondError(c, http.StatusNotFound, "NOT_FOUND", "User not found.", nil)
 		return
 	}
-	utils.RespondSuccess(c, ToUserResponse(&user), "User found")
+	balance, _ := user_stats.GetUserBalance(user.ID)
+	utils.RespondSuccess(c, ToUserResponseWithBalance(&user, balance), "User found")
 }
 
 // AddUserHandler creates a new user (DTO request/response).
@@ -80,7 +84,8 @@ func AddUserHandler(c *gin.Context) {
 		return
 	}
 	if success {
-		utils.RespondSuccess(c, ToUserResponse(&user), "User registered successfully.")
+		balance, _ := user_stats.GetUserBalance(user.ID)
+		utils.RespondSuccess(c, ToUserResponseWithBalance(&user, balance), "User registered successfully.")
 	} else {
 		utils.RespondError(c, http.StatusInternalServerError, "REGISTER_FAIL", "Could not register user.", nil)
 	}
@@ -119,7 +124,8 @@ func UpdateUserHandler(c *gin.Context) {
 		return
 	}
 	if success {
-		utils.RespondSuccess(c, ToUserResponse(&user), "User updated successfully.")
+		balance, _ := user_stats.GetUserBalance(user.ID)
+		utils.RespondSuccess(c, ToUserResponseWithBalance(&user, balance), "User updated successfully.")
 	} else {
 		utils.RespondError(c, http.StatusBadRequest, "UPDATE_FAIL", "Could not update user.", nil)
 	}
@@ -162,7 +168,7 @@ func GetUserBalanceHandler(c *gin.Context) {
 		utils.RespondError(c, http.StatusBadRequest, "INVALID_ID", "Invalid user ID.", err.Error())
 		return
 	}
-	balance, err := CalculateUserBalance(int64(userId))
+	balance, err := user_stats.GetUserBalance(int64(userId))
 	if err != nil {
 		utils.RespondError(c, http.StatusInternalServerError, "DB_ERROR", "Failed to fetch balance.", err.Error())
 		return
@@ -177,7 +183,23 @@ func GetMeHandler(c *gin.Context) {
 		utils.RespondError(c, http.StatusUnauthorized, "NO_AUTH", "User not authenticated.", nil)
 		return
 	}
-	user, err := GetUserByUsername(username.(string))
+	userCommon, err := common.GetUserByUsername(username.(string))
+	if err != nil || userCommon == nil {
+		utils.RespondError(c, http.StatusInternalServerError, "DB_ERROR", "Failed to fetch user.", nil)
+		return
+	}
+	// Convert common.User to users.User
+	user := &User{
+		ID:           userCommon.ID,
+		Username:     userCommon.Username,
+		Email:        userCommon.Email,
+		PasswordHash: userCommon.PasswordHash,
+		CPF:          userCommon.CPF,
+		Phone:        userCommon.Phone,
+		AvatarURL:    userCommon.AvatarURL,
+		CreatedAt:    userCommon.CreatedAt,
+		UpdatedAt:    userCommon.UpdatedAt,
+	}
 	if err != nil {
 		utils.RespondError(c, http.StatusInternalServerError, "DB_ERROR", "Failed to fetch user.", err.Error())
 		return
@@ -186,8 +208,9 @@ func GetMeHandler(c *gin.Context) {
 		utils.RespondError(c, http.StatusNotFound, "NOT_FOUND", "User not found.", nil)
 		return
 	}
+	balance, _ := user_stats.GetUserBalance(user.ID)
 	user.PasswordHash = ""
-	utils.RespondSuccess(c, user, "User data fetched successfully.")
+	utils.RespondSuccess(c, ToUserResponseWithBalance(user, balance), "User data fetched successfully.")
 }
 
 // UpdateMeHandler updates the authenticated user's data.
@@ -197,7 +220,22 @@ func UpdateMeHandler(c *gin.Context) {
 		utils.RespondError(c, http.StatusUnauthorized, "NO_AUTH", "User not authenticated.", nil)
 		return
 	}
-	user, err := GetUserByUsername(username.(string))
+	userCommon, err := common.GetUserByUsername(username.(string))
+	if err != nil || userCommon == nil {
+		utils.RespondError(c, http.StatusInternalServerError, "DB_ERROR", "Failed to fetch user.", nil)
+		return
+	}
+	user := &User{
+		ID:           userCommon.ID,
+		Username:     userCommon.Username,
+		Email:        userCommon.Email,
+		PasswordHash: userCommon.PasswordHash,
+		CPF:          userCommon.CPF,
+		Phone:        userCommon.Phone,
+		AvatarURL:    userCommon.AvatarURL,
+		CreatedAt:    userCommon.CreatedAt,
+		UpdatedAt:    userCommon.UpdatedAt,
+	}
 	if err != nil || user == nil {
 		utils.RespondError(c, http.StatusInternalServerError, "DB_ERROR", "Failed to fetch user.", nil)
 		return
@@ -255,12 +293,12 @@ func GetMeBalanceHandler(c *gin.Context) {
 		utils.RespondError(c, http.StatusUnauthorized, "NO_AUTH", "User not authenticated.", nil)
 		return
 	}
-	user, err := GetUserByUsername(username.(string))
-	if err != nil || user == nil {
+	userCommon, err := common.GetUserByUsername(username.(string))
+	if err != nil || userCommon == nil {
 		utils.RespondError(c, http.StatusInternalServerError, "DB_ERROR", "Failed to fetch user.", nil)
 		return
 	}
-	balance, err := CalculateUserBalance(user.ID)
+	balance, err := user_stats.GetUserBalance(userCommon.ID)
 	if err != nil {
 		utils.RespondError(c, http.StatusInternalServerError, "DB_ERROR", "Failed to fetch balance.", err.Error())
 		return
@@ -275,10 +313,21 @@ func UploadAvatarHandler(c *gin.Context) {
 		utils.RespondError(c, http.StatusUnauthorized, "NO_AUTH", "User not authenticated.", nil)
 		return
 	}
-	user, err := GetUserByUsername(username.(string))
-	if err != nil || user == nil {
+	userCommon, err := common.GetUserByUsername(username.(string))
+	if err != nil || userCommon == nil {
 		utils.RespondError(c, http.StatusInternalServerError, "DB_ERROR", "Failed to fetch user.", nil)
 		return
+	}
+	user := &User{
+		ID:           userCommon.ID,
+		Username:     userCommon.Username,
+		Email:        userCommon.Email,
+		PasswordHash: userCommon.PasswordHash,
+		CPF:          userCommon.CPF,
+		Phone:        userCommon.Phone,
+		AvatarURL:    userCommon.AvatarURL,
+		CreatedAt:    userCommon.CreatedAt,
+		UpdatedAt:    userCommon.UpdatedAt,
 	}
 	file, err := c.FormFile("avatar")
 	if err != nil {
@@ -325,10 +374,21 @@ func ChangePasswordHandler(c *gin.Context) {
 		utils.RespondError(c, http.StatusBadRequest, "INVALID_PASSWORD", "A nova senha deve ter pelo menos 6 caracteres.", nil)
 		return
 	}
-	user, err := GetUserByUsername(username.(string))
-	if err != nil || user == nil {
+	userCommon, err := common.GetUserByUsername(username.(string))
+	if err != nil || userCommon == nil {
 		utils.RespondError(c, http.StatusInternalServerError, "DB_ERROR", "Failed to fetch user.", nil)
 		return
+	}
+	user := &User{
+		ID:           userCommon.ID,
+		Username:     userCommon.Username,
+		Email:        userCommon.Email,
+		PasswordHash: userCommon.PasswordHash,
+		CPF:          userCommon.CPF,
+		Phone:        userCommon.Phone,
+		AvatarURL:    userCommon.AvatarURL,
+		CreatedAt:    userCommon.CreatedAt,
+		UpdatedAt:    userCommon.UpdatedAt,
 	}
 	// Verifica senha atual
 	err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(req.CurrentPassword))
