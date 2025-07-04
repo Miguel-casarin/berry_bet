@@ -62,28 +62,27 @@ func RoletaBetHandler(c *gin.Context) {
 		return
 	}
 
-	fmt.Println("DEBUG userID passado para GetUserStatsByID:", userID)
-
 	var req RoletaBetRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		utils.RespondError(c, http.StatusBadRequest, "INVALID_INPUT", "Invalid data.", err.Error())
 		return
 	}
 
+	// Busca dados do usuário
 	user, err := user_stats.GetUserStatsByID(fmt.Sprintf("%d", userID))
 	if err != nil || user.ID == 0 {
-		fmt.Println("DEBUG user_stats.GetUserStatsByID erro ou user.ID == 0:", err, user)
 		utils.RespondError(c, http.StatusNotFound, "NOT_FOUND", "User not found.", nil)
 		return
 	}
 
+	// Verifica se tem saldo suficiente
 	if user.Balance < req.BetValue {
 		utils.RespondError(c, http.StatusBadRequest, "INSUFFICIENT_FUNDS", "User does not have enough balance to place this bet.", nil)
 		return
 	}
 
+	// Executa a lógica da roleta
 	res := ExecutaRoleta(userID, req.BetValue)
-
 	if res == nil {
 		utils.RespondError(c, http.StatusInternalServerError, "GAME_ERROR", "Failed to execute roleta game.", nil)
 		return
@@ -95,21 +94,34 @@ func RoletaBetHandler(c *gin.Context) {
 		return
 	}
 
-	if roletaRes.CartinhaSorteada != "perca" {
-		user.TotalBets += 1
+	// Atualiza estatísticas do usuário
+	isWin := roletaRes.CartinhaSorteada != "perca"
+
+	user.TotalBets += 1
+	user.TotalAmountBet += req.BetValue
+	user.Balance -= req.BetValue // Sempre debita a aposta
+
+	if isWin {
+		// Vitória
 		user.TotalWins += 1
-		user.TotalAmountBet += req.BetValue
 		user.TotalProfit += roletaRes.Lucro
-		user.Balance += roletaRes.Lucro // lucro
-		user.Balance += req.BetValue    //
+		user.Balance += roletaRes.Lucro + req.BetValue // Retorna a aposta + lucro
+		user.ConsecutiveLosses = 0                     // Reseta perdas consecutivas
+	} else {
+		// Perda
+		user.TotalLosses += 1
+		user.ConsecutiveLosses += 1 // Incrementa perdas consecutivas
+	}
 
-		// Persistir no banco
-		_, err := user_stats.UpdateUserStats(user, user.ID)
-		if err != nil {
-			utils.RespondError(c, http.StatusInternalServerError, "DB_ERROR", "Failed to update user stats.", err.Error())
-			return
-		}
+	// Salva no banco
+	_, err = user_stats.UpdateUserStats(user, user.ID)
+	if err != nil {
+		utils.RespondError(c, http.StatusInternalServerError, "DB_ERROR", "Failed to update user stats.", err.Error())
+		return
+	}
 
+	// Resposta para o frontend
+	if isWin {
 		resp := RoletaBetResponse{
 			Result:         "win",
 			WinAmount:      roletaRes.Lucro + req.BetValue,
@@ -118,19 +130,7 @@ func RoletaBetHandler(c *gin.Context) {
 			Message:        "Parabéns, você ganhou!",
 		}
 		c.JSON(http.StatusOK, resp)
-		return
 	} else {
-		user.TotalBets += 1
-		user.TotalAmountBet += req.BetValue
-		user.TotalLosses += 1
-		user.Balance -= req.BetValue
-
-		_, err := user_stats.UpdateUserStats(user, user.ID)
-		if err != nil {
-			utils.RespondError(c, http.StatusInternalServerError, "DB_ERROR", "Failed to update user stats.", err.Error())
-			return
-		}
-
 		resp := RoletaBetResponse{
 			Result:         "lose",
 			WinAmount:      0,
@@ -139,6 +139,5 @@ func RoletaBetHandler(c *gin.Context) {
 			Message:        "Que pena, você perdeu.",
 		}
 		c.JSON(http.StatusOK, resp)
-		return
 	}
 }

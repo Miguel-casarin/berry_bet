@@ -91,9 +91,13 @@ function jogodoTigrinho() {
       }
       
       setResultadoAposta(data);
-      setUserBalance(data.saldo_atual || data.current_balance);
-      setGrid(data.cartinha || createEmptyGrid());
-      setResult(data.mensagem || data.message || (data.result === 'win' ? '🎉 Vitória!' : '😢 Derrota!'));
+      setUserBalance(data.current_balance);
+      
+      // Mapeia a carta retornada para uma visualização no grid
+      const gridResult = mapCardToGrid(data.card);
+      setGrid(gridResult);
+      
+      setResult(data.message || (data.result === 'win' ? '🎉 Vitória!' : '😢 Derrota!'));
       
       // Limpa o campo de aposta para próxima rodada
       setValorAposta("");
@@ -104,6 +108,80 @@ function jogodoTigrinho() {
       setResult('Erro ao apostar.');
     }
     setIsSpinning(false);
+  };
+
+  // Função para mapear a carta retornada para uma visualização no grid
+  const mapCardToGrid = (card) => {
+    const cardMap = {
+      'cinco': 5,
+      'dez': 2,
+      'vinte': 3,
+      'master': 1,
+      'miseria': 8,
+      'perca': 7
+    };
+    
+    const cardId = cardMap[card] || 7; // default para perca
+    
+    if (card === 'perca') {
+      // Para perda, mostra imagens aleatórias sem padrão
+      return Array(3).fill(0).map(() => 
+        Array(3).fill(0).map(() => Math.floor(Math.random() * NUM_DOGS) + 1)
+      );
+    } else {
+      // Para vitória, mostra um padrão com a carta vencedora
+      const grid = Array(3).fill(0).map(() => Array(3).fill(0));
+      
+      // Coloca a carta vencedora em posições específicas para formar um padrão
+      if (card === 'master') {
+        // Padrão especial para master (linha diagonal)
+        grid[0][0] = cardId;
+        grid[1][1] = cardId;
+        grid[2][2] = cardId;
+      } else {
+        // Padrão de linha para outras cartas
+        grid[1][0] = cardId;
+        grid[1][1] = cardId;
+        grid[1][2] = cardId;
+      }
+      
+      // Preenche o resto com imagens aleatórias
+      for (let i = 0; i < 3; i++) {
+        for (let j = 0; j < 3; j++) {
+          if (grid[i][j] === 0) {
+            grid[i][j] = Math.floor(Math.random() * NUM_DOGS) + 1;
+          }
+        }
+      }
+      
+      return grid;
+    }
+  };
+
+  // Função para exibir o nome da carta de forma amigável
+  const getCardDisplayName = (card) => {
+    const cardNames = {
+      'cinco': 'Cinco (5%)',
+      'dez': 'Dez (10%)',
+      'vinte': 'Vinte (20%)',
+      'master': 'Master (70%)',
+      'miseria': 'Miséria (0.5%)',
+      'perca': 'Perda'
+    };
+    return cardNames[card] || card;
+  };
+
+  // Função para exibir o multiplicador
+  const getMultiplierDisplay = (card) => {
+    const multipliers = {
+      'cinco': '5%',
+      'dez': '10%',
+      'vinte': '20%',
+      'master': '70%',
+      'miseria': '0.5%',
+      'perca': '0%'
+    };
+    return multipliers[card] || '0%';
   };
 
   const textos = {
@@ -307,16 +385,21 @@ function jogodoTigrinho() {
         <div className='result'>{result}</div>
         {resultadoAposta && (
           <div style={{ marginTop: 16, fontWeight: 'bold' }}>
-            Resultado: {resultadoAposta.result === 'win' || resultadoAposta.result === 'vitoria' ? 'Vitória' : 'Derrota'}<br />
-            {resultadoAposta.win_amount !== undefined && (
-              <>Valor ganho: R$ {resultadoAposta.win_amount.toFixed(2)}<br /></>
+            Resultado: {resultadoAposta.result === 'win' ? 'Vitória' : 'Derrota'}<br />
+            {resultadoAposta.result === 'win' && (
+              <>
+                Carta: {getCardDisplayName(resultadoAposta.card)}<br />
+                Valor ganho: R$ {resultadoAposta.win_amount.toFixed(2)}<br />
+                Multiplicador: {getMultiplierDisplay(resultadoAposta.card)}<br />
+              </>
             )}
-            {resultadoAposta.cartinha && (
-              <>Cartinha: {JSON.stringify(resultadoAposta.cartinha)}<br /></>
+            {resultadoAposta.result === 'lose' && (
+              <>
+                Carta: {getCardDisplayName(resultadoAposta.card)}<br />
+                Valor perdido: R$ {Number(valorAposta) || 0}<br />
+              </>
             )}
-            {resultadoAposta.mensagem && (
-              <>{resultadoAposta.mensagem}<br /></>
-            )}
+            Saldo atual: R$ {resultadoAposta.current_balance.toFixed(2)}
           </div>
         )}
       </div>

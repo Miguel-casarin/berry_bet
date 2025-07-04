@@ -211,28 +211,93 @@ func Final(userID int64, valor_aposta float64) Dados_rodadas {
 func ExecutaRoleta(userID int64, valor_aposta float64) interface{} {
 	stats, err := user_stats.GetUserStatsByID(strconv.FormatInt(userID, 10))
 	if err != nil {
-		// Trate o erro conforme necessário
 		return nil
 	}
 
+	// Regra 1: Primeiras 3 apostas devem ser vitórias obrigatórias
 	if stats.TotalBets < 3 {
-		// Executa Start
-		valor := Start(userID, valor_aposta)
-		// Para as primeiras rodadas, considere como "win" fictício
-		return RoletaResult{
-			CartinhaSorteada: "win_start",
-			Lucro:            valor, // ou 0, se preferir
+		// Gera cartinha de vitória com multiplicador baixo para as primeiras 3
+		var cartinha string
+		var multiplicador float64
+
+		if stats.TotalBets == 0 {
+			cartinha = "cinco"
+			multiplicador = 0.05 // 5%
+		} else if stats.TotalBets == 1 {
+			cartinha = "dez"
+			multiplicador = 0.10 // 10%
+		} else {
+			cartinha = "dez"
+			multiplicador = 0.10 // 10% (máximo para as primeiras 3)
 		}
-	} else {
-		// Executa Final
-		resultado := Final(userID, valor_aposta)
-		cartinha := "perca"
-		if resultado.cartinha_sorteada != nil {
-			cartinha = string(*resultado.cartinha_sorteada)
-		}
+
+		lucro := valor_aposta * multiplicador
 		return RoletaResult{
 			CartinhaSorteada: cartinha,
-			Lucro:            resultado.lucro,
+			Lucro:            lucro,
+		}
+	}
+
+	// Regra 2: Após 3 perdas consecutivas, deve ser vitória obrigatória
+	if stats.ConsecutiveLosses >= 3 {
+		// Força vitória com cartinha "miseria" (multiplicador baixo)
+		lucro := valor_aposta * 0.005 // 0.5%
+		return RoletaResult{
+			CartinhaSorteada: "miseria",
+			Lucro:            lucro,
+		}
+	}
+
+	// Regra 3: Se saldo >= 1000, aplica função governo (chances muito baixas)
+	if stats.Balance >= 1000 {
+		// Governo: chances muito baixas de ganhar
+		if GovernoChance() {
+			// Rara vitória com multiplicador baixo
+			lucro := valor_aposta * 0.005 // 0.5%
+			return RoletaResult{
+				CartinhaSorteada: "miseria",
+				Lucro:            lucro,
+			}
+		} else {
+			// Perda quase garantida
+			return RoletaResult{
+				CartinhaSorteada: "perca",
+				Lucro:            0,
+			}
+		}
+	}
+
+	// Regra 4: Lógica normal de jogo
+	if DeveGanhar() {
+		// Gera cartinha aleatória e calcula lucro
+		cartinha := cartinha_aleatoria()
+		var multiplicador float64
+
+		switch cartinha {
+		case Miseria:
+			multiplicador = 0.005 // 0.5%
+		case Cinco:
+			multiplicador = 0.05 // 5%
+		case Dez:
+			multiplicador = 0.10 // 10%
+		case Vinte:
+			multiplicador = 0.20 // 20%
+		case Master:
+			multiplicador = 0.70 // 70%
+		default:
+			multiplicador = 0.005 // fallback
+		}
+
+		lucro := valor_aposta * multiplicador
+		return RoletaResult{
+			CartinhaSorteada: string(cartinha),
+			Lucro:            lucro,
+		}
+	} else {
+		// Perda
+		return RoletaResult{
+			CartinhaSorteada: "perca",
+			Lucro:            0,
 		}
 	}
 }

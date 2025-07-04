@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS user_stats (
     total_amount_bet REAL DEFAULT 0.0,
     total_profit REAL DEFAULT 0.0,
     balance REAL DEFAULT 0.0,
+    consecutive_losses INTEGER DEFAULT 0,
     last_bet_at TIMESTAMP,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

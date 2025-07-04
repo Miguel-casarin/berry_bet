@@ -117,3 +117,17 @@ func Randon_fdp() bool {
 		return false
 	}
 }
+
+// GovernoChance: função para quando o saldo é >= 1000, chances muito baixas de ganhar
+func GovernoChance() bool {
+	// Apenas 2% de chance de ganhar quando o governo interfere
+	numero := rand.Intn(100) + 1
+	return numero <= 2
+}
+
+// DeveGanhar: lógica normal de jogo, com chances balanceadas
+func DeveGanhar() bool {
+	// Aproximadamente 35% de chance de ganhar na lógica normal
+	numero := rand.Intn(100) + 1
+	return numero <= 35
+}
