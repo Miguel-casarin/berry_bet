@@ -361,7 +361,10 @@ func UploadAvatarHandler(c *gin.Context) {
 		utils.RespondError(c, http.StatusInternalServerError, "UPDATE_FAIL", "Failed to update user avatar.", err.Error())
 		return
 	}
-	utils.RespondSuccess(c, gin.H{"avatarUrl": avatarURL}, "Avatar updated successfully.")
+	utils.RespondSuccess(c, gin.H{
+		"avatarUrl": avatarURL,
+		"user": ToUserResponseWithBalance(user, 0), // Retorna os dados atualizados do usuário
+	}, "Avatar updated successfully.")
 }
 
 // ChangePasswordRequest representa o payload para troca de senha

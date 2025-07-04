@@ -10,6 +10,7 @@ func ToUserResponseWithBalance(u *User, balance float64) UserResponse {
 		CPF:       u.CPF,
 		Phone:     u.Phone,
 		DateBirth: u.DateBirth,
+		AvatarURL: u.AvatarURL,
 		Balance:   balance,
 	}
 }
@@ -32,6 +33,7 @@ type UserResponse struct {
 	CPF       string  `json:"cpf"`
 	Phone     string  `json:"phone"`
 	DateBirth string  `json:"date_birth"`
+	AvatarURL string  `json:"avatar_url"`
 	Balance   float64 `json:"balance"`
 }
 

@@ -87,6 +87,21 @@ function Perfil() {
         }
     }
 
+    // Listener para atualizar avatar em tempo real
+    useEffect(() => {
+        const handleAvatarUpdate = (event) => {
+            const { avatarUrl } = event.detail;
+            console.log('Perfil: Avatar atualizado via evento:', avatarUrl); // Debug
+            setUser(prevUser => ({
+                ...prevUser,
+                avatar_url: avatarUrl
+            }));
+        };
+
+        window.addEventListener('avatarUpdated', handleAvatarUpdate);
+        return () => window.removeEventListener('avatarUpdated', handleAvatarUpdate);
+    }, []);
+
     return (
         <div style={{
             minHeight: '100vh',

@@ -25,6 +25,8 @@ function Conta() {
     const [transactionsLoading, setTransactionsLoading] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const [typeFilter, setTypeFilter] = useState(''); // Filtro por tipo
+    const [avatarUploading, setAvatarUploading] = useState(false);
+    const [changedFields, setChangedFields] = useState(new Set());
     const navigate = useNavigate();
 
     const formatDateForInput = (dateString) => {
@@ -178,22 +180,83 @@ function Conta() {
     }, [navigate]);
 
     const handleChange = (e) => {
-        setForm({ ...form, [e.target.name]: e.target.value });
+        const { name, value } = e.target;
+        setForm({ ...form, [name]: value });
+        
+        // Rastrear campos alterados
+        const newChangedFields = new Set(changedFields);
+        if (user && user[name] !== value) {
+            newChangedFields.add(name);
+        } else {
+            newChangedFields.delete(name);
+        }
+        setChangedFields(newChangedFields);
+    };
+
+    // Definir quais campos são sensíveis e precisam de senha
+    const sensitiveFields = new Set(['username', 'email']);
+    
+    const requiresPassword = () => {
+        return Array.from(changedFields).some(field => sensitiveFields.has(field)) || 
+               (newPassword && newPassword.length > 0);
     };
 
     const handleSaveClick = () => {
-        // Só pede senha se algum campo editável mudou
-        if (
-            form.username !== user.username ||
-            form.email !== user.email ||
-            form.phone !== user.phone ||
-            (newPassword && newPassword.length > 0)
-        ) {
+        // Verificar se há mudanças
+        if (changedFields.size === 0 && (!newPassword || newPassword.length === 0)) {
+            setMessage('Nenhuma alteração foi feita.');
+            setTimeout(() => setMessage(''), 3000);
+            return;
+        }
+
+        // Verificar se precisa de senha
+        if (requiresPassword()) {
             setPendingSave(true);
             setShowPassword(true);
         } else {
-            setEditing(false);
+            // Salvar diretamente campos não sensíveis
+            handleDirectSave();
         }
+    };
+
+    const handleDirectSave = async () => {
+        setLoading(true);
+        setMessage('');
+        const token = localStorage.getItem('token');
+        
+        try {
+            const res = await fetch('http://localhost:8080/api/users/me', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify(form),
+            });
+            
+            if (res.status === 401) {
+                localStorage.removeItem('token');
+                navigate('/', { replace: true });
+                return;
+            }
+            
+            if (!res.ok) {
+                const errorData = await res.json();
+                throw new Error(errorData.message || 'Erro ao atualizar perfil');
+            }
+            
+            const data = await res.json();
+            setUser(data.data);
+            setEditing(false);
+            setChangedFields(new Set());
+            setMessage('Perfil atualizado com sucesso!');
+            setTimeout(() => setMessage(''), 3000);
+        } catch (err) {
+            setMessage(`Erro: ${err.message}`);
+            setTimeout(() => setMessage(''), 5000);
+        }
+        
+        setLoading(false);
     };
 
     const handlePasswordConfirm = async () => {
@@ -235,46 +298,101 @@ function Conta() {
     // Função para preview da imagem
     function onAvatarChange(e) {
         const file = e.target.files[0];
-        setAvatarFile(file);
-        if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => setAvatarPreview(reader.result);
-            reader.readAsDataURL(file);
-        } else {
-            setAvatarPreview(null);
+        if (!file) return;
+
+        // Validações
+        const maxSize = 5 * 1024 * 1024; // 5MB
+        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+
+        if (file.size > maxSize) {
+            setMessage('A imagem deve ter no máximo 5MB');
+            setTimeout(() => setMessage(''), 3000);
+            return;
         }
+
+        if (!allowedTypes.includes(file.type)) {
+            setMessage('Formato de imagem não suportado. Use JPEG, PNG ou WebP');
+            setTimeout(() => setMessage(''), 3000);
+            return;
+        }
+
+        setAvatarFile(file);
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            setAvatarPreview(reader.result);
+            setShowAvatarPopup(true);
+        };
+        reader.readAsDataURL(file);
     }
 
-    // Função para upload da imagem
-    async function handleAvatarUpload(e) {
-        e.preventDefault();
+    // Função para upload da imagem com confirmação
+    async function handleAvatarUpload() {
         if (!avatarFile) return;
+        
+        setAvatarUploading(true);
         const token = localStorage.getItem('token');
-        const formData = new FormData();
-        formData.append('avatar', avatarFile);
-        const res = await fetch('http://localhost:8080/api/users/avatar', {
-            method: 'POST',
-            headers: { Authorization: `Bearer ${token}` },
-            body: formData,
-        });
-        if (res.ok) {
-            // Após upload, busca novamente o usuário para garantir atualização do avatar
-            fetch('http://localhost:8080/api/users/me', {
+        
+        try {
+            const formData = new FormData();
+            formData.append('avatar', avatarFile);
+            
+            const res = await fetch('http://localhost:8080/api/users/avatar', {
+                method: 'POST',
                 headers: { Authorization: `Bearer ${token}` },
-            })
-                .then(async (res) => {
-                    if (res.ok) {
-                        const data = await res.json();
-                        setUser(data.data);
-                    }
+                body: formData,
+            });
+            
+            if (res.ok) {
+                const uploadResponse = await res.json();
+                
+                // Atualizar dados do usuário completos
+                const userRes = await fetch('http://localhost:8080/api/users/me', {
+                    headers: { Authorization: `Bearer ${token}` },
                 });
-            setAvatarPreview(null);
-            setShowAvatarInput(false);
-            alert('Foto atualizada!');
-        } else {
-            alert('Erro ao enviar foto');
+                
+                if (userRes.ok) {
+                    const userData = await userRes.json();
+                    console.log('Dados do usuário após upload:', userData); // Debug
+                    setUser(userData.data);
+                    
+                    // Forçar atualização do avatar no localStorage se existir
+                    if (userData.data.avatar_url) {
+                        localStorage.setItem('userAvatar', userData.data.avatar_url);
+                        console.log('Avatar salvo no localStorage:', userData.data.avatar_url); // Debug
+                    }
+                    
+                    // Disparar evento customizado para atualizar avatar em outras páginas
+                    window.dispatchEvent(new CustomEvent('avatarUpdated', { 
+                        detail: { avatarUrl: userData.data.avatar_url } 
+                    }));
+                    console.log('Evento avatarUpdated disparado:', userData.data.avatar_url); // Debug
+                }
+                
+                // Limpar estados
+                setAvatarFile(null);
+                setAvatarPreview(null);
+                setShowAvatarPopup(false);
+                setShowAvatarInput(false);
+                setMessage('Avatar atualizado com sucesso!');
+                setTimeout(() => setMessage(''), 3000);
+            } else {
+                const errorData = await res.json();
+                throw new Error(errorData.message || 'Erro ao enviar foto');
+            }
+        } catch (err) {
+            setMessage(`Erro: ${err.message}`);
+            setTimeout(() => setMessage(''), 5000);
         }
+        
+        setAvatarUploading(false);
     }
+
+    const cancelAvatarUpload = () => {
+        setAvatarFile(null);
+        setAvatarPreview(null);
+        setShowAvatarPopup(false);
+        setShowAvatarInput(false);
+    };
 
     const handlePasswordChange = async (e) => {
         e.preventDefault();
@@ -386,11 +504,18 @@ function Conta() {
                         onClick={() => editing && setShowAvatarPopup(true)}
                         title={editing ? 'Clique para trocar a foto' : ''}
                     >
-                        <img
-                            src={avatarPreview || (user.avatar_url ? `http://localhost:8080${user.avatar_url}` : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.username)}`)}
-                            alt="Avatar"
-                            style={{ width: '100%', height: '100%', objectFit: 'cover', filter: editing ? 'brightness(0.95)' : 'none', borderRadius: '50%' }}
-                        />
+                        {(() => {
+                            const avatarSrc = avatarPreview || (user.avatar_url ? `http://localhost:8080${user.avatar_url}` : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.username)}`);
+                            console.log('Avatar src na conta.jsx:', avatarSrc, 'user.avatar_url:', user.avatar_url); // Debug
+                            
+                            return (
+                                <img
+                                    src={avatarSrc}
+                                    alt="Avatar"
+                                    style={{ width: '100%', height: '100%', objectFit: 'cover', filter: editing ? 'brightness(0.95)' : 'none', borderRadius: '50%' }}
+                                />
+                            );
+                        })()}
                         {editing && (
                             <span style={{ position: 'absolute', bottom: 8, right: 8, background: '#43e97b', borderRadius: '50%', width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 16, boxShadow: '0 2px 8px #43e97b33', zIndex: 2 }}>
                                 ✏️
@@ -522,14 +647,101 @@ function Conta() {
                             </div>
                         </div>
                         {message && <div style={{ color: message.includes('sucesso') ? '#43e97b' : '#ff4b2b', marginBottom: 16, textAlign: 'center', fontWeight: 600 }}>{message}</div>}
-                        <div style={{ display: 'flex', justifyContent: 'center', marginTop: 16 }}>
+                        
+                        {/* Indicadores de campos alterados */}
+                        {editing && changedFields.size > 0 && (
+                            <div style={{ marginBottom: 16, padding: 12, background: '#43e97b22', borderRadius: 8, border: '1px solid #43e97b33' }}>
+                                <div style={{ color: '#43e97b', fontSize: 14, fontWeight: 600, marginBottom: 8 }}>
+                                    Campos alterados:
+                                </div>
+                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                                    {Array.from(changedFields).map(field => (
+                                        <span 
+                                            key={field}
+                                            style={{ 
+                                                background: sensitiveFields.has(field) ? '#ff6b6b22' : '#43e97b22',
+                                                color: sensitiveFields.has(field) ? '#ff6b6b' : '#43e97b',
+                                                padding: '4px 8px',
+                                                borderRadius: 4,
+                                                fontSize: 12,
+                                                fontWeight: 600,
+                                                border: `1px solid ${sensitiveFields.has(field) ? '#ff6b6b33' : '#43e97b33'}`
+                                            }}
+                                        >
+                                            {field === 'username' ? 'Nome de usuário' :
+                                             field === 'name' ? 'Nome completo' :
+                                             field === 'email' ? 'Email' :
+                                             field === 'phone' ? 'Telefone' :
+                                             field === 'date_birth' ? 'Data nascimento' : field}
+                                            {sensitiveFields.has(field) && ' 🔒'}
+                                        </span>
+                                    ))}
+                                </div>
+                                {requiresPassword() && (
+                                    <div style={{ color: '#ffa726', fontSize: 12, marginTop: 8, fontStyle: 'italic' }}>
+                                        * Campos marcados com 🔒 requerem confirmação de senha
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        <div style={{ display: 'flex', justifyContent: 'center', gap: 12, marginTop: 16 }}>
                             <button
                                 type="button"
                                 onClick={editing ? handleSaveClick : () => setEditing(true)}
-                                style={{ background: editing ? '#43e97b' : '#2575fc', color: '#fff', border: 'none', borderRadius: 8, padding: '14px 48px', fontWeight: 700, fontSize: 18, cursor: 'pointer', boxShadow: editing ? '0 2px 8px #43e97b22' : '0 2px 8px #2575fc22', letterSpacing: 1, transition: 'background 0.2s' }}
+                                disabled={loading}
+                                style={{ 
+                                    background: editing ? (changedFields.size > 0 ? '#43e97b' : '#666') : '#2575fc', 
+                                    color: '#fff', 
+                                    border: 'none', 
+                                    borderRadius: 8, 
+                                    padding: '14px 48px', 
+                                    fontWeight: 700, 
+                                    fontSize: 18, 
+                                    cursor: loading ? 'not-allowed' : 'pointer', 
+                                    boxShadow: editing ? '0 2px 8px #43e97b22' : '0 2px 8px #2575fc22', 
+                                    letterSpacing: 1, 
+                                    transition: 'background 0.2s',
+                                    opacity: loading ? 0.7 : 1
+                                }}
                             >
-                                {editing ? 'Salvar' : 'Editar'}
+                                {loading ? 'Salvando...' : editing ? 'Salvar' : 'Editar'}
                             </button>
+                            {editing && (
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setEditing(false);
+                                        setChangedFields(new Set());
+                                        // Restaurar valores originais
+                                        setForm({
+                                            username: user.username || '',
+                                            name: user.name || '',
+                                            email: user.email || '',
+                                            phone: user.phone || '',
+                                            cpf: user.cpf || '',
+                                            date_birth: formatDateForInput(user.date_birth),
+                                        });
+                                    }}
+                                    disabled={loading}
+                                    style={{ 
+                                        background: '#666', 
+                                        color: '#fff', 
+                                        border: 'none', 
+                                        borderRadius: 8, 
+                                        padding: '14px 48px', 
+                                        fontWeight: 700, 
+                                        fontSize: 18, 
+                                        cursor: loading ? 'not-allowed' : 'pointer', 
+                                        boxShadow: '0 2px 8px #66622', 
+                                        letterSpacing: 1, 
+                                        transition: 'background 0.2s',
+                                        opacity: loading ? 0.7 : 1
+                                    }}
+                                >
+                                    Cancelar
+                                </button>
+                            )}
                         </div>
                     </form>
                     )}
@@ -915,7 +1127,9 @@ function Conta() {
                         position: 'relative',
                         color: '#fff',
                     }}>
-                        <div style={{ fontWeight: 700, fontSize: 20, marginBottom: 16, color: '#fff', textAlign: 'center', letterSpacing: 1 }}>Trocar foto de perfil</div>
+                        <div style={{ fontWeight: 700, fontSize: 20, marginBottom: 16, color: '#fff', textAlign: 'center', letterSpacing: 1 }}>
+                            {avatarPreview ? 'Confirmar nova foto?' : 'Trocar foto de perfil'}
+                        </div>
                         <div style={{ width: 120, height: 120, borderRadius: '50%', overflow: 'hidden', border: '3px solid #fff700', marginBottom: 16, background: '#23272b', boxShadow: '0 0 16px #fff70033, 0 0 0 6px #43e97b33' }}>
                             <img
                                 src={avatarPreview || (user.avatar_url ? `http://localhost:8080${user.avatar_url}` : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.username)}`)}
@@ -923,10 +1137,79 @@ function Conta() {
                                 style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }}
                             />
                         </div>
-                        <input type="file" accept="image/*" onChange={onAvatarChange} style={{ marginBottom: 16, color: '#fff', background: 'none', border: '1.5px solid #43e97b', borderRadius: 8, padding: 8, width: '100%' }} />
+                        {!avatarPreview && (
+                            <input 
+                                type="file" 
+                                accept="image/jpeg,image/jpg,image/png,image/webp" 
+                                onChange={onAvatarChange} 
+                                style={{ 
+                                    marginBottom: 16, 
+                                    color: '#fff', 
+                                    background: 'none', 
+                                    border: '1.5px solid #43e97b', 
+                                    borderRadius: 8, 
+                                    padding: 8, 
+                                    width: '100%' 
+                                }} 
+                            />
+                        )}
                         <div style={{ display: 'flex', gap: 12, marginTop: 8, justifyContent: 'center' }}>
-                            <button onClick={async (e) => { e.preventDefault(); await handleAvatarUpload(e); setShowAvatarPopup(false); }} style={{ background: 'linear-gradient(90deg, #43e97b 0%, #fff700 100%)', color: '#101820', border: 'none', borderRadius: 8, padding: '10px 28px', fontWeight: 800, fontSize: 16, cursor: 'pointer', boxShadow: '0 2px 8px #43e97b22', letterSpacing: 1 }}>Confirmar</button>
-                            <button onClick={() => { setShowAvatarPopup(false); setAvatarPreview(null); }} style={{ background: '#23272b', color: '#fff', border: '1.5px solid #aaa', borderRadius: 8, padding: '10px 28px', fontWeight: 700, fontSize: 16, cursor: 'pointer', boxShadow: '0 2px 8px #aaa2' }}>Cancelar</button>
+                            {avatarPreview ? (
+                                <>
+                                    <button 
+                                        onClick={handleAvatarUpload} 
+                                        disabled={avatarUploading}
+                                        style={{ 
+                                            background: avatarUploading ? '#666' : 'linear-gradient(90deg, #43e97b 0%, #fff700 100%)', 
+                                            color: '#101820', 
+                                            border: 'none', 
+                                            borderRadius: 8, 
+                                            padding: '10px 28px', 
+                                            fontWeight: 800, 
+                                            fontSize: 16, 
+                                            cursor: avatarUploading ? 'not-allowed' : 'pointer', 
+                                            boxShadow: '0 2px 8px #43e97b22', 
+                                            letterSpacing: 1 
+                                        }}
+                                    >
+                                        {avatarUploading ? 'Enviando...' : 'Confirmar'}
+                                    </button>
+                                    <button 
+                                        onClick={cancelAvatarUpload} 
+                                        disabled={avatarUploading}
+                                        style={{ 
+                                            background: '#23272b', 
+                                            color: '#fff', 
+                                            border: '1.5px solid #aaa', 
+                                            borderRadius: 8, 
+                                            padding: '10px 28px', 
+                                            fontWeight: 700, 
+                                            fontSize: 16, 
+                                            cursor: avatarUploading ? 'not-allowed' : 'pointer', 
+                                            boxShadow: '0 2px 8px #aaa2' 
+                                        }}
+                                    >
+                                        Cancelar
+                                    </button>
+                                </>
+                            ) : (
+                                <button 
+                                    onClick={cancelAvatarUpload} 
+                                    style={{ 
+                                        background: '#23272b', 
+                                        color: '#fff', 
+                                        border: '1.5px solid #aaa', 
+                                        borderRadius: 8, 
+                                        padding: '10px 28px', 
+                                        fontWeight: 700, 
+                                        fontSize: 16, 
+                                        cursor: 'pointer', 
+                                        boxShadow: '0 2px 8px #aaa2' 
+                                    }}
+                                >
+                                    Fechar
+                                </button>
+                            )}
                         </div>
                     </div>
                 </div>

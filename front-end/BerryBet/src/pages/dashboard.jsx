@@ -143,6 +143,19 @@ function Dashboard() {
           navigate('/');
         });
     }
+
+    // Listener para atualizar avatar em tempo real
+    const handleAvatarUpdate = (event) => {
+      const { avatarUrl } = event.detail;
+      console.log('Dashboard: Avatar atualizado via evento:', avatarUrl); // Debug
+      setUser(prevUser => ({
+        ...prevUser,
+        avatar_url: avatarUrl
+      }));
+    };
+
+    window.addEventListener('avatarUpdated', handleAvatarUpdate);
+    return () => window.removeEventListener('avatarUpdated', handleAvatarUpdate);
   }, [navigate]);
 
   const handleCardClick = () => {
@@ -313,11 +326,18 @@ function Dashboard() {
                 }}
                 title="Abrir menu do perfil"
               >
-                <img
-                  src={user.avatar_url ? `http://localhost:8080${user.avatar_url}` : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.username)}`}
-                  alt="avatar"
-                  style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', background: '#fff700', boxShadow: '0 0 8px #fff70055', border: 'none' }}
-                />
+                {(() => {
+                  const avatarSrc = user.avatar_url ? `http://localhost:8080${user.avatar_url}` : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.username)}`;
+                  console.log('Avatar src no dashboard:', avatarSrc, 'user.avatar_url:', user.avatar_url); // Debug
+                  
+                  return (
+                    <img
+                      src={avatarSrc}
+                      alt="avatar"
+                      style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', background: '#fff700', boxShadow: '0 0 8px #fff70055', border: 'none' }}
+                    />
+                  );
+                })()}
                 <span
                   style={{ fontWeight: 700, color: '#fff', fontSize: 18, maxWidth: 140, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', textShadow: '0 1px 8px #43e97b88' }}
                   title={user.username}
