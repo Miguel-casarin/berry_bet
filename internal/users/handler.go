@@ -73,10 +73,12 @@ func AddUserHandler(c *gin.Context) {
 	}
 	user := User{
 		Username:     req.Username,
+		Name:         req.Name,
 		Email:        req.Email,
 		PasswordHash: string(hashed),
 		CPF:          req.CPF,
 		Phone:        req.Phone,
+		DateBirth:    req.DateBirth,
 	}
 	success, err := AddUser(user)
 	if err != nil {
@@ -104,11 +106,13 @@ func UpdateUserHandler(c *gin.Context) {
 		return
 	}
 	user := User{
-		ID:       int64(userId),
-		Username: req.Username,
-		Email:    req.Email,
-		CPF:      req.CPF,
-		Phone:    req.Phone,
+		ID:        int64(userId),
+		Username:  req.Username,
+		Name:      req.Name,
+		Email:     req.Email,
+		CPF:       req.CPF,
+		Phone:     req.Phone,
+		DateBirth: req.DateBirth,
 	}
 	if req.Password != "" {
 		hashed, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
@@ -184,29 +188,27 @@ func GetMeHandler(c *gin.Context) {
 		return
 	}
 	userCommon, err := common.GetUserByUsername(username.(string))
-	if err != nil || userCommon == nil {
-		utils.RespondError(c, http.StatusInternalServerError, "DB_ERROR", "Failed to fetch user.", nil)
+	if err != nil {
+		utils.RespondError(c, http.StatusInternalServerError, "DB_ERROR", "Failed to fetch user.", err.Error())
+		return
+	}
+	if userCommon == nil {
+		utils.RespondError(c, http.StatusNotFound, "NOT_FOUND", "User not found.", nil)
 		return
 	}
 	// Convert common.User to users.User
 	user := &User{
 		ID:           userCommon.ID,
 		Username:     userCommon.Username,
+		Name:         userCommon.Name,
 		Email:        userCommon.Email,
 		PasswordHash: userCommon.PasswordHash,
 		CPF:          userCommon.CPF,
 		Phone:        userCommon.Phone,
+		DateBirth:    userCommon.DateBirth,
 		AvatarURL:    userCommon.AvatarURL,
 		CreatedAt:    userCommon.CreatedAt,
 		UpdatedAt:    userCommon.UpdatedAt,
-	}
-	if err != nil {
-		utils.RespondError(c, http.StatusInternalServerError, "DB_ERROR", "Failed to fetch user.", err.Error())
-		return
-	}
-	if user == nil {
-		utils.RespondError(c, http.StatusNotFound, "NOT_FOUND", "User not found.", nil)
-		return
 	}
 	balance, _ := user_stats.GetUserBalance(user.ID)
 	user.PasswordHash = ""
@@ -221,31 +223,35 @@ func UpdateMeHandler(c *gin.Context) {
 		return
 	}
 	userCommon, err := common.GetUserByUsername(username.(string))
-	if err != nil || userCommon == nil {
-		utils.RespondError(c, http.StatusInternalServerError, "DB_ERROR", "Failed to fetch user.", nil)
+	if err != nil {
+		utils.RespondError(c, http.StatusInternalServerError, "DB_ERROR", "Failed to fetch user.", err.Error())
+		return
+	}
+	if userCommon == nil {
+		utils.RespondError(c, http.StatusNotFound, "NOT_FOUND", "User not found.", nil)
 		return
 	}
 	user := &User{
 		ID:           userCommon.ID,
 		Username:     userCommon.Username,
+		Name:         userCommon.Name,
 		Email:        userCommon.Email,
 		PasswordHash: userCommon.PasswordHash,
 		CPF:          userCommon.CPF,
 		Phone:        userCommon.Phone,
+		DateBirth:    userCommon.DateBirth,
 		AvatarURL:    userCommon.AvatarURL,
 		CreatedAt:    userCommon.CreatedAt,
 		UpdatedAt:    userCommon.UpdatedAt,
 	}
-	if err != nil || user == nil {
-		utils.RespondError(c, http.StatusInternalServerError, "DB_ERROR", "Failed to fetch user.", nil)
-		return
-	}
 	var req struct {
-		Username string `json:"username"`
-		Email    string `json:"email"`
-		Password string `json:"password,omitempty"`
-		CPF      string `json:"cpf"`
-		Phone    string `json:"phone"`
+		Username  string `json:"username"`
+		Name      string `json:"name"`
+		Email     string `json:"email"`
+		Password  string `json:"password,omitempty"`
+		CPF       string `json:"cpf"`
+		Phone     string `json:"phone"`
+		DateBirth string `json:"date_birth"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		utils.RespondError(c, http.StatusBadRequest, "INVALID_INPUT", "Invalid data.", err.Error())
@@ -253,6 +259,9 @@ func UpdateMeHandler(c *gin.Context) {
 	}
 	if req.Username != "" {
 		user.Username = req.Username
+	}
+	if req.Name != "" {
+		user.Name = req.Name
 	}
 	if req.Email != "" {
 		user.Email = req.Email
@@ -262,6 +271,9 @@ func UpdateMeHandler(c *gin.Context) {
 	}
 	if req.Phone != "" {
 		user.Phone = req.Phone
+	}
+	if req.DateBirth != "" {
+		user.DateBirth = req.DateBirth
 	}
 	if req.Password != "" {
 		hashed, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)

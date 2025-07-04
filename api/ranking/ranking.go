@@ -10,6 +10,7 @@ import (
 type RankingPlayer struct {
 	ID             int     `json:"id"`
 	Username       string  `json:"username"`
+	Name           string  `json:"name"`
 	AvatarURL      string  `json:"avatar_url"`
 	Balance        float64 `json:"balance"`
 	TotalBets      int64   `json:"total_bets"`
@@ -22,7 +23,7 @@ type RankingPlayer struct {
 // GetRankingHandler retorna o ranking dos jogadores por saldo (top 10)
 func GetRankingHandler(c *gin.Context) {
 	rows, err := config.DB.Query(`
-		SELECT u.id, u.username, u.avatar_url,
+		SELECT u.id, u.username, u.name, u.avatar_url,
 		COALESCE(us.balance, 0),
 		COALESCE(us.total_bets, 0),
 		COALESCE(us.total_wins, 0),
@@ -43,7 +44,7 @@ func GetRankingHandler(c *gin.Context) {
 	var ranking []RankingPlayer
 	for rows.Next() {
 		var p RankingPlayer
-		if err := rows.Scan(&p.ID, &p.Username, &p.AvatarURL, &p.Balance, &p.TotalBets, &p.TotalWins, &p.TotalLosses, &p.TotalProfit, &p.TotalAmountBet); err == nil {
+		if err := rows.Scan(&p.ID, &p.Username, &p.Name, &p.AvatarURL, &p.Balance, &p.TotalBets, &p.TotalWins, &p.TotalLosses, &p.TotalProfit, &p.TotalAmountBet); err == nil {
 			ranking = append(ranking, p)
 		}
 	}

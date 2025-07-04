@@ -149,8 +149,9 @@ function Perfil() {
                             style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'brightness(0.95)', borderRadius: '50%' }}
                         />
                     </div>
-                    <div style={{ fontSize: 28, fontWeight: 800, color: '#fff', marginBottom: 6, textAlign: 'center', textShadow: '0 2px 8px #43e97b33' }}>{user?.username}</div>
-                    <div style={{ color: '#b0b8c1', fontSize: 16, marginBottom: 8, textAlign: 'center', fontWeight: 500 }}>{user?.email}</div>
+                    <div style={{ fontSize: 28, fontWeight: 800, color: '#fff', marginBottom: 6, textAlign: 'center', textShadow: '0 2px 8px #43e97b33' }}>{user?.name || user?.username}</div>
+                    <div style={{ color: '#b0b8c1', fontSize: 16, marginBottom: 4, textAlign: 'center', fontWeight: 500 }}>@{user?.username}</div>
+                    <div style={{ color: '#b0b8c1', fontSize: 14, marginBottom: 8, textAlign: 'center', fontWeight: 400 }}>{user?.email}</div>
                     <div style={{ color: '#43e97b', fontSize: 15, marginBottom: 18, textAlign: 'center', fontWeight: 700 }}>Membro desde: {user?.created_at ? new Date(user.created_at).toLocaleDateString() : '-'}</div>
                 </section>
                 {/* Conteúdo principal */}

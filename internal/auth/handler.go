@@ -43,18 +43,20 @@ func LoginHandler(c *gin.Context) {
 
 func RegisterHandler(c *gin.Context) {
 	var req struct {
-		Username string `json:"username"`
-		Email    string `json:"email"`
-		Password string `json:"password"`
-		CPF      string `json:"cpf"`
-		Phone    string `json:"phone"`
+		Username  string `json:"username"`
+		Name      string `json:"name"`
+		Email     string `json:"email"`
+		Password  string `json:"password"`
+		CPF       string `json:"cpf"`
+		Phone     string `json:"phone"`
+		DateBirth string `json:"date_birth"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		utils.RespondError(c, http.StatusBadRequest, "INVALID_INPUT", "Invalid request.", err.Error())
 		return
 	}
-	if req.Username == "" || req.Email == "" || req.Password == "" || req.CPF == "" {
-		utils.RespondError(c, http.StatusBadRequest, "MISSING_FIELDS", "Username, email, password and cpf are required.", nil)
+	if req.Username == "" || req.Name == "" || req.Email == "" || req.Password == "" || req.CPF == "" {
+		utils.RespondError(c, http.StatusBadRequest, "MISSING_FIELDS", "Username, name, email, password and cpf are required.", nil)
 		return
 	}
 	if !utils.IsValidEmail(req.Email) {
@@ -69,7 +71,7 @@ func RegisterHandler(c *gin.Context) {
 		utils.RespondError(c, http.StatusBadRequest, "INVALID_PHONE", "Invalid phone number.", nil)
 		return
 	}
-	err := CreateUser(req.Username, req.Email, req.Password, req.CPF, req.Phone)
+	err := CreateUser(req.Username, req.Name, req.Email, req.Password, req.CPF, req.Phone, req.DateBirth)
 	if err != nil {
 		utils.RespondError(c, http.StatusBadRequest, "REGISTER_FAIL", "Could not register user.", err.Error())
 		return

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 
 function Conta() {
     const [user, setUser] = useState(null);
-    const [form, setForm] = useState({ username: '', email: '', phone: '', cpf: '' });
+    const [form, setForm] = useState({ username: '', name: '', email: '', phone: '', cpf: '', date_birth: '' });
     const [editing, setEditing] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [password, setPassword] = useState('');
@@ -21,6 +21,43 @@ function Conta() {
     const [confirmNewPassword, setConfirmNewPassword] = useState('');
     const [passwordChangeMsg, setPasswordChangeMsg] = useState('');
     const navigate = useNavigate();
+
+    const formatDateForInput = (dateString) => {
+        if (!dateString) return '';
+        console.log('Formatando data:', dateString); // Debug
+        
+        // Se a data já está no formato correto (YYYY-MM-DD), retorna como está
+        if (dateString.match(/^\d{4}-\d{2}-\d{2}$/)) {
+            return dateString;
+        }
+        
+        // Se a data está no formato brasileiro (DD/MM/YYYY), converte
+        if (dateString.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
+            const [day, month, year] = dateString.split('/');
+            return `${year}-${month}-${day}`;
+        }
+        
+        // Se a data está em outro formato, tenta converter
+        try {
+            const date = new Date(dateString);
+            if (isNaN(date.getTime())) return '';
+            return date.toISOString().split('T')[0];
+        } catch (e) {
+            console.error('Erro ao formatar data:', e);
+            return '';
+        }
+    };
+
+    const formatDateForDisplay = (dateString) => {
+        if (!dateString) return '';
+        try {
+            const date = new Date(dateString);
+            if (isNaN(date.getTime())) return '';
+            return date.toLocaleDateString('pt-BR');
+        } catch (e) {
+            return '';
+        }
+    };
 
     useEffect(() => {
         const token = localStorage.getItem('token');
@@ -41,12 +78,18 @@ function Conta() {
                 }
                 if (!res.ok) throw new Error('Erro ao buscar usuário');
                 const data = await res.json();
+                console.log('Data recebida do backend:', data.data); // Debug
+                console.log('Data de nascimento bruta:', data.data.date_birth); // Debug específico
                 setUser(data.data);
+                const formattedDate = formatDateForInput(data.data.date_birth);
+                console.log('Data formatada para input:', formattedDate); // Debug
                 setForm({
                     username: data.data.username || '',
+                    name: data.data.name || '',
                     email: data.data.email || '',
                     phone: data.data.phone || '',
                     cpf: data.data.cpf || '',
+                    date_birth: formattedDate,
                 });
             })
             .catch(() => {
@@ -297,6 +340,17 @@ function Conta() {
                                 />
                             </div>
                             <div>
+                                <label style={{ fontWeight: 700, marginBottom: 4, display: 'block', color: '#fff' }}>Nome completo</label>
+                                <input
+                                    type="text"
+                                    name="name"
+                                    value={form.name}
+                                    onChange={handleChange}
+                                    disabled
+                                    style={{ width: '100%', padding: 12, borderRadius: 10, border: '1.5px solid #43e97b', marginTop: 4, fontSize: 16, background: '#181c1f', color: '#888', cursor: 'not-allowed' }}
+                                />
+                            </div>
+                            <div>
                                 <label style={{ fontWeight: 700, marginBottom: 4, display: 'block', color: '#fff' }}>Email</label>
                                 <input
                                     type="email"
@@ -317,6 +371,23 @@ function Conta() {
                                     disabled={!editing}
                                     style={{ width: '100%', padding: 12, borderRadius: 10, border: '1.5px solid #43e97b', marginTop: 4, fontSize: 16, background: editing ? '#23272b' : '#181c1f', color: '#fff', transition: 'background 0.2s, border 0.2s' }}
                                 />
+                            </div>
+                            <div>
+                                <label style={{ fontWeight: 700, marginBottom: 4, display: 'block', color: '#fff' }}>Data de nascimento</label>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                                    <input
+                                        type="date"
+                                        name="date_birth"
+                                        value={form.date_birth}
+                                        onChange={handleChange}
+                                        disabled
+                                        style={{ width: '100%', padding: 12, borderRadius: 10, border: '1.5px solid #43e97b', fontSize: 16, background: '#181c1f', color: '#fff', cursor: 'not-allowed' }}
+                                    />
+                                    <div style={{ fontSize: 12, color: '#888', display: 'flex', justifyContent: 'space-between' }}>
+                                        <span>Backend: {user?.date_birth || 'N/A'}</span>
+                                        <span>Form: {form.date_birth || 'N/A'}</span>
+                                    </div>
+                                </div>
                             </div>
                             <div>
                                 <label style={{ fontWeight: 700, marginBottom: 4, display: 'block', color: '#fff' }}>CPF</label>
