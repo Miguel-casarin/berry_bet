@@ -13,16 +13,18 @@ const createEmptyGrid = () =>
 
 function jogodoTigrinho() {
   const [grid, setGrid] = useState(createEmptyGrid());
-  const [result, setResult] = useState('Clique em Girar');
+  const [result, setResult] = useState('Digite o valor e clique em Apostar');
   const [isSpinning, setIsSpinning] = useState(false);
   const [popupOpen, setPopupOpen] = useState(false);
   const [selecionado, setSelecionado] = useState("");
   const [valorDeposito, setValorDeposito] = useState("");
   const [valorAposta, setValorAposta] = useState("");
-  const [valorApostaConfirmado, setValorApostaConfirmado] = useState("");
   const [resultadoAposta, setResultadoAposta] = useState(null);
   const [userBalance, setUserBalance] = useState(null);
   const navigate = useNavigate();
+
+  // Variáveis para o popup de depósito
+  const valoresRapidos = [100, 500, 1000];
 
   // Busca saldo do usuário ao carregar
   React.useEffect(() => {
@@ -42,20 +44,32 @@ function jogodoTigrinho() {
 
   const handleValorApostaChange = (e) => {
     setValorAposta(e.target.value.replace(/[^0-9]/g, ''));
-    setValorApostaConfirmado(""); // Limpa confirmação ao editar
-  };
-
-  const handleConfirmarAposta = () => {
-    if (valorAposta && Number(valorAposta) > 0) {
-      setValorApostaConfirmado(valorAposta);
-      setResult('Valor confirmado! Agora gire a roleta.');
-    }
   };
 
   const handleApostar = async () => {
+    if (!valorAposta || Number(valorAposta) <= 0) {
+      setResult('Digite um valor válido para apostar!');
+      return;
+    }
+
+    const valorApostaNum = Number(valorAposta);
+    
+    // Verifica se tem saldo suficiente
+    if (userBalance < valorApostaNum) {
+      setResult('Saldo insuficiente!');
+      return;
+    }
+
+    // Decrementa o saldo imediatamente
+    setUserBalance(prev => prev - valorApostaNum);
+    
     setResultadoAposta(null);
-    setResult('Girando...');
+    setResult('Apostando...');
     setIsSpinning(true);
+    
+    // Executa a animação
+    await animateSpin();
+    
     const token = localStorage.getItem('token');
     try {
       const res = await fetch('http://localhost:8080/api/v1/roleta/apostar', {
@@ -64,19 +78,29 @@ function jogodoTigrinho() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`
         },
-        body: JSON.stringify({ valor_aposta: Number(valorApostaConfirmado) })
+        body: JSON.stringify({ valor_aposta: valorApostaNum })
       });
       const data = await res.json();
+      
       if (!res.ok) {
+        // Se deu erro, restaura o saldo
+        setUserBalance(prev => prev + valorApostaNum);
         setResult(data.message || data.mensagem || 'Erro na aposta');
         setIsSpinning(false);
         return;
       }
+      
       setResultadoAposta(data);
       setUserBalance(data.saldo_atual || data.current_balance);
       setGrid(data.cartinha || createEmptyGrid());
       setResult(data.mensagem || data.message || (data.result === 'win' ? '🎉 Vitória!' : '😢 Derrota!'));
+      
+      // Limpa o campo de aposta para próxima rodada
+      setValorAposta("");
+      
     } catch (err) {
+      // Se deu erro, restaura o saldo
+      setUserBalance(prev => prev + valorApostaNum);
       setResult('Erro ao apostar.');
     }
     setIsSpinning(false);
@@ -139,13 +163,37 @@ function jogodoTigrinho() {
   };
 
   const girar = async () => {
-    if (!valorApostaConfirmado || Number(valorApostaConfirmado) <= 0) {
-      setResult('Confirme o valor da aposta antes de girar!');
-      return;
-    }
-    setValorAposta(valorApostaConfirmado); // Garante que o valor usado é o confirmado
-    await animateSpin();
+    // Esta função agora só chama handleApostar
     await handleApostar();
+  };
+
+  const handleValorRapido = (valor) => {
+    setValorDeposito(prev => String(Number(prev || 0) + valor));
+  };
+
+  const handleInputChange = (e) => {
+    setValorDeposito(e.target.value.replace(/[^0-9]/g, ''));
+  };
+
+  const handleConfirmar = async () => {
+    if (!valorDeposito || !selecionado) return;
+    // Exemplo de envio para backend
+    try {
+      await fetch('/api/deposito', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          metodo: selecionado,
+          valor: Number(valorDeposito)
+        })
+      });
+      alert('Depósito enviado!');
+      setPopupOpen(false);
+      setValorDeposito("");
+      setSelecionado("");
+    } catch (err) {
+      alert('Erro ao enviar depósito.');
+    }
   };
 
   return (
@@ -235,16 +283,8 @@ function jogodoTigrinho() {
             value={valorAposta}
             onChange={handleValorApostaChange}
             style={{ padding: 8, borderRadius: 4, border: '1px solid #ccc', width: 160 }}
-            disabled={isSpinning || !!valorApostaConfirmado}
+            disabled={isSpinning}
           />
-          <button
-            onClick={handleConfirmarAposta}
-            disabled={isSpinning || !valorAposta || Number(valorAposta) <= 0 || !!valorApostaConfirmado}
-            style={{ padding: '8px 16px', borderRadius: 4, background: '#43e97b', color: '#fff', border: 'none', fontWeight: 'bold', cursor: 'pointer' }}
-          >
-            Confirmar aposta
-          </button>
-          {valorApostaConfirmado && <span style={{ color: '#43e97b', fontWeight: 'bold' }}>Valor confirmado: R$ {valorApostaConfirmado}</span>}
         </div>
         <div className='slot'>
           {grid.flat().map((dogId, index) => (
@@ -261,8 +301,8 @@ function jogodoTigrinho() {
             </div>
           ))}
         </div>
-        <button onClick={girar} disabled={isSpinning || !valorApostaConfirmado}>
-          {isSpinning ? 'Girando...' : 'Girar'}
+        <button onClick={girar} disabled={isSpinning || !valorAposta || Number(valorAposta) <= 0}>
+          {isSpinning ? 'Apostando...' : 'Apostar'}
         </button>
         <div className='result'>{result}</div>
         {resultadoAposta && (
