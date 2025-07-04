@@ -10,4 +10,5 @@ type RoletaBetResponse struct {
     WinAmount   float64 `json:"win_amount"`    // how much was won (or 0)
     Card        int     `json:"card"`          // card matrix sent by the backend
     CurrentBalance float64 `json:"current_balance"` // user's updated balance
-    Message     string
+    Message     string  `json:"message"`       // message to the user
+}
