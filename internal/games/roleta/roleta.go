@@ -22,20 +22,38 @@ func Update_wins_losses(userID int64, ganhou bool) int {
 	return int(stats.TotalLosses)
 }
 
+// ATENÇÃO: Função para atualizar o saldo do usuário no banco de dados
+func UpdateUserBalance(userID int64, newBalance float64) error {
+	stmt, err := config.DB.Prepare("UPDATE user_stats SET balance = ?, updated_at = datetime('now') WHERE user_id = ?")
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+	_, err = stmt.Exec(newBalance, userID)
+	return err
+}
+
+// Função para obter o saldo atual do usuário (OK)
 func Get_Saldo_Atual(userID int64) (float64, error) {
 	return user_stats.GetUserBalance(userID)
 }
 
+// Função para incrementar (ou decrementar) o saldo do usuário no banco de dados
 func Inclement_amount(userID int64, valor float64) (float64, error) {
 	balance, err := user_stats.GetUserBalance(userID)
 	if err != nil {
 		return 0, err
 	}
 	new_balance := balance + valor
-	// Não existe função para setar saldo diretamente, então apenas retorna o novo valor
+	// >>> ALTERAÇÃO: Agora salva o novo saldo no banco <<<
+	err = UpdateUserBalance(userID, new_balance)
+	if err != nil {
+		return 0, err
+	}
 	return new_balance, nil
 }
 
+// Função para debitar o valor da aposta do saldo do usuário no banco de dados
 func Value_aport(userID int64, valor float64) (float64, error) {
 	balance, err := user_stats.GetUserBalance(userID)
 	if err != nil {
@@ -45,25 +63,12 @@ func Value_aport(userID int64, valor float64) (float64, error) {
 		return 0, fmt.Errorf("saldo insuficiente")
 	}
 	new_balance := balance - valor
-	// Não existe função para setar saldo diretamente, então apenas retorna o valor
-	_ = new_balance // evitar erro de variável não usada
-	return valor, nil
-}
-
-// --- Função não utilizada ---
-// func Count_partidas(num_parttidas int) int {
-// 	num_partidas = user_stats.UpdateUserStatsAfterBet
-// 	num_partidas++
-// 	return num_partidas
-// }
-
-// retorna as cartinhas
-func (d Dados_rodadas) CartinhaSorteada() *string {
-	if d.cartinha_sorteada == nil {
-		return nil
+	// >>> ALTERAÇÃO: Agora salva o novo saldo no banco <<<
+	err = UpdateUserBalance(userID, new_balance)
+	if err != nil {
+		return 0, err
 	}
-	c := string(*d.cartinha_sorteada)
-	return &c
+	return valor, nil
 }
 
 // Atualiza o total de apostas do usuário
@@ -87,8 +92,6 @@ func UpdateUserTotalProfit(userID int64, totalProfit float64) error {
 	_, err = stmt.Exec(totalProfit, userID)
 	return err
 }
-
-// type cartinha string // Defina o tipo cartinha se não estiver importando de outro arquivo
 
 // criar uma struct para guardar os resultados
 type Dados_rodadas struct {
@@ -150,7 +153,9 @@ func Final(userID int64, valor_aposta float64) Dados_rodadas {
 		data.historical_value += Count_money(data.historical_value, data.valor_aposta)
 		data.loser_count = Loser_count(data.loser_count)
 		data.victory = 0
-		data.cartinha_sorteada = nil
+
+		perca := Perca
+		data.cartinha_sorteada = &perca
 
 		novoStatisticalLoser := Update_wins_losses(userID, false)
 		data.statistical_loser = novoStatisticalLoser
@@ -161,17 +166,36 @@ func Final(userID int64, valor_aposta float64) Dados_rodadas {
 		data.valor_aposta = Give_low(data.valor_aposta)
 		data.statistical_loser += Statistical_loser(data.loser_count)
 		data.loser_count = 0
+
+		miseria := Miseria
+		data.cartinha_sorteada = &miseria
+
 		user_stats.IncrementUserTotalBets(userID)
 	}
 
 	if data.historical_value >= data.limit {
 		Governo(data.valor_aposta)
 		user_stats.IncrementUserTotalBets(userID)
+
+		// Exemplo: se considera "ganho" ao atingir o limite
+		miseria := Miseria
+		data.cartinha_sorteada = &miseria
+	} else {
+		// Aqui você pode colocar a condição de perda, se houver
+		perca := Perca
+		data.cartinha_sorteada = &perca
 	}
 
 	if data.victory >= 5 {
 		Governo(data.valor_aposta)
 		user_stats.IncrementUserTotalBets(userID)
+
+		miseria := Miseria
+		data.cartinha_sorteada = &miseria
+	} else {
+		// Aqui você pode colocar a condição de perda, se houver
+		perca := Perca
+		data.cartinha_sorteada = &perca
 	}
 
 	return data
@@ -194,6 +218,3 @@ func ExecutaRoleta(userID int64, valor_aposta float64) interface{} {
 		return resultado
 	}
 }
-
-// --- Funções não utilizadas ou não implementadas ---
-// func Count_partidas(num_parttidas int) int {
