@@ -2,7 +2,7 @@ package user_stats
 
 import (
 	"berry_bet/config"
-	"berry_bet/internal/users"
+	"berry_bet/internal/common"
 	"berry_bet/internal/utils"
 	"database/sql"
 	"net/http"
@@ -143,7 +143,7 @@ func GetMeStatsHandler(c *gin.Context) {
 		utils.RespondError(c, http.StatusUnauthorized, "NO_AUTH", "User not authenticated.", nil)
 		return
 	}
-	user, err := users.GetUserByUsername(username.(string))
+	user, err := common.GetUserByUsername(username.(string))
 	if err != nil || user == nil {
 		utils.RespondError(c, http.StatusInternalServerError, "DB_ERROR", "Failed to fetch user.", nil)
 		return
@@ -196,7 +196,7 @@ func GetMeBalanceHandler(c *gin.Context) {
 		utils.RespondError(c, http.StatusUnauthorized, "NO_AUTH", "User not authenticated.", nil)
 		return
 	}
-	user, err := users.GetUserByUsername(username.(string))
+	user, err := common.GetUserByUsername(username.(string))
 	if err != nil || user == nil {
 		utils.RespondError(c, http.StatusInternalServerError, "DB_ERROR", "Failed to fetch user.", nil)
 		return

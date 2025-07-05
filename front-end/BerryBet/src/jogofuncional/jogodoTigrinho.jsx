@@ -18,36 +18,67 @@ function jogodoTigrinho() {
   const [popupOpen, setPopupOpen] = useState(false);
   const [selecionado, setSelecionado] = useState("");
   const [valorDeposito, setValorDeposito] = useState("");
+  const [valorAposta, setValorAposta] = useState("");
+  const [valorApostaConfirmado, setValorApostaConfirmado] = useState("");
+  const [resultadoAposta, setResultadoAposta] = useState(null);
+  const [userBalance, setUserBalance] = useState(null);
   const navigate = useNavigate();
 
-  const valoresRapidos = [100, 500, 1000];
-
-  const handleValorRapido = (valor) => {
-    setValorDeposito(prev => String(Number(prev || 0) + valor));
-  };
-
-  const handleInputChange = (e) => {
-    setValorDeposito(e.target.value.replace(/[^0-9]/g, ''));
-  };
-
-  const handleConfirmar = async () => {
-    if (!valorDeposito || !selecionado) return;
-    try {
-      await fetch('/api/deposito', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          metodo: selecionado,
-          valor: Number(valorDeposito)
-        })
-      });
-      alert('Depósito enviado!');
-      setPopupOpen(false);
-      setValorDeposito("");
-      setSelecionado("");
-    } catch (err) {
-      alert('Erro ao enviar depósito.');
+  // Busca saldo do usuário ao carregar
+  React.useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      fetch('http://localhost:8080/api/users/me', {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+        .then(async (res) => {
+          if (res.ok) {
+            const data = await res.json();
+            setUserBalance(data.data.balance);
+          }
+        });
     }
+  }, []);
+
+  const handleValorApostaChange = (e) => {
+    setValorAposta(e.target.value.replace(/[^0-9]/g, ''));
+    setValorApostaConfirmado(""); // Limpa confirmação ao editar
+  };
+
+  const handleConfirmarAposta = () => {
+    if (valorAposta && Number(valorAposta) > 0) {
+      setValorApostaConfirmado(valorAposta);
+      setResult('Valor confirmado! Agora gire a roleta.');
+    }
+  };
+
+  const handleApostar = async () => {
+    setResultadoAposta(null);
+    setResult('Girando...');
+    setIsSpinning(true);
+    const token = localStorage.getItem('token');
+    try {
+      const res = await fetch('http://localhost:8080/api/v1/roleta/bet', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ amount: Number(valorAposta) })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setResult(data.message || 'Erro na aposta');
+        setIsSpinning(false);
+        return;
+      }
+      setResultadoAposta(data.data);
+      setUserBalance(data.data.balance);
+      setResult(data.data.result === 'win' ? `🎉 Vitória! Você ganhou R$ ${data.data.amount_won.toFixed(2)} (Odd: ${data.data.odd.toFixed(2)}) - Carta: ${data.data.tipo_cartinha}` : '😢 Derrota!');
+    } catch (err) {
+      setResult('Erro ao apostar.');
+    }
+    setIsSpinning(false);
   };
 
   const textos = {
@@ -89,10 +120,10 @@ function jogodoTigrinho() {
     ),
   };
 
-  const animateSpin = async (duration = 1500) => {
+  // Animação fake só para efeito visual
+  const animateSpin = async (duration = 1200) => {
     const interval = 100;
     const iterations = duration / interval;
-
     for (let i = 0; i < iterations; i++) {
       const tempGrid = Array(3)
         .fill(0)
@@ -107,22 +138,13 @@ function jogodoTigrinho() {
   };
 
   const girar = async () => {
-    setIsSpinning(true);
-    setResult('Girando...');
-
+    if (!valorApostaConfirmado || Number(valorApostaConfirmado) <= 0) {
+      setResult('Confirme o valor da aposta antes de girar!');
+      return;
+    }
+    setValorAposta(valorApostaConfirmado); // Garante que o valor usado é o confirmado
     await animateSpin();
-
-    // Simula resultado final
-    const fakeGrid = [
-      [6, 4, 8],
-      [7, 5, 8],
-      [4, 7, 8],
-    ];
-    const fakeWin = true;
-
-    setGrid(fakeGrid);
-    setResult(fakeWin ? '🎉 Vitória (simulada)!' : '😢 Derrota (simulada)!');
-    setIsSpinning(false);
+    await handleApostar();
   };
 
   return (
@@ -202,6 +224,27 @@ function jogodoTigrinho() {
       )}
       <div className='jogodoTigrinho'>
         <h1>🐶 Roleta dos Cachorrinhos</h1>
+        <div style={{ marginBottom: 16 }}>
+          <strong>Saldo: </strong> R$ {userBalance !== null ? userBalance.toFixed(2) : '...'}
+        </div>
+        <div style={{ marginBottom: 16, display: 'flex', gap: 8, alignItems: 'center' }}>
+          <input
+            type="number"
+            placeholder="Valor da aposta"
+            value={valorAposta}
+            onChange={handleValorApostaChange}
+            style={{ padding: 8, borderRadius: 4, border: '1px solid #ccc', width: 160 }}
+            disabled={isSpinning || !!valorApostaConfirmado}
+          />
+          <button
+            onClick={handleConfirmarAposta}
+            disabled={isSpinning || !valorAposta || Number(valorAposta) <= 0 || !!valorApostaConfirmado}
+            style={{ padding: '8px 16px', borderRadius: 4, background: '#43e97b', color: '#fff', border: 'none', fontWeight: 'bold', cursor: 'pointer' }}
+          >
+            Confirmar aposta
+          </button>
+          {valorApostaConfirmado && <span style={{ color: '#43e97b', fontWeight: 'bold' }}>Valor confirmado: R$ {valorApostaConfirmado}</span>}
+        </div>
         <div className='slot'>
           {grid.flat().map((dogId, index) => (
             <div className='cell' key={index}>
@@ -217,10 +260,22 @@ function jogodoTigrinho() {
             </div>
           ))}
         </div>
-        <button onClick={girar} disabled={isSpinning}>
+        <button onClick={girar} disabled={isSpinning || !valorApostaConfirmado}>
           {isSpinning ? 'Girando...' : 'Girar'}
         </button>
         <div className='result'>{result}</div>
+        {resultadoAposta && (
+          <div style={{ marginTop: 16, fontWeight: 'bold' }}>
+            Resultado: {resultadoAposta.result === 'win' ? 'Vitória' : 'Derrota'}<br />
+            {resultadoAposta.result === 'win' && (
+              <>
+                Valor ganho: R$ {resultadoAposta.amount_won.toFixed(2)}<br />
+                Odd: {resultadoAposta.odd.toFixed(2)}<br />
+                Carta: {resultadoAposta.tipo_cartinha}
+              </>
+            )}
+          </div>
+        )}
       </div>
     </>
   );

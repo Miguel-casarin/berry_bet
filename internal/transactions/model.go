@@ -221,8 +221,22 @@ func CreateDepositTransaction(userID int64, amount float64, description string) 
 	_, err = tx.Exec(`
 		INSERT INTO transactions (user_id, type, amount, description, created_at) 
 		VALUES (?, 'deposit', ?, ?, datetime('now'))`, userID, amount, description)
-
 	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	// Atualiza o saldo do usuário em user_stats
+	var currentBalance float64
+	err = tx.QueryRow(`SELECT balance FROM user_stats WHERE user_id = ?`, userID).Scan(&currentBalance)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+	newBalance := currentBalance + amount
+	_, err = tx.Exec(`UPDATE user_stats SET balance = ?, updated_at = datetime('now') WHERE user_id = ?`, newBalance, userID)
+	if err != nil {
+		tx.Rollback()
 		return err
 	}
 

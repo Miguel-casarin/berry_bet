@@ -48,6 +48,15 @@ func AddTransactionHandler(c *gin.Context) {
 		utils.RespondError(c, http.StatusBadRequest, "INVALID_INPUT", "Invalid data.", err.Error())
 		return
 	}
+	if req.Type == "deposit" {
+		err := CreateDepositTransaction(req.UserID, req.Amount, req.Description)
+		if err != nil {
+			utils.RespondError(c, http.StatusInternalServerError, "DB_ERROR", "Failed to register deposit.", err.Error())
+			return
+		}
+		utils.RespondSuccess(c, nil, "Deposit registered successfully")
+		return
+	}
 	transaction := Transaction{
 		UserID:      req.UserID,
 		Type:        req.Type,
