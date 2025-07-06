@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './style.css';
 import "../pages/popup.css";
 
 const NUM_DOGS = 8;
-const getDogImage = id => `/src/assets/melo${id}.png`;
+const getDogImage = (id) => `/src/assets/melo${id}.png`;
 
 const createEmptyGrid = () =>
   Array(3)
@@ -67,7 +67,7 @@ function jogodoTigrinho() {
     setResult('Apostando...');
     setIsSpinning(true);
     
-    // Executa a animação
+    // Executa o animação
     await animateSpin();
     
     const token = localStorage.getItem('token');
@@ -92,16 +92,16 @@ function jogodoTigrinho() {
       
       setResultadoAposta(data);
       setUserBalance(data.current_balance);
-      
+
       // Mapeia a carta retornada para uma visualização no grid
       const gridResult = mapCardToGrid(data.card);
-      setGrid(gridResult);
-      
+      await animateSpin(1200, gridResult); // Passe o grid final aqui
+
       setResult(data.message || (data.result === 'win' ? '🎉 Vitória!' : '😢 Derrota!'));
-      
-      // Limpa o campo de aposta para próxima rodada
-      setValorAposta("");
-      
+
+      // NÃO limpe o campo de aposta aqui!
+      // setValorAposta("");  <-- Remova ou comente esta linha
+
     } catch (err) {
       // Se deu erro, restaura o saldo
       setUserBalance(prev => prev + valorApostaNum);
@@ -120,14 +120,25 @@ function jogodoTigrinho() {
       'miseria': 8,
       'perca': 7
     };
-    
-    const cardId = cardMap[card] || 7; // default para perca
-    
+    const cardId = cardMap[card] || 7;
+
     if (card === 'perca') {
-      // Para perda, mostra imagens aleatórias sem padrão
-      return Array(3).fill(0).map(() => 
-        Array(3).fill(0).map(() => Math.floor(Math.random() * NUM_DOGS) + 1)
-      );
+      // Para derrota, embaralhe os cachorros para evitar repetições em linha/coluna
+      let dogs = [];
+      for (let i = 0; i < 9; i++) {
+        dogs.push((i % NUM_DOGS) + 1);
+      }
+      // Embaralha o array
+      for (let i = dogs.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [dogs[i], dogs[j]] = [dogs[j], dogs[i]];
+      }
+      // Monta o grid 3x3
+      return [
+        [dogs[0], dogs[1], dogs[2]],
+        [dogs[3], dogs[4], dogs[5]],
+        [dogs[6], dogs[7], dogs[8]],
+      ];
     } else {
       // Para vitória, mostra um padrão com a carta vencedora
       const grid = Array(3).fill(0).map(() => Array(3).fill(0));
@@ -256,8 +267,20 @@ function jogodoTigrinho() {
     ),
   };
 
+  // Adicione ou ajuste esta função no seu componente
+const getCardImage = (card) => {
+  const cardMap = {
+    'miseria': 'Card1.png',
+    'cinco': 'Card2.png',
+    'dez': 'Card3.png',
+    'vinte': 'Card4.png',
+    'master': 'Card5.png'
+  };
+  return `/src/assets/${cardMap[card] || 'Card1.png'}`;
+};
+
   // Animação fake só para efeito visual
-  const animateSpin = async (duration = 1200) => {
+  const animateSpin = async (duration = 1200, gridFinal = null) => {
     const interval = 100;
     const iterations = duration / interval;
     for (let i = 0; i < iterations; i++) {
@@ -270,6 +293,20 @@ function jogodoTigrinho() {
         );
       setGrid(tempGrid);
       await new Promise(res => setTimeout(res, interval));
+    }
+    // Suaviza a transição para o grid final
+    if (gridFinal) {
+      for (let i = 0; i < 3; i++) {
+        setGrid(prev => {
+          const novo = prev.map(row => [...row]);
+          for (let j = 0; j <= i; j++) {
+            novo[i][j] = gridFinal[i][j];
+          }
+          return novo;
+        });
+        await new Promise(res => setTimeout(res, 120));
+      }
+      setGrid(gridFinal);
     }
   };
 
@@ -307,28 +344,15 @@ function jogodoTigrinho() {
     }
   };
 
+  // Adicionado para debug
+  useEffect(() => {
+    if (resultadoAposta) {
+      console.log('DEBUG resultadoAposta:', resultadoAposta);
+    }
+  }, [resultadoAposta]);
+
   return (
     <>
-      <header>
-        <nav>
-          <a className="logo" href="/dashboard">Berry.Bet</a>
-          <div className="mobile-menu">
-            <div className="line1"></div>
-            <div className="line2"></div>
-            <div className="line3"></div>
-          </div>
-          <ul className="nav-list">
-            <li>
-              <a href="#" onClick={e => { e.preventDefault(); setPopupOpen(true); }}>Depósito</a>
-            </li>
-            <li><a href="/saque">Saque</a></li>
-            <li>
-              <a href="#" onClick={e => { e.preventDefault(); navigate('/dashboard'); }}>Voltar</a>
-            </li>
-          </ul>
-        </nav>
-      </header>
-      <main></main>
       {popupOpen && (
         <div className={popupOpen ? "popup-overlay active" : "popup-overlay"} onClick={e => { if (e.target.className.includes('popup-overlay')) setPopupOpen(false); }}>
           <div className="popup-container" onClick={e => e.stopPropagation()}>
@@ -382,59 +406,419 @@ function jogodoTigrinho() {
           </div>
         </div>
       )}
-      <div className='jogodoTigrinho'>
-        <h1>🐶 Roleta dos Cachorrinhos</h1>
-        <div style={{ marginBottom: 16 }}>
-          <strong>Saldo: </strong> R$ {userBalance !== null ? userBalance.toFixed(2) : '...'}
-        </div>
-        <div style={{ marginBottom: 16, display: 'flex', gap: 8, alignItems: 'center' }}>
-          <input
-            type="number"
-            placeholder="Valor da aposta"
-            value={valorAposta}
-            onChange={handleValorApostaChange}
-            style={{ padding: 8, borderRadius: 4, border: '1px solid #ccc', width: 160 }}
-            disabled={isSpinning}
-          />
-        </div>
-        <div className='slot'>
-          {grid.flat().map((dogId, index) => (
-            <div className='cell' key={index}>
-              {dogId ? (
-                <img
-                  src={getDogImage(dogId)}
-                  alt={`dog-${dogId}`}
-                  className='dog-img'
-                />
+      {/* Game Layout - Figma Style */}
+      <div style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        background: '#0a0a0a',
+        color: '#fff',
+        fontFamily: 'Arial, sans-serif'
+      }}>
+        {/* Header */}
+        <header style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          padding: '1rem 2rem',
+          background: '#111',
+          borderBottom: '1px solid #333'
+        }}>
+          <div style={{ display: 'flex', gap: '2rem', alignItems: 'center' }}>
+            <div 
+              style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#39FF14', cursor: 'pointer' }}
+              onClick={() => navigate('/dashboard')}
+            >
+              Berry.Bet
+            </div>
+            <div 
+              style={{ color: '#ccc', cursor: 'pointer', transition: 'color 0.3s' }}
+              onClick={() => navigate('/dashboard')}
+              onMouseEnter={(e) => e.target.style.color = '#39FF14'}
+              onMouseLeave={(e) => e.target.style.color = '#ccc'}
+            >
+              Menu
+            </div>
+            <div 
+              style={{ color: '#ccc', cursor: 'pointer', transition: 'color 0.3s' }}
+              onClick={() => navigate('/ranking')}
+              onMouseEnter={(e) => e.target.style.color = '#39FF14'}
+              onMouseLeave={(e) => e.target.style.color = '#ccc'}
+            >
+              Ranking
+            </div>
+            <div 
+              style={{ color: '#ccc', cursor: 'pointer', transition: 'color 0.3s' }}
+              onClick={() => navigate('/saque')}
+              onMouseEnter={(e) => e.target.style.color = '#39FF14'}
+              onMouseLeave={(e) => e.target.style.color = '#ccc'}
+            >
+              Saque
+            </div>
+          </div>
+          <div style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>
+            R$ {userBalance !== null ? userBalance.toFixed(0) : '0'}
+          </div>
+        </header>
+
+        {/* Main Game Area */}
+        <div style={{
+          display: 'flex',
+          height: 'calc(100vh - 140px)', // header + footer
+          position: 'relative'
+        }}>
+          
+          {/* Left Sidebar - Your Card */}
+          <div style={{
+            width: '300px',
+            height: '900px', 
+            padding: '2rem',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>
+            <div style={{
+              background: '#1a1a1a',
+              height: '900px', 
+              borderRadius: '16px',
+              border: '2px solid #39FF14',
+              padding: '2rem',
+              width: '100%',
+              textAlign: 'center'
+            }}>
+              <div style={{ fontSize: '1.2rem', marginBottom: '1rem', color: '#fff' }}>Your Card:</div>
+              
+              {/* Exibição da carta baseada no resultado */}
+              {resultadoAposta && ['win', 'vitoria'].includes(resultadoAposta.result) &&
+               resultadoAposta.card &&
+               ['master', 'vinte', 'dez', 'cinco', 'miseria'].includes(resultadoAposta.card) &&
+               resultadoAposta.win_amount > Number(valorAposta) ? (
+                (() => {
+                  switch (resultadoAposta.card) {
+                    case 'master':
+                      return (
+                        <div>
+                          <img
+                            src={getCardImage('master')}
+                            alt="Master"
+                            style={{
+                              width: 120,
+                              height: 160,
+                              marginBottom: 16,
+                              borderRadius: 8,
+                              border: '2px solid #39FF14',
+                              background: '#fff'
+                            }}
+                          />
+                          <div style={{ fontSize: '14px', color: '#39FF14', fontWeight: 'bold' }}>
+                            MASTER - {getMultiplierDisplay('master')}
+                          </div>
+                        </div>
+                      );
+                    case 'vinte':
+                      return (
+                        <div>
+                          <img 
+                            src={getCardImage('vinte')} 
+                            alt="Vinte" 
+                            style={{ 
+                              width: 120, 
+                              height: 160, 
+                              marginBottom: 16, 
+                              borderRadius: 8, 
+                              border: '2px solid #39FF14', 
+                              background: '#fff' 
+                            }} 
+                          />
+                          <div style={{ fontSize: '14px', color: '#39FF14', fontWeight: 'bold' }}>
+                            VINTE - {getMultiplierDisplay('vinte')}
+                          </div>
+                        </div>
+                      );
+                    case 'dez':
+                      return (
+                        <div>
+                          <img 
+                            src={getCardImage('dez')} 
+                            alt="Dez" 
+                            style={{ 
+                              width: 120, 
+                              height: 160, 
+                              marginBottom: 16, 
+                              borderRadius: 8, 
+                              border: '2px solid #39FF14', 
+                              background: '#fff' 
+                            }} 
+                          />
+                          <div style={{ fontSize: '14px', color: '#39FF14', fontWeight: 'bold' }}>
+                            DEZ - {getMultiplierDisplay('dez')}
+                          </div>
+                        </div>
+                      );
+                    case 'cinco':
+                      return (
+                        <div>
+                          <img 
+                            src={getCardImage('cinco')} 
+                            alt="Cinco" 
+                            style={{ 
+                              width: 120, 
+                              height: 160, 
+                              marginBottom: 16, 
+                              borderRadius: 8, 
+                              border: '2px solid #39FF14', 
+                              background: '#fff' 
+                            }} 
+                          />
+                          <div style={{ fontSize: '14px', color: '#39FF14', fontWeight: 'bold' }}>
+                            CINCO - {getMultiplierDisplay('cinco')}
+                          </div>
+                        </div>
+                      );
+                    case 'miseria':
+                      return (
+                        <div>
+                          <img 
+                            src={getCardImage('miseria')} 
+                            alt="Miséria" 
+                            style={{ 
+                              width: 120, 
+                              height: 160, 
+                              marginBottom: 16, 
+                              borderRadius: 8, 
+                              border: '2px solid #39FF14', 
+                              background: '#fff' 
+                            }} 
+                          />
+                          <div style={{ fontSize: '14px', color: '#39FF14', fontWeight: 'bold' }}>
+                            MISÉRIA - {getMultiplierDisplay('miseria')}
+                          </div>
+                        </div>
+                      );
+                    default:
+                      return null;
+                  }
+                })()
               ) : (
-                <span>❔</span>
+                /* Estado padrão - Vazio */
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  height: '200px',
+                  color: '#666',
+                  fontSize: '14px'
+                }}>
+                  Aguardando resultado...
+                </div>
               )}
             </div>
-          ))}
-        </div>
-        <button onClick={girar} disabled={isSpinning || !valorAposta || Number(valorAposta) <= 0}>
-          {isSpinning ? 'Apostando...' : 'Apostar'}
-        </button>
-        <div className='result'>{result}</div>
-        {resultadoAposta && (
-          <div style={{ marginTop: 16, fontWeight: 'bold' }}>
-            Resultado: {resultadoAposta.result === 'win' ? 'Vitória' : 'Derrota'}<br />
-            {resultadoAposta.result === 'win' && (
-              <>
-                Carta: {getCardDisplayName(resultadoAposta.card)}<br />
-                Valor ganho: R$ {resultadoAposta.win_amount.toFixed(2)}<br />
-                Multiplicador: {getMultiplierDisplay(resultadoAposta.card)}<br />
-              </>
-            )}
-            {resultadoAposta.result === 'lose' && (
-              <>
-                Carta: {getCardDisplayName(resultadoAposta.card)}<br />
-                Valor perdido: R$ {Number(valorAposta) || 0}<br />
-              </>
-            )}
-            Saldo atual: R$ {resultadoAposta.current_balance.toFixed(2)}
           </div>
-        )}
+
+          {/* Center Game Grid */}
+          <div style={{
+            flex: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '2rem'
+          }}>
+            <div className="slot" style={{
+              backgroundImage: 'url("/src/assets/Frame 2.png")',
+              backgroundSize: 'contain',
+              backgroundPosition: 'center',
+              backgroundRepeat: 'no-repeat'
+            }}>
+              {grid.flat().map((dogId, index) => (
+                <div 
+                  key={index}
+                  className="cell"
+                >
+                  {dogId ? (
+                    <img
+                      src={getDogImage(dogId)}
+                      alt={`dog-${dogId}`}
+                      className="dog-img"
+                    />
+                  ) : (
+                    <div style={{ 
+                      fontSize: '4rem', 
+                      color: 'rgba(255, 255, 255, 0.3)',
+                      textShadow: '0 2px 4px rgba(0, 0, 0, 0.5)'
+                    }}>
+                      ❔
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Right Sidebar - Placar */}
+          <div style={{
+            width: '300px',
+            padding: '2rem'
+          }}>
+            <div style={{
+              borderRadius: '16px',
+              border: '2px solid #39FF14',
+              padding: '2rem',
+              height: '900px',
+              overflow: 'auto'
+            }}>
+              <div style={{ fontSize: '1.2rem', fontWeight: 'bold', color: '#fff', marginBottom: '1rem' }}>Placar:</div>
+              
+              {/* Resultado da última aposta */}
+              <div style={{ marginBottom: '1rem', fontSize: '14px' }}>
+                <div style={{ color: '#39FF14' }}>{result}</div>
+              </div>
+
+              {/* Informações da carta quando há resultado */}
+              {resultadoAposta && (
+                <div style={{ marginBottom: '1rem', padding: '1rem', background: '#333', borderRadius: '8px' }}>
+                  {['win', 'vitoria'].includes(resultadoAposta.result) ? (
+                    resultadoAposta.card &&
+                    ['master', 'vinte', 'dez', 'cinco', 'miseria'].includes(resultadoAposta.card) &&
+                    resultadoAposta.win_amount > Number(valorAposta) ? (
+                      <>
+                        <div style={{ color: '#43e97b', fontSize: '14px', marginBottom: '0.5rem' }}>
+                          🎉 Vitória + Carta Especial!
+                        </div>
+                        <div style={{ color: '#fff', fontSize: '12px' }}>
+                          Carta: {getCardDisplayName(resultadoAposta.card)}
+                        </div>
+                        <div style={{ color: '#39FF14', fontSize: '12px' }}>
+                          Multiplicador: {getMultiplierDisplay(resultadoAposta.card)}
+                        </div>
+                      </>
+                    ) : (
+                      <div style={{ color: '#43e97b', fontSize: '14px' }}>
+                        🎉 Vitória na roleta!
+                      </div>
+                    )
+                  ) : (
+                    <div style={{ color: '#ff4d4f', fontSize: '14px' }}>
+                      😢 Derrota na roleta
+                    </div>
+                  )}
+                  {resultadoAposta.win_amount !== undefined && (
+                    <div style={{ color: '#fff', fontSize: '12px', marginTop: '0.5rem' }}>
+                      Valor ganho: R$ {resultadoAposta.win_amount.toFixed(2)}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Debug info (pode remover depois) */}
+              {resultadoAposta && (
+                <details style={{ fontSize: '10px', color: '#666', marginTop: '1rem' }}>
+                  <summary>Debug</summary>
+                  <pre style={{ color: '#666', fontSize: '10px', marginTop: '0.5rem' }}>
+                    {JSON.stringify(resultadoAposta, null, 2)}
+                  </pre>
+                </details>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Footer Controls */}
+        <footer style={{
+          position: 'fixed',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          background: '#2D2D2D',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          padding: '1rem 2rem',
+          borderTop: '1px solid #444'
+        }}>
+          {/* Left side - Aporte and Lance */}
+          <div style={{ display: 'flex', gap: '2rem', color: '#fff' }}>
+            <div>Aporte: 000.00 R$</div>
+            <div>Lance: 000.00 R$</div>
+          </div>
+
+          {/* Center - Play button */}
+          <button
+            onClick={girar}
+            disabled={isSpinning || !valorAposta || Number(valorAposta) <= 0}
+            style={{
+              width: 64,
+              height: 64,
+              borderRadius: '50%',
+              border: 'none',
+              backgroundColor: isSpinning ? '#666' : '#39FF14',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              fontSize: 24,
+              cursor: 'pointer',
+              color: '#000'
+            }}
+          >
+            ▶
+          </button>
+
+          {/* Right side - Bet amount controls */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem'
+          }}>
+            <button style={{
+              width: 40,
+              height: 40,
+              border: 'none',
+              borderRadius: '50%',
+              background: '#39FF14',
+              cursor: 'pointer',
+              fontSize: '18px'
+            }}
+            onClick={() => {
+              const newValue = Math.max(0, Number(valorAposta) - 10);
+              setValorAposta(newValue.toString());
+            }}
+            >
+              ◀
+            </button>
+            
+            <div style={{
+              background: '#39FF14',
+              color: '#000',
+              padding: '8px 16px',
+              borderRadius: '20px',
+              fontWeight: 'bold',
+              minWidth: '80px',
+              textAlign: 'center'
+            }}>
+              R$ {valorAposta || '0'}
+            </div>
+            
+            <button style={{
+              width: 40,
+              height: 40,
+              border: 'none',
+              borderRadius: '50%',
+              background: '#39FF14',
+              cursor: 'pointer',
+              fontSize: '18px'
+            }}
+            onClick={() => {
+              const newValue = Number(valorAposta || 0) + 10;
+              setValorAposta(newValue.toString());
+            }}
+            >
+              ▶
+            </button>
+          </div>
+        </footer>
       </div>
     </>
   );

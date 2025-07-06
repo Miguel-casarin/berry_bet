@@ -46,28 +46,30 @@ body {
 
 .slot {
   display: grid;
-  grid-template-columns: repeat(3, 100px);
-  gap: 12px;
-  margin: 30px auto;
-  justify-content: center;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  width: 600px;
+  height: 600px;
+  margin: 20px auto;
+  position: relative;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
 }
 
 .cell {
-  width: 100px;
-  height: 100px;
-  background-color: #222;
-  border: 2px solid #555;
-  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
+  background: transparent;
+  border: none;
+  position: relative;
 }
 
 .dog-img {
-  width: 90px;
-  height: 90px;
-  object-fit: cover;
-  border-radius: 10px;
+  width: 85%;
+  height: 85%;
+  object-fit: contain;
+  transition: none;
+  filter: none;
 }
 
 button {
