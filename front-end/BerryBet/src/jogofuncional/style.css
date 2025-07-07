@@ -86,3 +86,17 @@ button {
 .react-horizontal-scrolling-menu--scroll-container {
   overflow-x: hidden !important;
 }
+
+/* Animação de rotação para o caramelo error */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.spinning-caramelo {
+  animation: spin 2s linear infinite;
+}

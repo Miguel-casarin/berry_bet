@@ -1,3 +1,5 @@
+import './saque.css';
+
 function Saque() {
   return (
     <div style={{
@@ -25,31 +27,28 @@ function Saque() {
         404
       </div>
       
-      {/* Ícone Pixelado */}
+      {/* Ícone Caramelo Error Rodando */}
       <div style={{
         width: '120px',
         height: '120px',
-        backgroundColor: '#333',
-        border: '4px solid #666',
-        borderRadius: '50%',
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
         marginBottom: '30px',
-        position: 'relative',
-        boxShadow: '0 0 30px rgba(255, 255, 255, 0.1)'
+        position: 'relative'
       }}>
-        {/* Símbolo de dinheiro pixelado */}
-        <div style={{
-          color: '#39FF14',
-          fontSize: '60px',
-          fontWeight: 'bold',
-          fontFamily: 'monospace'
-        }}>
-          $
-        </div>
+        <img 
+          src="/src/assets/caramelo_error 1.png"
+          alt="Caramelo Error"
+          className="spinning-caramelo"
+          style={{
+            width: '100px',
+            height: '100px',
+            filter: 'drop-shadow(0 0 20px rgba(255, 255, 255, 0.3))'
+          }}
+        />
       </div>
-      
+    
       {/* Mensagem */}
       <div style={{
         color: '#ffffff',

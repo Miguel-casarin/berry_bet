@@ -22,6 +22,7 @@ function jogodoTigrinho() {
   const [valorAposta, setValorAposta] = useState("");
   const [resultadoAposta, setResultadoAposta] = useState(null);
   const [userBalance, setUserBalance] = useState(null);
+  const [showCarameloError, setShowCarameloError] = useState(false);
   const navigate = useNavigate();
 
   // Variáveis para o popup de depósito
@@ -65,6 +66,7 @@ function jogodoTigrinho() {
     setUserBalance(prev => prev - valorApostaNum);
     
     setResultadoAposta(null);
+    setShowCarameloError(false); // Reset do caramelo error
     setResult('Apostando...');
     setIsSpinning(true);
     
@@ -99,6 +101,13 @@ function jogodoTigrinho() {
       await animateSpin(1200, gridResult); // Passe o grid final aqui
 
       setResult(data.message || (data.result === 'win' ? '🎉 Vitória!' : '😢 Derrota!'));
+
+      // Mostra o caramelo error se for derrota (após o grid final ser mostrado)
+      if (data.result === 'loss' || data.card === 'perca' || data.win_amount <= Number(valorAposta)) {
+        setTimeout(() => {
+          setShowCarameloError(true);
+        }, 500); // Pequeno delay para garantir que o grid final foi mostrado
+      }
 
       // NÃO limpe o campo de aposta aqui!
       // setValorAposta("");  <-- Remova ou comente esta linha
@@ -495,7 +504,29 @@ const getCardImage = (card) => {
               
               {/* Exibição da carta baseada no resultado */}
               <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                {resultadoAposta && ['win', 'vitoria'].includes(resultadoAposta.result) &&
+                {showCarameloError ? (
+                  // Mostra o caramelo error girando quando há derrota
+                  <div style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}>
+                    <img
+                      src="/src/assets/caramelo_error 1.png"
+                      alt="Caramelo Error"
+                      className="spinning-caramelo"
+                      style={{
+                        width: 120,
+                        height: 120,
+                        filter: 'drop-shadow(0 0 20px rgba(255, 0, 0, 0.5))'
+                      }}
+                    />
+                    <div style={{ fontSize: '14px', color: '#FF4444', fontWeight: 'bold', marginTop: '10px' }}>
+                      VOCÊ PERDEU!
+                    </div>
+                  </div>
+                ) : resultadoAposta && ['win', 'vitoria'].includes(resultadoAposta.result) &&
                  resultadoAposta.card &&
                  ['master', 'vinte', 'dez', 'cinco', 'miseria'].includes(resultadoAposta.card) &&
                  resultadoAposta.win_amount > Number(valorAposta) ? (
