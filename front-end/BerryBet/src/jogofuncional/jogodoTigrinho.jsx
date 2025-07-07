@@ -460,7 +460,7 @@ const getCardImage = (card) => {
             </div>
           </div>
           <div style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>
-            R$ {userBalance !== null ? userBalance.toFixed(0) : '0'}
+            R$ {userBalance !== null ? userBalance.toFixed(2) : '0.00'}
           </div>
         </header>
 
@@ -689,7 +689,7 @@ const getCardImage = (card) => {
 
           {/* Right Sidebar - Ranking Preview */}
           <div style={{
-            width: '490px',
+            width: '510px',
             padding: '2rem',
             display: 'flex',
             flexDirection: 'column',
@@ -755,7 +755,7 @@ const getCardImage = (card) => {
           {/* Left side - Aporte and Lance */}
           <div style={{ display: 'flex', gap: '2rem', color: '#fff' }}>
             <div>Aporte: {valorAposta ? `${Number(valorAposta).toFixed(2)}` : '0.00'} R$</div>
-            <div>Lance: {resultadoAposta?.win_amount ? `${resultadoAposta.win_amount.toFixed(2)}` : '0.00'} R$</div>
+            <div>Lance: {resultadoAposta?.win_amount ? `${Number(resultadoAposta.win_amount).toFixed(2)}` : '0.00'} R$</div>
           </div>
 
           {/* Center - Play button */}
@@ -910,6 +910,29 @@ const getCardImage = (card) => {
               </div>
             </div>
 
+            {/* Botão All Win */}
+            <button style={{
+              width: 80,
+              height: 55,
+              border: 'none',
+              borderRadius: '8px',
+              background: '#FFD700',
+              cursor: 'pointer',
+              fontSize: '12px',
+              fontWeight: 'bold',
+              color: '#000',
+              marginRight: '1rem'
+            }}
+            onClick={() => {
+              if (userBalance && userBalance > 0) {
+                setValorAposta(userBalance.toFixed(2));
+              }
+            }}
+            disabled={!userBalance || userBalance <= 0}
+            >
+              ALL WIN
+            </button>
+
             {/* Controles principais de aposta */}
             <div style={{
               display: 'flex',
@@ -942,7 +965,7 @@ const getCardImage = (card) => {
                 minWidth: '80px',
                 textAlign: 'center'
               }}>
-                R$ {valorAposta || '0'}
+                R$ {valorAposta ? Number(valorAposta).toFixed(2) : '0.00'}
               </div>
               
               <button style={{
