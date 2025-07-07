@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './style.css';
 import "../pages/popup.css";
+import RankingPreview from '../components/RankingPreview';
 
 const NUM_DOGS = 8;
 const getDogImage = (id) => `/src/assets/melo${id}.png`;
@@ -473,7 +474,6 @@ const getCardImage = (card) => {
           {/* Left Sidebar - Your Card */}
           <div style={{
             width: '300px',
-            height: '900px', 
             padding: '2rem',
             display: 'flex',
             flexDirection: 'column',
@@ -487,134 +487,162 @@ const getCardImage = (card) => {
               border: '2px solid #39FF14',
               padding: '2rem',
               width: '100%',
-              textAlign: 'center'
+              textAlign: 'center',
+              display: 'flex',
+              flexDirection: 'column'
             }}>
-              <div style={{ fontSize: '1.2rem', marginBottom: '1rem', color: '#fff' }}>Your Card:</div>
+              <div style={{ fontSize: '1.5rem', marginBottom: '1.5rem', color: '#39FF14', fontWeight: 'bold' }}>Your Card:</div>
               
               {/* Exibição da carta baseada no resultado */}
-              {resultadoAposta && ['win', 'vitoria'].includes(resultadoAposta.result) &&
-               resultadoAposta.card &&
-               ['master', 'vinte', 'dez', 'cinco', 'miseria'].includes(resultadoAposta.card) &&
-               resultadoAposta.win_amount > Number(valorAposta) ? (
-                (() => {
-                  switch (resultadoAposta.card) {
-                    case 'master':
-                      return (
-                        <div>
-                          <img
-                            src={getCardImage('master')}
-                            alt="Master"
-                            style={{
-                              width: 120,
-                              height: 160,
-                              marginBottom: 16,
-                              borderRadius: 8,
-                              border: '2px solid #39FF14',
-                              background: '#fff'
-                            }}
-                          />
-                          <div style={{ fontSize: '14px', color: '#39FF14', fontWeight: 'bold' }}>
-                            MASTER - {getMultiplierDisplay('master')}
+              <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                {resultadoAposta && ['win', 'vitoria'].includes(resultadoAposta.result) &&
+                 resultadoAposta.card &&
+                 ['master', 'vinte', 'dez', 'cinco', 'miseria'].includes(resultadoAposta.card) &&
+                 resultadoAposta.win_amount > Number(valorAposta) ? (
+                  (() => {
+                    switch (resultadoAposta.card) {
+                      case 'master':
+                        return (
+                          <div style={{ 
+                            display: 'flex', 
+                            flexDirection: 'column', 
+                            alignItems: 'center', 
+                            justifyContent: 'center'
+                          }}>
+                            <img
+                              src={getCardImage('master')}
+                              alt="Master"
+                              style={{
+                                width: 150,
+                                height: 200,
+                                marginBottom: 16,
+                                borderRadius: 8,
+                                border: '2px solid #39FF14',
+                                background: '#fff'
+                              }}
+                            />
+                            <div style={{ fontSize: '14px', color: '#39FF14', fontWeight: 'bold' }}>
+                              MASTER - {getMultiplierDisplay('master')}
+                            </div>
                           </div>
-                        </div>
-                      );
-                    case 'vinte':
-                      return (
-                        <div>
-                          <img 
-                            src={getCardImage('vinte')} 
-                            alt="Vinte" 
-                            style={{ 
-                              width: 120, 
-                              height: 160, 
-                              marginBottom: 16, 
-                              borderRadius: 8, 
-                              border: '2px solid #39FF14', 
-                              background: '#fff' 
-                            }} 
-                          />
-                          <div style={{ fontSize: '14px', color: '#39FF14', fontWeight: 'bold' }}>
-                            VINTE - {getMultiplierDisplay('vinte')}
+                        );
+                      case 'vinte':
+                        return (
+                          <div style={{ 
+                            display: 'flex', 
+                            flexDirection: 'column', 
+                            alignItems: 'center', 
+                            justifyContent: 'center'
+                          }}>
+                            <img 
+                              src={getCardImage('vinte')} 
+                              alt="Vinte" 
+                              style={{ 
+                                width: 150, 
+                                height: 200, 
+                                marginBottom: 16, 
+                                borderRadius: 8, 
+                                border: '2px solid #39FF14', 
+                                background: '#fff' 
+                              }} 
+                            />
+                            <div style={{ fontSize: '14px', color: '#39FF14', fontWeight: 'bold' }}>
+                              VINTE - {getMultiplierDisplay('vinte')}
+                            </div>
                           </div>
-                        </div>
-                      );
-                    case 'dez':
-                      return (
-                        <div>
-                          <img 
-                            src={getCardImage('dez')} 
-                            alt="Dez" 
-                            style={{ 
-                              width: 120, 
-                              height: 160, 
-                              marginBottom: 16, 
-                              borderRadius: 8, 
-                              border: '2px solid #39FF14', 
-                              background: '#fff' 
-                            }} 
-                          />
-                          <div style={{ fontSize: '14px', color: '#39FF14', fontWeight: 'bold' }}>
-                            DEZ - {getMultiplierDisplay('dez')}
+                        );
+                      case 'dez':
+                        return (
+                          <div style={{ 
+                            display: 'flex', 
+                            flexDirection: 'column', 
+                            alignItems: 'center', 
+                            justifyContent: 'center'
+                          }}>
+                            <img 
+                              src={getCardImage('dez')} 
+                              alt="Dez" 
+                              style={{ 
+                                width: 150, 
+                                height: 200, 
+                                marginBottom: 16, 
+                                borderRadius: 8, 
+                                border: '2px solid #39FF14', 
+                                background: '#fff' 
+                              }} 
+                            />
+                            <div style={{ fontSize: '14px', color: '#39FF14', fontWeight: 'bold' }}>
+                              DEZ - {getMultiplierDisplay('dez')}
+                            </div>
                           </div>
-                        </div>
-                      );
-                    case 'cinco':
-                      return (
-                        <div>
-                          <img 
-                            src={getCardImage('cinco')} 
-                            alt="Cinco" 
-                            style={{ 
-                              width: 120, 
-                              height: 160, 
-                              marginBottom: 16, 
-                              borderRadius: 8, 
-                              border: '2px solid #39FF14', 
-                              background: '#fff' 
-                            }} 
-                          />
-                          <div style={{ fontSize: '14px', color: '#39FF14', fontWeight: 'bold' }}>
-                            CINCO - {getMultiplierDisplay('cinco')}
+                        );
+                      case 'cinco':
+                        return (
+                          <div style={{ 
+                            display: 'flex', 
+                            flexDirection: 'column', 
+                            alignItems: 'center', 
+                            justifyContent: 'center'
+                          }}>
+                            <img 
+                              src={getCardImage('cinco')} 
+                              alt="Cinco" 
+                              style={{ 
+                                width: 150, 
+                                height: 200, 
+                                marginBottom: 16, 
+                                borderRadius: 8, 
+                                border: '2px solid #39FF14', 
+                                background: '#fff' 
+                              }} 
+                            />
+                            <div style={{ fontSize: '14px', color: '#39FF14', fontWeight: 'bold' }}>
+                              CINCO - {getMultiplierDisplay('cinco')}
+                            </div>
                           </div>
-                        </div>
-                      );
-                    case 'miseria':
-                      return (
-                        <div>
-                          <img 
-                            src={getCardImage('miseria')} 
-                            alt="Miséria" 
-                            style={{ 
-                              width: 120, 
-                              height: 160, 
-                              marginBottom: 16, 
-                              borderRadius: 8, 
-                              border: '2px solid #39FF14', 
-                              background: '#fff' 
-                            }} 
-                          />
-                          <div style={{ fontSize: '14px', color: '#39FF14', fontWeight: 'bold' }}>
-                            MISÉRIA - {getMultiplierDisplay('miseria')}
+                        );
+                      case 'miseria':
+                        return (
+                          <div style={{ 
+                            display: 'flex', 
+                            flexDirection: 'column', 
+                            alignItems: 'center', 
+                            justifyContent: 'center'
+                          }}>
+                            <img 
+                              src={getCardImage('miseria')} 
+                              alt="Miséria" 
+                              style={{ 
+                                width: 150, 
+                                height: 200, 
+                                marginBottom: 16, 
+                                borderRadius: 8, 
+                                border: '2px solid #39FF14', 
+                                background: '#fff' 
+                              }} 
+                            />
+                            <div style={{ fontSize: '14px', color: '#39FF14', fontWeight: 'bold' }}>
+                              MISÉRIA - {getMultiplierDisplay('miseria')}
+                            </div>
                           </div>
-                        </div>
-                      );
-                    default:
-                      return null;
-                  }
-                })()
-              ) : (
-                /* Estado padrão - Vazio */
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  height: '200px',
-                  color: '#666',
-                  fontSize: '14px'
-                }}>
-                  Aguardando resultado...
-                </div>
-              )}
+                        );
+                      default:
+                        return null;
+                    }
+                  })()
+                ) : (
+                  /* Estado padrão - Vazio */
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#666',
+                    fontSize: '14px'
+                  }}>
+                    Aguardando resultado...
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
@@ -625,7 +653,8 @@ const getCardImage = (card) => {
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            padding: '2rem'
+            padding: '2rem',
+            minHeight: '100%'
           }}>
             <div className="slot" style={{
               backgroundImage: 'url("/src/assets/Frame 2.png")',
@@ -658,70 +687,54 @@ const getCardImage = (card) => {
             </div>
           </div>
 
-          {/* Right Sidebar - Placar */}
+          {/* Right Sidebar - Ranking Preview */}
           <div style={{
-            width: '300px',
-            padding: '2rem'
+            width: '490px',
+            padding: '2rem',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center'
           }}>
             <div style={{
+              background: '#1a1a1a',
+              height: '900px', 
               borderRadius: '16px',
               border: '2px solid #39FF14',
               padding: '2rem',
-              height: '900px',
-              overflow: 'auto'
+              width: '100%',
+              overflow: 'hidden',
+              display: 'flex',
+              flexDirection: 'column'
             }}>
-              <div style={{ fontSize: '1.2rem', fontWeight: 'bold', color: '#fff', marginBottom: '1rem' }}>Placar:</div>
-              
-              {/* Resultado da última aposta */}
-              <div style={{ marginBottom: '1rem', fontSize: '14px' }}>
-                <div style={{ color: '#39FF14' }}>{result}</div>
+              {/* Título do Ranking */}
+              <div style={{ 
+                fontSize: '1.5rem', 
+                marginBottom: '1.5rem', 
+                color: '#39FF14', 
+                fontWeight: 'bold',
+                textAlign: 'center'
+              }}>
+                Top 5 Jogadores
               </div>
-
-              {/* Informações da carta quando há resultado */}
-              {resultadoAposta && (
-                <div style={{ marginBottom: '1rem', padding: '1rem', background: '#333', borderRadius: '8px' }}>
-                  {['win', 'vitoria'].includes(resultadoAposta.result) ? (
-                    resultadoAposta.card &&
-                    ['master', 'vinte', 'dez', 'cinco', 'miseria'].includes(resultadoAposta.card) &&
-                    resultadoAposta.win_amount > Number(valorAposta) ? (
-                      <>
-                        <div style={{ color: '#43e97b', fontSize: '14px', marginBottom: '0.5rem' }}>
-                          🎉 Vitória + Carta Especial!
-                        </div>
-                        <div style={{ color: '#fff', fontSize: '12px' }}>
-                          Carta: {getCardDisplayName(resultadoAposta.card)}
-                        </div>
-                        <div style={{ color: '#39FF14', fontSize: '12px' }}>
-                          Multiplicador: {getMultiplierDisplay(resultadoAposta.card)}
-                        </div>
-                      </>
-                    ) : (
-                      <div style={{ color: '#43e97b', fontSize: '14px' }}>
-                        🎉 Vitória na roleta!
-                      </div>
-                    )
-                  ) : (
-                    <div style={{ color: '#ff4d4f', fontSize: '14px' }}>
-                      😢 Derrota na roleta
-                    </div>
-                  )}
-                  {resultadoAposta.win_amount !== undefined && (
-                    <div style={{ color: '#fff', fontSize: '12px', marginTop: '0.5rem' }}>
-                      Valor ganho: R$ {resultadoAposta.win_amount.toFixed(2)}
-                    </div>
-                  )}
+              
+              {/* Componente RankingPreview sem scroll */}
+              <div style={{ 
+                flex: 1,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                overflow: 'hidden'
+              }}>
+                <div style={{ 
+                  width: '100%',
+                  maxHeight: '100%',
+                  transform: 'scale(1)',
+                  transformOrigin: 'center'
+                }}>
+                  <RankingPreview />
                 </div>
-              )}
-
-              {/* Debug info (pode remover depois) */}
-              {resultadoAposta && (
-                <details style={{ fontSize: '10px', color: '#666', marginTop: '1rem' }}>
-                  <summary>Debug</summary>
-                  <pre style={{ color: '#666', fontSize: '10px', marginTop: '0.5rem' }}>
-                    {JSON.stringify(resultadoAposta, null, 2)}
-                  </pre>
-                </details>
-              )}
+              </div>
             </div>
           </div>
         </div>
@@ -741,8 +754,8 @@ const getCardImage = (card) => {
         }}>
           {/* Left side - Aporte and Lance */}
           <div style={{ display: 'flex', gap: '2rem', color: '#fff' }}>
-            <div>Aporte: 000.00 R$</div>
-            <div>Lance: 000.00 R$</div>
+            <div>Aporte: {valorAposta ? `${Number(valorAposta).toFixed(2)}` : '0.00'} R$</div>
+            <div>Lance: {resultadoAposta?.win_amount ? `${resultadoAposta.win_amount.toFixed(2)}` : '0.00'} R$</div>
           </div>
 
           {/* Center - Play button */}
@@ -770,53 +783,185 @@ const getCardImage = (card) => {
           <div style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '0.5rem'
+            gap: '1rem'
           }}>
-            <button style={{
-              width: 40,
-              height: 40,
-              border: 'none',
-              borderRadius: '50%',
-              background: '#39FF14',
-              cursor: 'pointer',
-              fontSize: '18px'
-            }}
-            onClick={() => {
-              const newValue = Math.max(0, Number(valorAposta) - 10);
-              setValorAposta(newValue.toString());
-            }}
-            >
-              ◀
-            </button>
-            
+            {/* Apostas rápidas */}
             <div style={{
-              background: '#39FF14',
-              color: '#000',
-              padding: '8px 16px',
-              borderRadius: '20px',
-              fontWeight: 'bold',
-              minWidth: '80px',
-              textAlign: 'center'
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '0.3rem'
             }}>
-              R$ {valorAposta || '0'}
+              <div style={{
+                display: 'flex',
+                gap: '0.3rem'
+              }}>
+                <button style={{
+                  width: 35,
+                  height: 25,
+                  border: 'none',
+                  borderRadius: '4px',
+                  background: '#39FF14',
+                  cursor: 'pointer',
+                  fontSize: '10px',
+                  fontWeight: 'bold',
+                  color: '#000'
+                }}
+                onClick={() => {
+                  const newValue = Number(valorAposta || 0) + 2;
+                  setValorAposta(newValue.toString());
+                }}
+                >
+                  +2
+                </button>
+                <button style={{
+                  width: 35,
+                  height: 25,
+                  border: 'none',
+                  borderRadius: '4px',
+                  background: '#39FF14',
+                  cursor: 'pointer',
+                  fontSize: '10px',
+                  fontWeight: 'bold',
+                  color: '#000'
+                }}
+                onClick={() => {
+                  const newValue = Number(valorAposta || 0) + 20;
+                  setValorAposta(newValue.toString());
+                }}
+                >
+                  +20
+                </button>
+                <button style={{
+                  width: 35,
+                  height: 25,
+                  border: 'none',
+                  borderRadius: '4px',
+                  background: '#39FF14',
+                  cursor: 'pointer',
+                  fontSize: '10px',
+                  fontWeight: 'bold',
+                  color: '#000'
+                }}
+                onClick={() => {
+                  const newValue = Number(valorAposta || 0) + 50;
+                  setValorAposta(newValue.toString());
+                }}
+                >
+                  +50
+                </button>
+              </div>
+              <div style={{
+                display: 'flex',
+                gap: '0.3rem'
+              }}>
+                <button style={{
+                  width: 35,
+                  height: 25,
+                  border: 'none',
+                  borderRadius: '4px',
+                  background: '#39FF14',
+                  cursor: 'pointer',
+                  fontSize: '9px',
+                  fontWeight: 'bold',
+                  color: '#000'
+                }}
+                onClick={() => {
+                  const newValue = Number(valorAposta || 0) + 100;
+                  setValorAposta(newValue.toString());
+                }}
+                >
+                  +100
+                </button>
+                <button style={{
+                  width: 35,
+                  height: 25,
+                  border: 'none',
+                  borderRadius: '4px',
+                  background: '#39FF14',
+                  cursor: 'pointer',
+                  fontSize: '9px',
+                  fontWeight: 'bold',
+                  color: '#000'
+                }}
+                onClick={() => {
+                  const newValue = Number(valorAposta || 0) + 200;
+                  setValorAposta(newValue.toString());
+                }}
+                >
+                  +200
+                </button>
+                <button style={{
+                  width: 35,
+                  height: 25,
+                  border: 'none',
+                  borderRadius: '4px',
+                  background: '#FF4444',
+                  cursor: 'pointer',
+                  fontSize: '8px',
+                  fontWeight: 'bold',
+                  color: '#fff'
+                }}
+                onClick={() => {
+                  setValorAposta('0');
+                }}
+                >
+                  Clear
+                </button>
+              </div>
             </div>
-            
-            <button style={{
-              width: 40,
-              height: 40,
-              border: 'none',
-              borderRadius: '50%',
-              background: '#39FF14',
-              cursor: 'pointer',
-              fontSize: '18px'
-            }}
-            onClick={() => {
-              const newValue = Number(valorAposta || 0) + 10;
-              setValorAposta(newValue.toString());
-            }}
-            >
-              ▶
-            </button>
+
+            {/* Controles principais de aposta */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem'
+            }}>
+              <button style={{
+                width: 40,
+                height: 40,
+                border: 'none',
+                borderRadius: '50%',
+                background: '#39FF14',
+                cursor: 'pointer',
+                fontSize: '18px'
+              }}
+              onClick={() => {
+                const newValue = Math.max(0, Number(valorAposta) - 5);
+                setValorAposta(newValue.toString());
+              }}
+              >
+                ◀
+              </button>
+              
+              <div style={{
+                background: '#39FF14',
+                color: '#000',
+                padding: '8px 16px',
+                borderRadius: '20px',
+                fontWeight: 'bold',
+                minWidth: '80px',
+                textAlign: 'center'
+              }}>
+                R$ {valorAposta || '0'}
+              </div>
+              
+              <button style={{
+                width: 40,
+                height: 40,
+                border: 'none',
+                borderRadius: '50%',
+                background: '#39FF14',
+                cursor: 'pointer',
+                fontSize: '18px'
+              }}
+              onClick={() => {
+                const newValue = Number(valorAposta || 0) + 5;
+                setValorAposta(newValue.toString());
+              }}
+              >
+                ▶
+              </button>
+            </div>
           </div>
         </footer>
       </div>

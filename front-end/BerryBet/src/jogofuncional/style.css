@@ -49,8 +49,8 @@ body {
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: repeat(3, 1fr);
   width: 600px;
-  height: 600px;
-  margin: 20px auto;
+  height: 480px;
+  margin: 0 auto;
   position: relative;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
 }
@@ -65,8 +65,8 @@ body {
 }
 
 .dog-img {
-  width: 85%;
-  height: 85%;
+  width: 60%;
+  height: 80%;
   object-fit: contain;
   transition: none;
   filter: none;
