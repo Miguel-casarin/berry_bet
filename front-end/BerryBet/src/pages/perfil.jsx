@@ -184,25 +184,48 @@ function Perfil() {
                     <div style={{ fontSize: 28, fontWeight: 800, color: '#51F893', marginBottom: 6, textAlign: 'center', textShadow: '0 0 10px rgba(81, 248, 147, 0.7)' }}>{user?.name || user?.username}</div>
                     <div style={{ color: '#ccc', fontSize: 16, marginBottom: 4, textAlign: 'center', fontWeight: 500 }}>@{user?.username}</div>
                     <div style={{ color: '#ccc', fontSize: 14, marginBottom: 8, textAlign: 'center', fontWeight: 400 }}>{user?.email}</div>
-                    <div style={{ color: '#51F893', fontSize: 15, marginBottom: 18, textAlign: 'center', fontWeight: 700 }}>Membro desde: {user?.created_at ? new Date(user.created_at).toLocaleDateString() : '-'}</div>
+                    <button
+                        onClick={() => navigate('/conta')}
+                        style={{
+                            marginTop: 18,
+                            background: 'linear-gradient(90deg, #51F893 0%, #222 100%)',
+                            color: '#111',
+                            fontWeight: 700,
+                            fontSize: 16,
+                            border: 'none',
+                            borderRadius: 8,
+                            padding: '10px 28px',
+                            cursor: 'pointer',
+                            boxShadow: '0 2px 8px #51F89355',
+                            transition: 'all 0.2s',
+                            letterSpacing: 1,
+                            textShadow: '0 2px 8px #51F89333',
+                            outline: 'none',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 8
+                        }}
+                        onMouseEnter={e => {
+                            e.target.style.background = 'linear-gradient(90deg, #40E882 0%, #222 100%)';
+                            e.target.style.color = '#fff';
+                        }}
+                        onMouseLeave={e => {
+                            e.target.style.background = 'linear-gradient(90deg, #51F893 0%, #222 100%)';
+                            e.target.style.color = '#111';
+                        }}
+                    >
+                        <span style={{ fontSize: 18 }}>⚙️</span> Gerenciar Conta
+                    </button>
                 </section>
                 {/* Conteúdo principal */}
                 <section style={{ flex: 1, minWidth: 340, maxWidth: 650, display: 'flex', flexDirection: 'column', gap: 24 }}>
                     <div style={{ background: '#111', borderRadius: 20, boxShadow: '0 4px 32px rgba(81, 248, 147, 0.3)', padding: '38px 34px', border: '2px solid #51F893', marginBottom: 0 }}>
                         <div style={{ color: '#ccc', fontSize: 18, marginBottom: 8 }}>Olá!</div>
                         <div style={{ fontWeight: 900, fontSize: 32, color: '#fff', marginBottom: 12, lineHeight: 1.2, letterSpacing: 1, textShadow: '0 2px 8px rgba(81, 248, 147, 0.3)' }}>
-                            {user?.username ? `Eu sou ${user.username}, apostador BerryBet!` : 'Perfil do Usuário'}
+                            {user?.name ? `${user.name}, apostador BerryBet!` : 'Perfil do Usuário'}
                         </div>
                         <div style={{ color: '#ccc', fontSize: 18, marginBottom: 18 }}>
-                            {user?.bio || 'Bem-vindo ao seu perfil. Aqui você pode acompanhar suas estatísticas e conquistas!'}
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 18 }}>
-                            <span style={{ color: '#51F893', fontWeight: 700, fontSize: 16, display: 'flex', alignItems: 'center', textShadow: '0 2px 8px rgba(81, 248, 147, 0.3)' }}>
-                                <span style={{ fontSize: 18, marginRight: 6 }}>●</span> Ativo
-                            </span>
-                            <span style={{ color: '#51F893', fontWeight: 700, fontSize: 16, display: 'flex', alignItems: 'center', textShadow: '0 2px 8px rgba(81, 248, 147, 0.3)' }}>
-                                <span style={{ fontSize: 18, marginRight: 6 }}>★</span> Membro desde {user?.created_at ? new Date(user.created_at).toLocaleDateString() : '-'}
-                            </span>
+                            {user?.bio || 'Bem-vindo ao BerryBet! Onde transformamos seu dinheiro em experiências inesquecíveis... principalmente a experiência de perdê-lo!'}
                         </div>
                     </div>
                     <div style={{ background: '#111', borderRadius: 20, boxShadow: '0 4px 32px rgba(81, 248, 147, 0.3)', padding: '34px 34px', border: '2px solid #51F893' }}>

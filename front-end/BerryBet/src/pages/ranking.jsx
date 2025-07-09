@@ -445,6 +445,43 @@ function Ranking() {
                 </div>
             </div>
             
+            {/* Botão de voltar compacto no canto superior esquerdo */}
+            <button
+                onClick={() => navigate('/dashboard')}
+                style={{
+                    position: 'fixed',
+                    top: 20,
+                    left: 20,
+                    zIndex: 1000,
+                    background: '#51F893',
+                    color: '#000',
+                    fontWeight: 700,
+                    fontSize: 15,
+                    border: 'none',
+                    borderRadius: 7,
+                    padding: '6px 16px 6px 12px',
+                    minWidth: 0,
+                    minHeight: 0,
+                    height: 36,
+                    lineHeight: '20px',
+                    cursor: 'pointer',
+                    boxShadow: '0 2px 8px rgba(81, 248, 147, 0.5)',
+                    transition: 'background 0.2s',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 6,
+                    maxWidth: 120,
+                }}
+                onMouseEnter={(e) => {
+                    e.target.style.background = '#40E882';
+                }}
+                onMouseLeave={(e) => {
+                    e.target.style.background = '#51F893';
+                }}
+            >
+                <span style={{ fontSize: 18, fontWeight: 900, marginRight: 2 }}>←</span> Voltar
+            </button>
+            
             <div style={{
                 width: '100%',
                 maxWidth: 900,
