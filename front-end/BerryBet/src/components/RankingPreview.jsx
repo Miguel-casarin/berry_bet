@@ -1,17 +1,30 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 function RankingPreview() {
     const [ranking, setRanking] = React.useState([]);
+    const navigate = useNavigate();
     React.useEffect(() => {
-        fetch('http://localhost:8080/api/ranking')
-            .then(res => res.json())
+        const token = localStorage.getItem('token');
+        if (!token) return;
+        
+        fetch('http://localhost:8080/api/ranking', {
+            headers: { Authorization: `Bearer ${token}` }
+        })
+            .then(res => {
+                if (!res.ok) return { data: [] };
+                return res.json();
+            })
             .then(data => {
                 const sorted = (data.data || []).sort((a, b) => (b.total_profit ?? 0) - (a.total_profit ?? 0));
                 setRanking(sorted.slice(0, 5));
+            })
+            .catch(() => {
+                setRanking([]);
             });
     }, []);
     return (
-        <div style={{
+        <div className="lightbar-card" style={{
             width: '100%',
             maxWidth: 500,
             background: '#1a1a1a',
@@ -19,6 +32,12 @@ function RankingPreview() {
             boxShadow: '0 0 20px rgba(81, 248, 147, 0.3)',
             padding: 18,
             border: '2px solid #51F893',
+            height: '100%', // altura responsiva
+            maxHeight: '450px', // altura máxima igual à Your Card
+            minHeight: '300px', // altura mínima igual à Your Card
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden' // evita overflow
         }}>
             <h3 style={{
                 textAlign: 'center',
@@ -30,8 +49,8 @@ function RankingPreview() {
                 letterSpacing: 1,
                 marginBottom: 18,
             }}>Top 5 Jogadores</h3>
-            <div style={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', background: 'none' }}>
+            <div style={{ overflowX: 'auto', flex: 1, display: 'flex', flexDirection: 'column' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', background: 'none', flex: 1 }}>
                     <thead>
                         <tr style={{ background: '#333', color: '#51F893', fontWeight: 900, fontSize: 15 }}>
                             <th style={{ padding: '8px 4px', borderBottom: '2px solid #51F893', borderRadius: 8 }}>#</th>
@@ -69,28 +88,31 @@ function RankingPreview() {
                 </table>
             </div>
             <div style={{ textAlign: 'center', marginTop: 8 }}>
-                <a href="/ranking" style={{
-                    color: '#000',
-                    fontWeight: 900,
-                    fontSize: 16,
-                    textDecoration: 'none',
-                    background: '#51F893',
-                    padding: '7px 22px',
-                    borderRadius: 10,
-                    boxShadow: '0 0 10px rgba(81, 248, 147, 0.3)',
-                    border: '2px solid #51F893',
-                    display: 'inline-block',
-                    transition: 'all 0.3s ease',
-                }}
-                onMouseEnter={(e) => {
-                    e.target.style.background = '#45E080';
-                    e.target.style.boxShadow = '0 0 15px rgba(81, 248, 147, 0.6)';
-                }}
-                onMouseLeave={(e) => {
-                    e.target.style.background = '#51F893';
-                    e.target.style.boxShadow = '0 0 10px rgba(81, 248, 147, 0.3)';
-                }}
-                >Ver ranking completo</a>
+                <button 
+                    onClick={() => navigate('/ranking')}
+                    style={{
+                        color: '#000',
+                        fontWeight: 900,
+                        fontSize: 16,
+                        textDecoration: 'none',
+                        background: '#51F893',
+                        padding: '7px 22px',
+                        borderRadius: 10,
+                        boxShadow: '0 0 10px rgba(81, 248, 147, 0.3)',
+                        border: '2px solid #51F893',
+                        cursor: 'pointer',
+                        transition: 'all 0.3s ease',
+                        outline: 'none'
+                    }}
+                    onMouseEnter={(e) => {
+                        e.target.style.background = '#45E080';
+                        e.target.style.boxShadow = '0 0 15px rgba(81, 248, 147, 0.6)';
+                    }}
+                    onMouseLeave={(e) => {
+                        e.target.style.background = '#51F893';
+                        e.target.style.boxShadow = '0 0 10px rgba(81, 248, 147, 0.3)';
+                    }}
+                >Ver ranking completo</button>
             </div>
         </div>
     );

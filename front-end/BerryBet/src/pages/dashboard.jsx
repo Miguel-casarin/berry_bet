@@ -206,7 +206,7 @@ function Dashboard() {
         style={{
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'space-between',
+          justifyContent: 'center',
           position: 'sticky',
           top: 0,
           background: '#111',
@@ -216,18 +216,22 @@ function Dashboard() {
           borderBottom: '1px solid #333',
         }}
       >
+        {/* Espaço à esquerda (invisível) para balancear */}
+        <div style={{ flex: 1 }}></div>
+        
         <header
           style={{
             fontSize: '32px',
             fontWeight: 'bold',
             textAlign: 'center',
-            flex: 1,
             letterSpacing: 2,
             color: '#fff',
             userSelect: 'none',
             lineHeight: '56px',
-            marginLeft: 24,
             fontFamily: 'Montserrat, Arial, sans-serif',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
           }}
         >
           <span
@@ -254,7 +258,9 @@ function Dashboard() {
             Berry.Bet
           </span>
         </header>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginRight: 24 }}>
+        
+        {/* Saldo e Perfil à direita */}
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'flex-end', marginRight: 24 }}>
           {/* Saldo à esquerda do bloco do perfil */}
           {isLogged && (
             user ? (
