@@ -129,13 +129,13 @@ function Conta() {
     const getTransactionColor = (type, amount) => {
         const typeColors = {
             'bet': '#ff6b6b',      // Vermelho para apostas
-            'win': '#43e97b',      // Verde para ganhos
+            'win': '#51F893',      // Verde para ganhos
             'deposit': '#4ecdc4',  // Azul-verde para depósitos
             'withdrawal': '#ffa726', // Laranja para saques
             'bonus': '#9c27b0'     // Roxo para bônus
         };
         
-        return typeColors[type] || (amount > 0 ? '#43e97b' : '#ff6b6b');
+        return typeColors[type] || (amount > 0 ? '#51F893' : '#ff6b6b');
     };
 
     useEffect(() => {
@@ -447,40 +447,26 @@ function Conta() {
     return (
         <div style={{
             minHeight: '100vh',
-            background: 'linear-gradient(135deg, #101820 0%, #0a2e12 60%, #fff700 180%)',
+            background: '#0a0a0a',
             backgroundAttachment: 'fixed',
             padding: 0
         }}>
             <header
                 style={{
-                    fontSize: '32px',
-                    fontWeight: 'bold',
-                    textAlign: 'center',
-                    flex: 1,
-                    letterSpacing: 2,
-                    color: '#fff',
-                    userSelect: 'none',
-                    lineHeight: '56px',
-                    marginLeft: 0,
-                    marginRight: 0,
-                    textShadow: '0 2px 8px #fff70088, 0 0px 2px #43e97b55',
-                    fontFamily: 'Montserrat, Arial, sans-serif',
-                    filter: 'drop-shadow(0 0 8px #43e97b55)',
-                    background: 'linear-gradient(90deg, #181c2b 0%, #232946 100%)',
-                    borderBottom: '2.5px solid #fff700',
-                    boxShadow: '0 4px 24px 0 #00ff8577, 0 1.5px 0 #fff700',
-                    backdropFilter: 'blur(8px)',
-                    WebkitBackdropFilter: 'blur(8px)',
-                    minHeight: 64,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
                     width: '100%',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    padding: '1rem 2rem',
+                    background: '#111',
+                    borderBottom: '1px solid #333',
+                    height: 64,
+                    position: 'sticky',
+                    top: 0,
                     zIndex: 10,
-                    position: 'relative',
-                    padding: 0,
                 }}
             >
+                <div style={{ flex: 1 }}></div>
                 <span
                     style={{
                         cursor: 'pointer',
@@ -504,12 +490,13 @@ function Conta() {
                 >
                     Berry.Bet
                 </span>
+                <div style={{ flex: 1 }}></div>
             </header>
             <main style={{ maxWidth: 1000, margin: '0 auto', padding: '40px 0 0 0', display: 'flex', gap: 32, justifyContent: 'center', alignItems: 'flex-start', minHeight: 600 }}>
                 {/* Avatar e info */}
-                <section style={{ background: 'rgba(16,24,32,0.98)', borderRadius: 20, boxShadow: '0 4px 32px #00ff8577, 0 0 0 2px #fff70055', padding: 38, minWidth: 320, maxWidth: 340, display: 'flex', flexDirection: 'column', alignItems: 'center', border: '2px solid #43e97b', position: 'relative', backdropFilter: 'blur(6px)' }}>
+                <section style={{ background: '#111', borderRadius: 20, boxShadow: '0 4px 32px rgba(81, 248, 147, 0.3)', padding: 38, minWidth: 320, maxWidth: 340, display: 'flex', flexDirection: 'column', alignItems: 'center', border: '2px solid #51F893', position: 'relative' }}>
                     <div
-                        style={{ width: 110, height: 110, borderRadius: '50%', border: '4px solid #fff700', overflow: 'hidden', marginBottom: 18, background: '#23272b', position: 'relative', cursor: editing ? 'pointer' : 'default', transition: 'box-shadow 0.2s' }}
+                        style={{ width: 110, height: 110, borderRadius: '50%', border: '4px solid #51F893', overflow: 'hidden', marginBottom: 18, background: '#333', position: 'relative', cursor: editing ? 'pointer' : 'default', transition: 'box-shadow 0.2s' }}
                         onClick={() => editing && setShowAvatarPopup(true)}
                         title={editing ? 'Clique para trocar a foto' : ''}
                     >
@@ -526,24 +513,24 @@ function Conta() {
                             );
                         })()}
                         {editing && (
-                            <span style={{ position: 'absolute', bottom: 8, right: 8, background: '#43e97b', borderRadius: '50%', width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 16, boxShadow: '0 2px 8px #43e97b33', zIndex: 2 }}>
+                            <span style={{ position: 'absolute', bottom: 8, right: 8, background: '#51F893', borderRadius: '50%', width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#000', fontSize: 16, boxShadow: '0 2px 8px rgba(81, 248, 147, 0.3)', zIndex: 2 }}>
                                 ✏️
                             </span>
                         )}
                     </div>
-                    <div style={{ fontSize: 24, fontWeight: 800, color: '#fff', marginBottom: 4, textAlign: 'center', textShadow: '0 2px 8px #43e97b33' }}>{user.username}</div>
+                    <div style={{ fontSize: 24, fontWeight: 800, color: '#fff', marginBottom: 4, textAlign: 'center', textShadow: '0 2px 8px rgba(81, 248, 147, 0.3)' }}>{user.username}</div>
                     <div style={{ color: '#b0b8c1', fontSize: 15, marginBottom: 8, textAlign: 'center' }}>{user.email}</div>
-                    <div style={{ color: '#43e97b', fontSize: 14, marginBottom: 0, textAlign: 'center', fontWeight: 700 }}>CPF: {user.cpf || '-'}</div>
+                    <div style={{ color: '#51F893', fontSize: 14, marginBottom: 0, textAlign: 'center', fontWeight: 700 }}>CPF: {user.cpf || '-'}</div>
                 </section>
                 {/* Formulário principal */}
-                <section style={{ flex: 1, minWidth: 340, maxWidth: 600, background: 'rgba(16,24,32,0.98)', borderRadius: 20, boxShadow: '0 4px 32px #00ff8577, 0 0 0 2px #fff70055', border: '2px solid #43e97b', padding: '36px 32px 32px 32px', display: 'flex', flexDirection: 'column', gap: 0, position: 'relative', color: '#fff', backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)' }}>
+                <section style={{ flex: 1, minWidth: 340, maxWidth: 600, background: '#111', borderRadius: 20, boxShadow: '0 4px 32px rgba(81, 248, 147, 0.3)', border: '2px solid #51F893', padding: '36px 32px 32px 32px', display: 'flex', flexDirection: 'column', gap: 0, position: 'relative', color: '#fff' }}>
                     {/* Abas */}
-                    <div style={{ display: 'flex', marginBottom: 24, borderBottom: '1px solid #43e97b' }}>
+                    <div style={{ display: 'flex', marginBottom: 24, borderBottom: '1px solid #51F893' }}>
                         <button
                             onClick={() => setActiveTab('profile')}
                             style={{
                                 padding: '12px 24px',
-                                background: activeTab === 'profile' ? '#43e97b' : 'transparent',
+                                background: activeTab === 'profile' ? '#51F893' : 'transparent',
                                 color: activeTab === 'profile' ? '#000' : '#fff',
                                 border: 'none',
                                 borderRadius: '10px 10px 0 0',
@@ -564,7 +551,7 @@ function Conta() {
                             }}
                             style={{
                                 padding: '12px 24px',
-                                background: activeTab === 'transactions' ? '#43e97b' : 'transparent',
+                                background: activeTab === 'transactions' ? '#51F893' : 'transparent',
                                 color: activeTab === 'transactions' ? '#000' : '#fff',
                                 border: 'none',
                                 borderRadius: '10px 10px 0 0',
@@ -590,7 +577,7 @@ function Conta() {
                                     value={form.username}
                                     onChange={handleChange}
                                     disabled={!editing}
-                                    style={{ width: '100%', padding: 12, borderRadius: 10, border: '1.5px solid #43e97b', marginTop: 4, fontSize: 16, background: editing ? '#23272b' : '#181c1f', color: '#fff', transition: 'background 0.2s, border 0.2s' }}
+                                    style={{ width: '100%', padding: 12, borderRadius: 10, border: '1.5px solid #51F893', marginTop: 4, fontSize: 16, background: editing ? '#333' : '#222', color: '#fff', transition: 'background 0.2s, border 0.2s' }}
                                 />
                             </div>
                             <div>
@@ -612,7 +599,7 @@ function Conta() {
                                     value={form.email}
                                     onChange={handleChange}
                                     disabled={!editing}
-                                    style={{ width: '100%', padding: 12, borderRadius: 10, border: '1.5px solid #43e97b', marginTop: 4, fontSize: 16, background: editing ? '#23272b' : '#181c1f', color: '#fff', transition: 'background 0.2s, border 0.2s' }}
+                                    style={{ width: '100%', padding: 12, borderRadius: 10, border: '1.5px solid #51F893', marginTop: 4, fontSize: 16, background: editing ? '#333' : '#222', color: '#fff', transition: 'background 0.2s, border 0.2s' }}
                                 />
                             </div>
                             <div>
@@ -623,7 +610,7 @@ function Conta() {
                                     value={form.phone}
                                     onChange={handleChange}
                                     disabled={!editing}
-                                    style={{ width: '100%', padding: 12, borderRadius: 10, border: '1.5px solid #43e97b', marginTop: 4, fontSize: 16, background: editing ? '#23272b' : '#181c1f', color: '#fff', transition: 'background 0.2s, border 0.2s' }}
+                                    style={{ width: '100%', padding: 12, borderRadius: 10, border: '1.5px solid #51F893', marginTop: 4, fontSize: 16, background: editing ? '#333' : '#222', color: '#fff', transition: 'background 0.2s, border 0.2s' }}
                                 />
                             </div>
                             <div>
@@ -1231,8 +1218,8 @@ function Conta() {
                     top: 20,
                     left: 20,
                     zIndex: 1000,
-                    background: 'linear-gradient(90deg, #fff700 0%, #43e97b 100%)',
-                    color: '#101820',
+                    background: '#51F893',
+                    color: '#000',
                     fontWeight: 700,
                     fontSize: 15,
                     border: 'none',
@@ -1243,12 +1230,18 @@ function Conta() {
                     height: 36,
                     lineHeight: '20px',
                     cursor: 'pointer',
-                    boxShadow: '0 2px 8px #43e97b55',
+                    boxShadow: '0 2px 8px rgba(81, 248, 147, 0.5)',
                     transition: 'background 0.2s',
                     display: 'flex',
                     alignItems: 'center',
                     gap: 6,
                     maxWidth: 120,
+                }}
+                onMouseEnter={(e) => {
+                    e.target.style.background = '#40E882';
+                }}
+                onMouseLeave={(e) => {
+                    e.target.style.background = '#51F893';
                 }}
             >
                 <span style={{ fontSize: 18, fontWeight: 900, marginRight: 2 }}>←</span> Voltar

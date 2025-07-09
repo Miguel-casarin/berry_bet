@@ -1,0 +1,58 @@
+/* CSS específico para a página de depósito */
+.deposito-container {
+  min-height: 100vh;
+  background: #0a0a0a;
+  color: #fff;
+  font-family: Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0;
+}
+
+.deposito-container * {
+  outline: none !important;
+}
+
+.deposito-container button {
+  outline: none !important;
+}
+
+/* Estilos para botões de pagamento */
+.deposito-container .botao-pagamento {
+  background: #51F893 !important;
+  background-color: #51F893 !important;
+  color: #000 !important;
+  border: 2px solid #51F893 !important;
+  padding: 12px 20px !important;
+  border-radius: 10px !important;
+  font-size: 16px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  transition: all 0.3s ease !important;
+  outline: none !important;
+  box-shadow: 0 0 10px rgba(81, 248, 147, 0.3) !important;
+  transform: scale(1) !important;
+}
+
+.deposito-container .botao-pagamento:hover {
+  background: #45E080 !important;
+  background-color: #45E080 !important;
+  box-shadow: 0 0 15px rgba(81, 248, 147, 0.6) !important;
+  transform: scale(1.05) !important;
+}
+
+.deposito-container .botao-pagamento.selecionado {
+  background: #51F893 !important;
+  background-color: #51F893 !important;
+  color: #000 !important;
+  box-shadow: 0 0 15px rgba(81, 248, 147, 0.6) !important;
+  transform: scale(1.05) !important;
+}
+
+.deposito-container .botao-pagamento.selecionado:hover {
+  background: #45E080 !important;
+  background-color: #45E080 !important;
+  box-shadow: 0 0 15px rgba(81, 248, 147, 0.6) !important;
+  transform: scale(1.05) !important;
+}

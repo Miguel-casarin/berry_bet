@@ -56,13 +56,23 @@ function jogodoTigrinho() {
     setValorAposta(formattedValue);
   };
 
-  const handleApostar = async (isAllWin = false) => {
-    if (!valorAposta || Number(valorAposta) <= 0) {
+  const handleApostar = async () => {
+    // Limpa mensagens de erro anteriores
+    setShowCarameloError(false);
+    setShowWinCard(false);
+    
+    if (!valorAposta || valorAposta === '' || Number(valorAposta) <= 0) {
       setResult('Digite um valor válido para apostar!');
       return;
     }
 
     const valorApostaNum = Number(valorAposta);
+    
+    // Validação adicional para valores muito baixos
+    if (valorApostaNum < 0.01) {
+      setResult('Valor mínimo de aposta é R$ 0,01');
+      return;
+    }
     
     // Verifica se tem saldo suficiente
     if (userBalance < valorApostaNum) {
@@ -105,11 +115,15 @@ function jogodoTigrinho() {
       }
       
       setResultadoAposta(data);
-      // Não atualiza o saldo com data.current_balance para evitar duplicação
-      // O saldo já foi decrementado no início da função
-      // Se ganhou, adiciona apenas o valor ganho
-      if (data.result === 'win' && data.win_amount > valorApostaNum) {
-        setUserBalance(prev => prev + data.win_amount);
+      // Atualiza o saldo baseado na resposta do servidor
+      if (data.current_balance !== undefined) {
+        setUserBalance(data.current_balance);
+      } else {
+        // Fallback: se não há current_balance, calcula manualmente
+        // O saldo já foi decrementado no início, então só adiciona se ganhou
+        if (data.result === 'win' && data.win_amount > 0) {
+          setUserBalance(prev => prev + data.win_amount);
+        }
       }
 
       // Mapeia a carta retornada para uma visualização no grid
@@ -119,15 +133,15 @@ function jogodoTigrinho() {
       setResult(data.message || (data.result === 'win' ? '🎉 Vitória!' : '😢 Derrota!'));
 
       // Mostra o caramelo error se for derrota (após o grid final ser mostrado)
-      if (data.result === 'loss' || data.card === 'perca' || data.win_amount <= Number(valorAposta)) {
+      if (data.result === 'loss' || data.card === 'perca' || data.win_amount < Number(valorAposta)) {
         setTimeout(() => {
           setShowCarameloError(true);
-        }, 1000); // Delay de 1 segundo para mostrar o caramelo error
+        }, 500); // Delay para mostrar o caramelo error
       } else {
         // Para vitória, mostra a carta após um delay
         setTimeout(() => {
           setShowWinCard(true);
-        }, 800); // Delay de 800ms para mostrar a carta vencedora
+        }, 500); // Delay para mostrar a carta vencedora
       }
 
       // NÃO limpe o campo de aposta aqui!
@@ -138,6 +152,8 @@ function jogodoTigrinho() {
       setUserBalance(prev => prev + valorApostaNum);
       setResult('Erro ao apostar.');
     }
+    
+    // Sempre garante que o botão play volta ao normal após o jogo
     setIsSpinning(false);
   };
 
@@ -302,9 +318,9 @@ const getCardImage = (card) => {
     }
   };
 
-  const girar = async (isAllWin = false) => {
+  const girar = async () => {
     // Esta função agora só chama handleApostar
-    await handleApostar(isAllWin);
+    await handleApostar();
   };
 
   // Adicionado para debug
@@ -328,7 +344,7 @@ const getCardImage = (card) => {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          zIndex: 1000
+          zIndex: 9999
         }}>
           <div style={{
             background: '#1a1a1a',
@@ -443,7 +459,7 @@ const getCardImage = (card) => {
         </header>
 
         {/* Main Game Area */}
-        <div style={{
+        <div className="jogo-tigrinho" style={{
           display: 'flex',
           height: 'calc(100vh - 280px)', // header + footer maior (120px)
           position: 'relative',
@@ -460,7 +476,7 @@ const getCardImage = (card) => {
             alignItems: 'center',
             justifyContent: 'center'
           }}>
-            <div style={{
+            <div className="lightbar-card" style={{
               background: '#1a1a1a',
               height: '100%', // altura responsiva
               maxHeight: '450px', // altura máxima reduzida
@@ -747,6 +763,7 @@ const getCardImage = (card) => {
             <button
               onClick={girar}
               disabled={isSpinning || !valorAposta || Number(valorAposta) <= 0}
+              className={isSpinning ? "" : "lightbar-play-button"}
               style={{
                 width: 80,
                 height: 80,
@@ -761,20 +778,7 @@ const getCardImage = (card) => {
                 color: '#000',
                 boxShadow: '0 4px 20px rgba(81, 248, 147, 0.4)',
                 filter: 'drop-shadow(0 0 10px rgba(81, 248, 147, 0.6))',
-                transition: 'all 0.3s ease',
                 outline: 'none'
-              }}
-              onMouseEnter={(e) => {
-                if (!isSpinning && valorAposta && Number(valorAposta) > 0) {
-                  e.target.style.transform = 'scale(1.1)';
-                  e.target.style.boxShadow = '0 6px 30px rgba(81, 248, 147, 0.6)';
-                  e.target.style.filter = 'drop-shadow(0 0 15px rgba(81, 248, 147, 0.8))';
-                }
-              }}
-              onMouseLeave={(e) => {
-                e.target.style.transform = 'scale(1)';
-                e.target.style.boxShadow = '0 4px 20px rgba(81, 248, 147, 0.4)';
-                e.target.style.filter = 'drop-shadow(0 0 10px rgba(81, 248, 147, 0.6))';
               }}
             >
               ▶
@@ -1025,11 +1029,8 @@ const getCardImage = (card) => {
                       fontSize: '9px',
                       fontWeight: 'bold',
                       color: '#fff',
-                      transition: 'background-color 0.2s',
                       outline: 'none'
                     }}
-                    onMouseEnter={(e) => e.target.style.backgroundColor = '#FF6666'}
-                    onMouseLeave={(e) => e.target.style.backgroundColor = '#FF4444'}
                   >
                     Clear
                   </button>
@@ -1038,7 +1039,7 @@ const getCardImage = (card) => {
 
               {/* Botão All Win ao lado (maior) */}
               <button
-                onClick={async () => {
+                onClick={() => {
                   if (userBalance !== null) {
                     // Se saldo for menor que 1 real, mostra popup
                     if (userBalance < 1) {
@@ -1047,13 +1048,10 @@ const getCardImage = (card) => {
                       return;
                     }
                     
-                    // Para All Win, usa o saldo total como número inteiro
+                    // Para All Win, apenas define o valor da aposta com o saldo total
                     const allWinValue = Math.floor(userBalance);
                     setValorAposta(allWinValue.toString());
-                    // Aguarda um pouco para o state atualizar, então faz a aposta
-                    setTimeout(() => {
-                      girar(true); // true indica que é All Win
-                    }, 100);
+                    setResult('Valor All Win definido! Clique no botão Play para apostar.');
                   }
                 }}
                 style={{
@@ -1066,15 +1064,12 @@ const getCardImage = (card) => {
                   fontSize: '12px',
                   fontWeight: 'bold',
                   color: '#000',
-                  transition: 'background-color 0.2s',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   alignSelf: 'center',
                   outline: 'none'
                 }}
-                onMouseEnter={(e) => e.target.style.backgroundColor = '#FFED4A'}
-                onMouseLeave={(e) => e.target.style.backgroundColor = '#FFD700'}
               >
                 ALL WIN
               </button>
@@ -1110,18 +1105,19 @@ const getCardImage = (card) => {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  transition: 'background-color 0.2s',
                   outline: 'none'
                 }}
-                onMouseEnter={(e) => e.target.style.backgroundColor = '#FF6666'}
-                onMouseLeave={(e) => e.target.style.backgroundColor = '#FF4444'}
               >
                 ◀
               </button>
 
               <input
                 type="text"
-                value={valorAposta ? `${Number(valorAposta).toFixed(2)}` : '0.00'}
+                value={valorAposta ? 
+                  (Number(valorAposta) % 1 === 0 ? 
+                    Number(valorAposta).toString() : 
+                    Number(valorAposta).toFixed(2)
+                  ) : '0.00'}
                 readOnly
                 style={{
                   width: '80px',
@@ -1157,11 +1153,8 @@ const getCardImage = (card) => {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  transition: 'background-color 0.2s',
                   outline: 'none'
                 }}
-                onMouseEnter={(e) => e.target.style.backgroundColor = '#45E080'}
-                onMouseLeave={(e) => e.target.style.backgroundColor = '#51F893'}
               >
                 ▶
               </button>
