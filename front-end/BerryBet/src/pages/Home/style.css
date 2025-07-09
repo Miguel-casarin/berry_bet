@@ -9,7 +9,7 @@
 
 
 .container {
-  background: rgba(255, 255, 255, 0.85);
+  background: rgba(0, 0, 0, 0.85);
   border-radius: 20px;
   box-shadow: 0 4px 24px rgba(0,0,0,0.18);
   padding: 2.5rem 2rem;
@@ -39,17 +39,20 @@ button {
   padding: 0.8rem;
   border-radius: 8px;
   border: none;
-  background: #f4e703;
-  color: #fff;
+  background: #51F893;
+  color: #000;
   font-size: 1.1rem;
   font-weight: bold;
   cursor: pointer;
   margin-top: 1rem;
-  transition: background 0.2s;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 10px rgba(81, 248, 147, 0.3);
 }
 
 button:hover {
-  background: #000000;
+  background: #45E080;
+  box-shadow: 0 0 15px rgba(81, 248, 147, 0.6);
+  transform: translateY(-2px);
 }
 
 
@@ -66,4 +69,129 @@ header ul p {
   margin-right: 32px; /* separa o logo dos links */
   font-weight: bold;
   font-size: 1.2rem;
+}
+
+/* Estilo para o logo Berry.Bet */
+.berry-bet-logo {
+  color: #51F893 !important;
+  text-shadow: 0 0 10px rgba(81, 248, 147, 0.7);
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.berry-bet-logo:hover {
+  color: #51F893 !important;
+  text-shadow: 0 0 15px rgba(81, 248, 147, 0.9);
+  transform: scale(1.05);
+}
+
+/* Estilos para textos de destaque */
+.text-success {
+  color: #51F893 !important;
+  text-shadow: 0 0 8px rgba(81, 248, 147, 0.6);
+}
+
+.text-primary {
+  color: #51F893 !important;
+  text-shadow: 0 0 8px rgba(81, 248, 147, 0.6);
+}
+
+/* Estilos para links */
+a {
+  color: #51F893;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+a:hover {
+  color: #45E080;
+  text-shadow: 0 0 8px rgba(81, 248, 147, 0.8);
+}
+
+/* Estilos para inputs com foco */
+input:focus {
+  outline: none;
+  border-color: #51F893;
+  box-shadow: 0 0 10px rgba(81, 248, 147, 0.3);
+}
+
+/* Remove text-shadow de botões específicos */
+button[type="button"] {
+  text-shadow: none !important;
+}
+
+/* Estilo específico para botão de cadastro - sobrescreve estilos gerais */
+button.btn-transparent {
+  color: #51F893 !important;
+  background: none !important;
+  border: none !important;
+  cursor: pointer !important;
+  text-decoration: underline !important;
+  padding: 0 !important;
+  text-shadow: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  filter: none !important;
+  margin: 0 !important;
+  font-size: inherit !important;
+  font-weight: inherit !important;
+  font-family: inherit !important;
+  width: auto !important;
+  border-radius: 0 !important;
+  margin-top: 0 !important;
+  transition: none !important;
+  transform: none !important;
+}
+
+button.btn-transparent:hover {
+  color: #51F893 !important;
+  background: none !important;
+  border: none !important;
+  text-shadow: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  filter: none !important;
+  transform: none !important;
+}
+
+button.btn-transparent:focus {
+  color: #51F893 !important;
+  background: none !important;
+  border: none !important;
+  text-shadow: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  filter: none !important;
+  transform: none !important;
+}
+
+button.btn-transparent:active {
+  color: #51F893 !important;
+  background: none !important;
+  border: none !important;
+  text-shadow: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  filter: none !important;
+  transform: none !important;
+}
+
+/* Regra adicional para garantir que o botão cadastre-se não tenha borda */
+p button.btn-transparent,
+p button.btn-transparent:hover,
+p button.btn-transparent:focus,
+p button.btn-transparent:active {
+  border: 0 !important;
+  border-width: 0 !important;
+  border-style: none !important;
+  border-color: transparent !important;
+  outline: 0 !important;
+  outline-width: 0 !important;
+  outline-style: none !important;
+  outline-color: transparent !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  text-shadow: none !important;
+  filter: none !important;
 }

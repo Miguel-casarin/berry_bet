@@ -64,7 +64,7 @@ function Deposito() {
     <>
       <header>
         <ul>
-          <p>Berry.Bet</p>
+          <p className="berry-bet-logo">Berry.Bet</p>
           <li><a href="/dashboard">Inicial</a></li>
           <li><a href="/jogodoTigrinho">JOGUE AQUI!</a></li>
           <li><a href="/saque">Saque</a></li>

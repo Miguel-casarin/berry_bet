@@ -140,8 +140,25 @@ function Ranking() {
                 }}
             >
                 <span
-                    style={{ fontWeight: 900, fontSize: 32, color: '#fff', letterSpacing: 1, textShadow: '0 2px 8px #43e97b88', userSelect: 'none', cursor: 'pointer' }}
+                    style={{ 
+                        fontWeight: 900, 
+                        fontSize: 32, 
+                        color: '#51F893', 
+                        letterSpacing: 1, 
+                        textShadow: '0 0 10px rgba(81, 248, 147, 0.7)', 
+                        userSelect: 'none', 
+                        cursor: 'pointer',
+                        transition: 'all 0.3s ease'
+                    }}
                     onClick={() => navigate('/dashboard')}
+                    onMouseEnter={(e) => {
+                        e.target.style.textShadow = '0 0 15px rgba(81, 248, 147, 0.9)';
+                        e.target.style.transform = 'scale(1.05)';
+                    }}
+                    onMouseLeave={(e) => {
+                        e.target.style.textShadow = '0 0 10px rgba(81, 248, 147, 0.7)';
+                        e.target.style.transform = 'scale(1)';
+                    }}
                 >Berry.Bet</span>
             </header>
             {/* Botão de voltar compacto no canto superior esquerdo */}

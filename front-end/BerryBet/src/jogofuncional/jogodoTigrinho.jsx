@@ -17,16 +17,13 @@ function jogodoTigrinho() {
   const [result, setResult] = useState('Digite o valor e clique em Apostar');
   const [isSpinning, setIsSpinning] = useState(false);
   const [popupOpen, setPopupOpen] = useState(false);
-  const [selecionado, setSelecionado] = useState("");
-  const [valorDeposito, setValorDeposito] = useState("");
   const [valorAposta, setValorAposta] = useState("");
   const [resultadoAposta, setResultadoAposta] = useState(null);
   const [userBalance, setUserBalance] = useState(null);
   const [showCarameloError, setShowCarameloError] = useState(false);
+  const [showNoMoneyPopup, setShowNoMoneyPopup] = useState(false);
+  const [showWinCard, setShowWinCard] = useState(false);
   const navigate = useNavigate();
-
-  // Variáveis para o popup de depósito
-  const valoresRapidos = [100, 500, 1000];
 
   // Busca saldo do usuário ao carregar
   React.useEffect(() => {
@@ -45,10 +42,21 @@ function jogodoTigrinho() {
   }, []);
 
   const handleValorApostaChange = (e) => {
-    setValorAposta(e.target.value.replace(/[^0-9]/g, ''));
+    const value = e.target.value.replace(/[^0-9.,]/g, '').replace(',', '.');
+    // Permite apenas um ponto decimal
+    const parts = value.split('.');
+    if (parts.length > 2) {
+      return;
+    }
+    // Limita a 2 casas decimais
+    if (parts[1] && parts[1].length > 2) {
+      parts[1] = parts[1].substring(0, 2);
+    }
+    const formattedValue = parts.join('.');
+    setValorAposta(formattedValue);
   };
 
-  const handleApostar = async () => {
+  const handleApostar = async (isAllWin = false) => {
     if (!valorAposta || Number(valorAposta) <= 0) {
       setResult('Digite um valor válido para apostar!');
       return;
@@ -59,6 +67,8 @@ function jogodoTigrinho() {
     // Verifica se tem saldo suficiente
     if (userBalance < valorApostaNum) {
       setResult('Saldo insuficiente!');
+      // Mostra popup sempre, exceto quando for All Win com saldo < 1 real (que já é tratado no botão)
+      setShowNoMoneyPopup(true);
       return;
     }
 
@@ -67,6 +77,7 @@ function jogodoTigrinho() {
     
     setResultadoAposta(null);
     setShowCarameloError(false); // Reset do caramelo error
+    setShowWinCard(false); // Reset da carta de vitória
     setResult('Apostando...');
     setIsSpinning(true);
     
@@ -94,7 +105,12 @@ function jogodoTigrinho() {
       }
       
       setResultadoAposta(data);
-      setUserBalance(data.current_balance);
+      // Não atualiza o saldo com data.current_balance para evitar duplicação
+      // O saldo já foi decrementado no início da função
+      // Se ganhou, adiciona apenas o valor ganho
+      if (data.result === 'win' && data.win_amount > valorApostaNum) {
+        setUserBalance(prev => prev + data.win_amount);
+      }
 
       // Mapeia a carta retornada para uma visualização no grid
       const gridResult = mapCardToGrid(data.card);
@@ -106,7 +122,12 @@ function jogodoTigrinho() {
       if (data.result === 'loss' || data.card === 'perca' || data.win_amount <= Number(valorAposta)) {
         setTimeout(() => {
           setShowCarameloError(true);
-        }, 500); // Pequeno delay para garantir que o grid final foi mostrado
+        }, 1000); // Delay de 1 segundo para mostrar o caramelo error
+      } else {
+        // Para vitória, mostra a carta após um delay
+        setTimeout(() => {
+          setShowWinCard(true);
+        }, 800); // Delay de 800ms para mostrar a carta vencedora
       }
 
       // NÃO limpe o campo de aposta aqui!
@@ -238,45 +259,6 @@ function jogodoTigrinho() {
     return multipliers[card] || '0%';
   };
 
-  const textos = {
-    pix: (
-      <>
-        <h3>PIX</h3>
-        <p>Transferência instantânea e gratuita. Use nossa chave PIX: <strong>perca@seudinheiro.com</strong></p>
-      </>
-    ),
-    cred: (
-      <>
-        <h3>Cartão de Crédito</h3>
-        <p>Compre agora e se preocupe depois! <em>Juros de apenas 15% ao mês</em></p>
-      </>
-    ),
-    deb: (
-      <>
-        <h3>Cartão de Débito</h3>
-        <p>Dinheiro saindo direto da sua conta! Rápido e prático.</p>
-      </>
-    ),
-    bole: (
-      <>
-        <h3>Boleto Bancário</h3>
-        <p>Pague em qualquer agência ou internet banking. Vence em 3 dias!</p>
-      </>
-    ),
-    bols: (
-      <>
-        <h3>Bolsa Família</h3>
-        <p>Seu dinheiro voltando para você! (ou não)</p>
-      </>
-    ),
-    carn: (
-      <>
-        <h3>Carnê</h3>
-        <p>Parcelamos sua dívida em até 12x com juros que você nem vai perceber!</p>
-      </>
-    ),
-  };
-
   // Adicione ou ajuste esta função no seu componente
 const getCardImage = (card) => {
   const cardMap = {
@@ -320,38 +302,9 @@ const getCardImage = (card) => {
     }
   };
 
-  const girar = async () => {
+  const girar = async (isAllWin = false) => {
     // Esta função agora só chama handleApostar
-    await handleApostar();
-  };
-
-  const handleValorRapido = (valor) => {
-    setValorDeposito(prev => String(Number(prev || 0) + valor));
-  };
-
-  const handleInputChange = (e) => {
-    setValorDeposito(e.target.value.replace(/[^0-9]/g, ''));
-  };
-
-  const handleConfirmar = async () => {
-    if (!valorDeposito || !selecionado) return;
-    // Exemplo de envio para backend
-    try {
-      await fetch('/api/deposito', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          metodo: selecionado,
-          valor: Number(valorDeposito)
-        })
-      });
-      alert('Depósito enviado!');
-      setPopupOpen(false);
-      setValorDeposito("");
-      setSelecionado("");
-    } catch (err) {
-      alert('Erro ao enviar depósito.');
-    }
+    await handleApostar(isAllWin);
   };
 
   // Adicionado para debug
@@ -363,61 +316,77 @@ const getCardImage = (card) => {
 
   return (
     <>
-      {popupOpen && (
-        <div className={popupOpen ? "popup-overlay active" : "popup-overlay"} onClick={e => { if (e.target.className.includes('popup-overlay')) setPopupOpen(false); }}>
-          <div className="popup-container" onClick={e => e.stopPropagation()}>
-            <div className="popup-header">
-              <div className="popup-close-canto">
-                <button className="popup-close" onClick={() => setPopupOpen(false)}>&times;</button>
-              </div>
+      {/* Popup de sem dinheiro */}
+      {showNoMoneyPopup && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0, 0, 0, 0.7)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            background: '#1a1a1a',
+            padding: '2rem',
+            borderRadius: '16px',
+            border: '2px solid #FF4444',
+            textAlign: 'center',
+            maxWidth: '400px',
+            width: '90%'
+          }}>
+            <div style={{
+              fontSize: '3rem',
+              marginBottom: '1rem'
+            }}>
+              😢
             </div>
-            <div className="popup-content">
-              <p>Escolha aqui seu método de pagamento:</p>
-              <div className="popup-content-flex">
-                <div className="botoes-pagamento-coluna">
-                  <button className={`botao-pagamento${selecionado === "pix" ? " selecionado" : ""}`} value="pix" onClick={() => setSelecionado("pix")}>Pix</button>
-                  <button className={`botao-pagamento${selecionado === "cred" ? " selecionado" : ""}`} value="cred" onClick={() => setSelecionado("cred")}>Crédito</button>
-                  <button className={`botao-pagamento${selecionado === "deb" ? " selecionado" : ""}`} value="deb" onClick={() => setSelecionado("deb")}>Débito</button>
-                  <button className={`botao-pagamento${selecionado === "bole" ? " selecionado" : ""}`} value="bole" onClick={() => setSelecionado("bole")}>Boleto</button>
-                  <button className={`botao-pagamento${selecionado === "bols" ? " selecionado" : ""}`} value="bols" onClick={() => setSelecionado("bols")}>Bolsa Família</button>
-                  <button className={`botao-pagamento${selecionado === "carn" ? " selecionado" : ""}`} value="carn" onClick={() => setSelecionado("carn")}>Carnê</button>
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ marginLeft: 16 }}>
-                    {selecionado ? (
-                      <>
-                        {textos[selecionado]}
-                        <div style={{ margin: '16px 0' }}>
-                          <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
-                            {valoresRapidos.map(v => (
-                              <button key={v} className="popup-btn popup-btn-secondary" type="button" onClick={() => handleValorRapido(v)}>
-                                +{v}
-                              </button>
-                            ))}
-                          </div>
-                          <input
-                            type="number"
-                            placeholder="Valor do depósito"
-                            value={valorDeposito}
-                            onChange={handleInputChange}
-                            style={{ width: '100%', padding: 8, borderRadius: 4, border: '1px solid #ccc' }}
-                          />
-                        </div>
-                      </>
-                    ) : <p>Selecione uma forma de pagamento para ver as informações</p>}
-                  </div>
-                </div>
-              </div>
-              <div className="popup-actions">
-                <button className="popup-btn popup-btn-secondary" onClick={() => setPopupOpen(false)}>Fechar</button>
-                <button className="popup-btn popup-btn-primary" onClick={handleConfirmar} disabled={!valorDeposito || !selecionado}>Confirmar</button>
-              </div>
+            <h2 style={{
+              color: '#FF4444',
+              marginBottom: '1rem',
+              fontSize: '1.5rem'
+            }}>
+              Saldo Insuficiente!
+            </h2>
+            <p style={{
+              color: '#ccc',
+              marginBottom: '1.5rem',
+              fontSize: '1rem'
+            }}>
+              Você não tem saldo suficiente para fazer esta aposta.
+            </p>
+            <div style={{
+              display: 'flex',
+              gap: '1rem',
+              justifyContent: 'center'
+            }}>
+              <button
+                onClick={() => setShowNoMoneyPopup(false)}
+                style={{
+                  padding: '0.5rem 1rem',
+                  border: 'none',
+                  borderRadius: '4px',
+                  background: '#51F893',
+                  color: '#000',
+                  cursor: 'pointer',
+                  fontSize: '1rem',
+                  fontWeight: 'bold',
+                  outline: 'none'
+                }}
+              >
+                OK
+              </button>
             </div>
           </div>
         </div>
       )}
+
       {/* Game Layout - Figma Style */}
-      <div style={{
+      <div className="jogo-tigrinho" style={{
         position: 'fixed',
         top: 0,
         left: 0,
@@ -438,7 +407,7 @@ const getCardImage = (card) => {
         }}>
           <div style={{ display: 'flex', gap: '2rem', alignItems: 'center' }}>
             <div 
-              style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#39FF14', cursor: 'pointer' }}
+              style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#51F893', cursor: 'pointer' }}
               onClick={() => navigate('/dashboard')}
             >
               Berry.Bet
@@ -446,7 +415,7 @@ const getCardImage = (card) => {
             <div 
               style={{ color: '#ccc', cursor: 'pointer', transition: 'color 0.3s' }}
               onClick={() => navigate('/dashboard')}
-              onMouseEnter={(e) => e.target.style.color = '#39FF14'}
+              onMouseEnter={(e) => e.target.style.color = '#51F893'}
               onMouseLeave={(e) => e.target.style.color = '#ccc'}
             >
               Menu
@@ -454,7 +423,7 @@ const getCardImage = (card) => {
             <div 
               style={{ color: '#ccc', cursor: 'pointer', transition: 'color 0.3s' }}
               onClick={() => navigate('/ranking')}
-              onMouseEnter={(e) => e.target.style.color = '#39FF14'}
+              onMouseEnter={(e) => e.target.style.color = '#51F893'}
               onMouseLeave={(e) => e.target.style.color = '#ccc'}
             >
               Ranking
@@ -462,7 +431,7 @@ const getCardImage = (card) => {
             <div 
               style={{ color: '#ccc', cursor: 'pointer', transition: 'color 0.3s' }}
               onClick={() => navigate('/saque')}
-              onMouseEnter={(e) => e.target.style.color = '#39FF14'}
+              onMouseEnter={(e) => e.target.style.color = '#51F893'}
               onMouseLeave={(e) => e.target.style.color = '#ccc'}
             >
               Saque
@@ -476,14 +445,16 @@ const getCardImage = (card) => {
         {/* Main Game Area */}
         <div style={{
           display: 'flex',
-          height: 'calc(100vh - 140px)', // header + footer
-          position: 'relative'
+          height: 'calc(100vh - 280px)', // header + footer maior (120px)
+          position: 'relative',
+          gap: '1rem',
+          padding: '1rem',
+          alignItems: 'stretch'
         }}>
           
           {/* Left Sidebar - Your Card */}
           <div style={{
-            width: '300px',
-            padding: '2rem',
+            flex: '0 0 280px', // largura fixa mas responsiva
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
@@ -491,16 +462,19 @@ const getCardImage = (card) => {
           }}>
             <div style={{
               background: '#1a1a1a',
-              height: '900px', 
+              height: '100%', // altura responsiva
+              maxHeight: '450px', // altura máxima reduzida
+              minHeight: '300px', // altura mínima
               borderRadius: '16px',
-              border: '2px solid #39FF14',
-              padding: '2rem',
+              border: '2px solid #51F893',
+              boxShadow: '0 0 15px rgba(81, 248, 147, 0.5)',
+              padding: '1.5rem',
               width: '100%',
               textAlign: 'center',
               display: 'flex',
               flexDirection: 'column'
             }}>
-              <div style={{ fontSize: '1.5rem', marginBottom: '1.5rem', color: '#39FF14', fontWeight: 'bold' }}>Your Card:</div>
+              <div style={{ fontSize: '1.5rem', marginBottom: '1.5rem', color: '#51F893', fontWeight: 'bold', textShadow: '0 0 10px rgba(81, 248, 147, 0.7)' }}>Your Card:</div>
               
               {/* Exibição da carta baseada no resultado */}
               <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -526,7 +500,7 @@ const getCardImage = (card) => {
                       VOCÊ PERDEU!
                     </div>
                   </div>
-                ) : resultadoAposta && ['win', 'vitoria'].includes(resultadoAposta.result) &&
+                ) : showWinCard && resultadoAposta && ['win', 'vitoria'].includes(resultadoAposta.result) &&
                  resultadoAposta.card &&
                  ['master', 'vinte', 'dez', 'cinco', 'miseria'].includes(resultadoAposta.card) &&
                  resultadoAposta.win_amount > Number(valorAposta) ? (
@@ -548,11 +522,12 @@ const getCardImage = (card) => {
                                 height: 200,
                                 marginBottom: 16,
                                 borderRadius: 8,
-                                border: '2px solid #39FF14',
+                                border: '2px solid #51F893',
+                                boxShadow: '0 0 10px rgba(81, 248, 147, 0.6)',
                                 background: '#fff'
                               }}
                             />
-                            <div style={{ fontSize: '14px', color: '#39FF14', fontWeight: 'bold' }}>
+                            <div style={{ fontSize: '14px', color: '#51F893', fontWeight: 'bold', textShadow: '0 0 8px rgba(81, 248, 147, 0.8)' }}>
                               MASTER - {getMultiplierDisplay('master')}
                             </div>
                           </div>
@@ -573,11 +548,12 @@ const getCardImage = (card) => {
                                 height: 200, 
                                 marginBottom: 16, 
                                 borderRadius: 8, 
-                                border: '2px solid #39FF14', 
+                                border: '2px solid #51F893', 
+                                boxShadow: '0 0 10px rgba(81, 248, 147, 0.6)',
                                 background: '#fff' 
                               }} 
                             />
-                            <div style={{ fontSize: '14px', color: '#39FF14', fontWeight: 'bold' }}>
+                            <div style={{ fontSize: '14px', color: '#51F893', fontWeight: 'bold', textShadow: '0 0 8px rgba(81, 248, 147, 0.8)' }}>
                               VINTE - {getMultiplierDisplay('vinte')}
                             </div>
                           </div>
@@ -598,11 +574,12 @@ const getCardImage = (card) => {
                                 height: 200, 
                                 marginBottom: 16, 
                                 borderRadius: 8, 
-                                border: '2px solid #39FF14', 
+                                border: '2px solid #51F893', 
+                                boxShadow: '0 0 10px rgba(81, 248, 147, 0.6)',
                                 background: '#fff' 
                               }} 
                             />
-                            <div style={{ fontSize: '14px', color: '#39FF14', fontWeight: 'bold' }}>
+                            <div style={{ fontSize: '14px', color: '#51F893', fontWeight: 'bold', textShadow: '0 0 8px rgba(81, 248, 147, 0.8)' }}>
                               DEZ - {getMultiplierDisplay('dez')}
                             </div>
                           </div>
@@ -623,11 +600,12 @@ const getCardImage = (card) => {
                                 height: 200, 
                                 marginBottom: 16, 
                                 borderRadius: 8, 
-                                border: '2px solid #39FF14', 
+                                border: '2px solid #51F893', 
+                                boxShadow: '0 0 10px rgba(81, 248, 147, 0.6)',
                                 background: '#fff' 
                               }} 
                             />
-                            <div style={{ fontSize: '14px', color: '#39FF14', fontWeight: 'bold' }}>
+                            <div style={{ fontSize: '14px', color: '#51F893', fontWeight: 'bold', textShadow: '0 0 8px rgba(81, 248, 147, 0.8)' }}>
                               CINCO - {getMultiplierDisplay('cinco')}
                             </div>
                           </div>
@@ -648,11 +626,12 @@ const getCardImage = (card) => {
                                 height: 200, 
                                 marginBottom: 16, 
                                 borderRadius: 8, 
-                                border: '2px solid #39FF14', 
+                                border: '2px solid #51F893', 
+                                boxShadow: '0 0 10px rgba(81, 248, 147, 0.6)',
                                 background: '#fff' 
                               }} 
                             />
-                            <div style={{ fontSize: '14px', color: '#39FF14', fontWeight: 'bold' }}>
+                            <div style={{ fontSize: '14px', color: '#51F893', fontWeight: 'bold', textShadow: '0 0 8px rgba(81, 248, 147, 0.8)' }}>
                               MISÉRIA - {getMultiplierDisplay('miseria')}
                             </div>
                           </div>
@@ -684,9 +663,10 @@ const getCardImage = (card) => {
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            padding: '2rem',
+            position: 'relative',
             minHeight: '100%'
           }}>
+            {/* Grid do jogo */}
             <div className="slot" style={{
               backgroundImage: 'url("/src/assets/Frame 2.png")',
               backgroundSize: 'contain',
@@ -720,53 +700,13 @@ const getCardImage = (card) => {
 
           {/* Right Sidebar - Ranking Preview */}
           <div style={{
-            width: '510px',
-            padding: '2rem',
+            flex: '0 0 350px', // largura fixa mas responsiva
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center'
           }}>
-            <div style={{
-              background: '#1a1a1a',
-              height: '900px', 
-              borderRadius: '16px',
-              border: '2px solid #39FF14',
-              padding: '2rem',
-              width: '100%',
-              overflow: 'hidden',
-              display: 'flex',
-              flexDirection: 'column'
-            }}>
-              {/* Título do Ranking */}
-              <div style={{ 
-                fontSize: '1.5rem', 
-                marginBottom: '1.5rem', 
-                color: '#39FF14', 
-                fontWeight: 'bold',
-                textAlign: 'center'
-              }}>
-                Top 5 Jogadores
-              </div>
-              
-              {/* Componente RankingPreview sem scroll */}
-              <div style={{ 
-                flex: 1,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                overflow: 'hidden'
-              }}>
-                <div style={{ 
-                  width: '100%',
-                  maxHeight: '100%',
-                  transform: 'scale(1)',
-                  transformOrigin: 'center'
-                }}>
-                  <RankingPreview />
-                </div>
-              </div>
-            </div>
+            <RankingPreview />
           </div>
         </div>
 
@@ -778,243 +718,455 @@ const getCardImage = (card) => {
           right: 0,
           background: '#2D2D2D',
           display: 'flex',
-          justifyContent: 'space-between',
           alignItems: 'center',
-          padding: '1rem 2rem',
-          borderTop: '1px solid #444'
+          padding: '1.5rem 2rem',
+          borderTop: '1px solid #444',
+          height: '120px', // altura maior para o footer
+          justifyContent: 'space-between'
         }}>
-          {/* Left side - Aporte and Lance */}
-          <div style={{ display: 'flex', gap: '2rem', color: '#fff' }}>
+          {/* Left side - Aporte and Lance (com flex para ocupar espaço) */}
+          <div style={{ 
+            display: 'flex', 
+            gap: '2rem', 
+            color: '#fff',
+            flex: '1' // Ocupa espaço disponível
+          }}>
             <div>Aporte: {valorAposta ? `${Number(valorAposta).toFixed(2)}` : '0.00'} R$</div>
             <div>Lance: {resultadoAposta?.win_amount ? `${Number(resultadoAposta.win_amount).toFixed(2)}` : '0.00'} R$</div>
           </div>
 
-          {/* Center - Play button */}
-          <button
-            onClick={girar}
-            disabled={isSpinning || !valorAposta || Number(valorAposta) <= 0}
-            style={{
-              width: 64,
-              height: 64,
-              borderRadius: '50%',
-              border: 'none',
-              backgroundColor: isSpinning ? '#666' : '#39FF14',
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              fontSize: 24,
-              cursor: 'pointer',
-              color: '#000'
-            }}
-          >
-            ▶
-          </button>
+          {/* Center - Botão de Play (centralizado horizontalmente) */}
+          <div style={{ 
+            position: 'absolute',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center' 
+          }}>
+            <button
+              onClick={girar}
+              disabled={isSpinning || !valorAposta || Number(valorAposta) <= 0}
+              style={{
+                width: 80,
+                height: 80,
+                borderRadius: '50%',
+                border: 'none',
+                backgroundColor: isSpinning ? '#666' : '#51F893',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                fontSize: 28,
+                cursor: 'pointer',
+                color: '#000',
+                boxShadow: '0 4px 20px rgba(81, 248, 147, 0.4)',
+                filter: 'drop-shadow(0 0 10px rgba(81, 248, 147, 0.6))',
+                transition: 'all 0.3s ease',
+                outline: 'none'
+              }}
+              onMouseEnter={(e) => {
+                if (!isSpinning && valorAposta && Number(valorAposta) > 0) {
+                  e.target.style.transform = 'scale(1.1)';
+                  e.target.style.boxShadow = '0 6px 30px rgba(81, 248, 147, 0.6)';
+                  e.target.style.filter = 'drop-shadow(0 0 15px rgba(81, 248, 147, 0.8))';
+                }
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.transform = 'scale(1)';
+                e.target.style.boxShadow = '0 4px 20px rgba(81, 248, 147, 0.4)';
+                e.target.style.filter = 'drop-shadow(0 0 10px rgba(81, 248, 147, 0.6))';
+              }}
+            >
+              ▶
+            </button>
+          </div>
 
           {/* Right side - Bet amount controls */}
           <div style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '1rem'
+            gap: '0.3rem',
+            flex: '1', // Ocupa espaço disponível
+            justifyContent: 'flex-end' // Alinha à direita
           }}>
-            {/* Apostas rápidas */}
-            <div style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '0.3rem'
-            }}>
-              <div style={{
-                display: 'flex',
-                gap: '0.3rem'
-              }}>
-                <button style={{
-                  width: 35,
-                  height: 25,
-                  border: 'none',
-                  borderRadius: '4px',
-                  background: '#39FF14',
-                  cursor: 'pointer',
-                  fontSize: '10px',
-                  fontWeight: 'bold',
-                  color: '#000'
-                }}
-                onClick={() => {
-                  const newValue = Number(valorAposta || 0) + 2;
-                  setValorAposta(newValue.toString());
-                }}
-                >
-                  +2
-                </button>
-                <button style={{
-                  width: 35,
-                  height: 25,
-                  border: 'none',
-                  borderRadius: '4px',
-                  background: '#39FF14',
-                  cursor: 'pointer',
-                  fontSize: '10px',
-                  fontWeight: 'bold',
-                  color: '#000'
-                }}
-                onClick={() => {
-                  const newValue = Number(valorAposta || 0) + 20;
-                  setValorAposta(newValue.toString());
-                }}
-                >
-                  +20
-                </button>
-                <button style={{
-                  width: 35,
-                  height: 25,
-                  border: 'none',
-                  borderRadius: '4px',
-                  background: '#39FF14',
-                  cursor: 'pointer',
-                  fontSize: '10px',
-                  fontWeight: 'bold',
-                  color: '#000'
-                }}
-                onClick={() => {
-                  const newValue = Number(valorAposta || 0) + 50;
-                  setValorAposta(newValue.toString());
-                }}
-                >
-                  +50
-                </button>
-              </div>
-              <div style={{
-                display: 'flex',
-                gap: '0.3rem'
-              }}>
-                <button style={{
-                  width: 35,
-                  height: 25,
-                  border: 'none',
-                  borderRadius: '4px',
-                  background: '#39FF14',
-                  cursor: 'pointer',
-                  fontSize: '9px',
-                  fontWeight: 'bold',
-                  color: '#000'
-                }}
-                onClick={() => {
-                  const newValue = Number(valorAposta || 0) + 100;
-                  setValorAposta(newValue.toString());
-                }}
-                >
-                  +100
-                </button>
-                <button style={{
-                  width: 35,
-                  height: 25,
-                  border: 'none',
-                  borderRadius: '4px',
-                  background: '#39FF14',
-                  cursor: 'pointer',
-                  fontSize: '9px',
-                  fontWeight: 'bold',
-                  color: '#000'
-                }}
-                onClick={() => {
-                  const newValue = Number(valorAposta || 0) + 200;
-                  setValorAposta(newValue.toString());
-                }}
-                >
-                  +200
-                </button>
-                <button style={{
-                  width: 35,
-                  height: 25,
-                  border: 'none',
-                  borderRadius: '4px',
-                  background: '#FF4444',
-                  cursor: 'pointer',
-                  fontSize: '8px',
-                  fontWeight: 'bold',
-                  color: '#fff'
-                }}
-                onClick={() => {
-                  setValorAposta('0');
-                }}
-                >
-                  Clear
-                </button>
-              </div>
-            </div>
-
-            {/* Botão All Win */}
-            <button style={{
-              width: 80,
-              height: 55,
-              border: 'none',
-              borderRadius: '8px',
-              background: '#FFD700',
-              cursor: 'pointer',
-              fontSize: '12px',
-              fontWeight: 'bold',
-              color: '#000',
-              marginRight: '1rem'
-            }}
-            onClick={() => {
-              if (userBalance && userBalance > 0) {
-                setValorAposta(userBalance.toFixed(2));
-              }
-            }}
-            disabled={!userBalance || userBalance <= 0}
-            >
-              ALL WIN
-            </button>
-
-            {/* Controles principais de aposta */}
+            {/* Botões com imagens das notas de dinheiro e All Win/Clear */}
             <div style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '0.5rem'
+              gap: '0.5rem',
+              justifyContent: 'center',
+              height: '100%'
             }}>
-              <button style={{
-                width: 40,
-                height: 40,
-                border: 'none',
-                borderRadius: '50%',
-                background: '#39FF14',
-                cursor: 'pointer',
-                fontSize: '18px'
-              }}
-              onClick={() => {
-                const newValue = Math.max(0, Number(valorAposta) - 5);
-                setValorAposta(newValue.toString());
-              }}
+              {/* Botões das notas de dinheiro */}
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '0.3rem',
+                justifyContent: 'center',
+                alignItems: 'center'
+              }}>
+                {/* Primeira linha de botões das notas */}
+                <div style={{
+                  display: 'flex',
+                  gap: '0.3rem'
+                }}>
+                  <button style={{
+                    width: 64,
+                    height: 36,
+                    border: 'none',
+                    borderRadius: '4px',
+                    background: 'transparent',
+                    cursor: 'pointer',
+                    fontSize: '10px',
+                    fontWeight: 'bold',
+                    color: '#000',
+                    backgroundImage: 'url("/src/assets/5 Reais.png")',
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    outline: 'none'
+                  }}
+                  onClick={() => {
+                    const newValue = (Number(valorAposta || 0) + 5).toFixed(2);
+                    setValorAposta(newValue);
+                  }}
+                  >
+                    <div style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      background: 'rgba(0, 0, 0, 0.3)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: '#fff',
+                      fontWeight: 'bold',
+                      fontSize: '8px'
+                    }}>
+                      +5
+                    </div>
+                  </button>
+                  <button style={{
+                    width: 64,
+                    height: 36,
+                    border: 'none',
+                    borderRadius: '4px',
+                    background: 'transparent',
+                    cursor: 'pointer',
+                    fontSize: '10px',
+                    fontWeight: 'bold',
+                    color: '#000',
+                    backgroundImage: 'url("/src/assets/20 Reais.png")',
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    outline: 'none'
+                  }}
+                  onClick={() => {
+                    const newValue = (Number(valorAposta || 0) + 20).toFixed(2);
+                    setValorAposta(newValue);
+                  }}
+                  >
+                    <div style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      background: 'rgba(0, 0, 0, 0.3)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: '#fff',
+                      fontWeight: 'bold',
+                      fontSize: '8px'
+                    }}>
+                      +20
+                    </div>
+                  </button>
+                  <button style={{
+                    width: 64,
+                    height: 36,
+                    border: 'none',
+                    borderRadius: '4px',
+                    background: 'transparent',
+                    cursor: 'pointer',
+                    fontSize: '10px',
+                    fontWeight: 'bold',
+                    color: '#000',
+                    backgroundImage: 'url("/src/assets/50 Reais.png")',
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    outline: 'none'
+                  }}
+                  onClick={() => {
+                    const newValue = (Number(valorAposta || 0) + 50).toFixed(2);
+                    setValorAposta(newValue);
+                  }}
+                  >
+                    <div style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      background: 'rgba(0, 0, 0, 0.3)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: '#fff',
+                      fontWeight: 'bold',
+                      fontSize: '8px'
+                    }}>
+                      +50
+                    </div>
+                  </button>
+                </div>
+                
+                {/* Segunda linha de botões das notas */}
+                <div style={{
+                  display: 'flex',
+                  gap: '0.3rem'
+                }}>
+                  <button style={{
+                    width: 64,
+                    height: 36,
+                    border: 'none',
+                    borderRadius: '4px',
+                    background: 'transparent',
+                    cursor: 'pointer',
+                    fontSize: '9px',
+                    fontWeight: 'bold',
+                    color: '#000',
+                    backgroundImage: 'url("/src/assets/100 Reais.png")',
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    outline: 'none'
+                  }}
+                  onClick={() => {
+                    const newValue = (Number(valorAposta || 0) + 100).toFixed(2);
+                    setValorAposta(newValue);
+                  }}
+                  >
+                    <div style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      background: 'rgba(0, 0, 0, 0.3)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: '#fff',
+                      fontWeight: 'bold',
+                      fontSize: '7px'
+                    }}>
+                      +100
+                    </div>
+                  </button>
+                  <button style={{
+                    width: 64,
+                    height: 36,
+                    border: 'none',
+                    borderRadius: '4px',
+                    background: 'transparent',
+                    cursor: 'pointer',
+                    fontSize: '9px',
+                    fontWeight: 'bold',
+                    color: '#000',
+                    backgroundImage: 'url("/src/assets/200 Reais.png")',
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    outline: 'none'
+                  }}
+                  onClick={() => {
+                    const newValue = (Number(valorAposta || 0) + 200).toFixed(2);
+                    setValorAposta(newValue);
+                  }}
+                  >
+                    <div style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      background: 'rgba(0, 0, 0, 0.3)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: '#fff',
+                      fontWeight: 'bold',
+                      fontSize: '7px'
+                    }}>
+                      +200
+                    </div>
+                  </button>
+                  {/* Botão Clear (vermelho) */}
+                  <button
+                    onClick={() => setValorAposta('0.00')}
+                    style={{
+                      width: 64,
+                      height: 36,
+                      border: 'none',
+                      borderRadius: '4px',
+                      background: '#FF4444',
+                      cursor: 'pointer',
+                      fontSize: '9px',
+                      fontWeight: 'bold',
+                      color: '#fff',
+                      transition: 'background-color 0.2s',
+                      outline: 'none'
+                    }}
+                    onMouseEnter={(e) => e.target.style.backgroundColor = '#FF6666'}
+                    onMouseLeave={(e) => e.target.style.backgroundColor = '#FF4444'}
+                  >
+                    Clear
+                  </button>
+                </div>
+              </div>
+
+              {/* Botão All Win ao lado (maior) */}
+              <button
+                onClick={async () => {
+                  if (userBalance !== null) {
+                    // Se saldo for menor que 1 real, mostra popup
+                    if (userBalance < 1) {
+                      setResult('Saldo insuficiente!');
+                      setShowNoMoneyPopup(true);
+                      return;
+                    }
+                    
+                    // Para All Win, usa o saldo total como número inteiro
+                    const allWinValue = Math.floor(userBalance);
+                    setValorAposta(allWinValue.toString());
+                    // Aguarda um pouco para o state atualizar, então faz a aposta
+                    setTimeout(() => {
+                      girar(true); // true indica que é All Win
+                    }, 100);
+                  }
+                }}
+                style={{
+                  width: 80,
+                  height: 76, // Altura total das duas linhas (36 + 36 + 4 de gap)
+                  border: 'none',
+                  borderRadius: '6px',
+                  background: '#FFD700',
+                  cursor: 'pointer',
+                  fontSize: '12px',
+                  fontWeight: 'bold',
+                  color: '#000',
+                  transition: 'background-color 0.2s',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  alignSelf: 'center',
+                  outline: 'none'
+                }}
+                onMouseEnter={(e) => e.target.style.backgroundColor = '#FFED4A'}
+                onMouseLeave={(e) => e.target.style.backgroundColor = '#FFD700'}
+              >
+                ALL WIN
+              </button>
+            </div>
+
+            {/* Campo de input para valor da aposta */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.3rem',
+              justifyContent: 'center',
+              height: '100%'
+            }}>
+              <span style={{ color: '#fff', fontSize: '14px' }}>Apostar:</span>
+              
+              {/* Botão de diminuir (-) */}
+              <button
+                onClick={() => {
+                  const currentValue = Number(valorAposta || 0);
+                  const newValue = Math.max(0, currentValue - 1).toFixed(2);
+                  setValorAposta(newValue);
+                }}
+                style={{
+                  width: '30px',
+                  height: '35px',
+                  border: 'none',
+                  borderRadius: '4px',
+                  background: '#FF4444',
+                  color: '#fff',
+                  cursor: 'pointer',
+                  fontSize: '16px',
+                  fontWeight: 'bold',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'background-color 0.2s',
+                  outline: 'none'
+                }}
+                onMouseEnter={(e) => e.target.style.backgroundColor = '#FF6666'}
+                onMouseLeave={(e) => e.target.style.backgroundColor = '#FF4444'}
               >
                 ◀
               </button>
-              
-              <div style={{
-                background: '#39FF14',
-                color: '#000',
-                padding: '8px 16px',
-                borderRadius: '20px',
-                fontWeight: 'bold',
-                minWidth: '80px',
-                textAlign: 'center'
-              }}>
-                R$ {valorAposta ? Number(valorAposta).toFixed(2) : '0.00'}
-              </div>
-              
-              <button style={{
-                width: 40,
-                height: 40,
-                border: 'none',
-                borderRadius: '50%',
-                background: '#39FF14',
-                cursor: 'pointer',
-                fontSize: '18px'
-              }}
-              onClick={() => {
-                const newValue = Number(valorAposta || 0) + 5;
-                setValorAposta(newValue.toString());
-              }}
+
+              <input
+                type="text"
+                value={valorAposta ? `${Number(valorAposta).toFixed(2)}` : '0.00'}
+                readOnly
+                style={{
+                  width: '80px',
+                  height: '35px',
+                  padding: '0 8px',
+                  border: '1px solid #444',
+                  borderRadius: '4px',
+                  background: '#1a1a1a',
+                  color: '#fff',
+                  fontSize: '14px',
+                  textAlign: 'center',
+                  cursor: 'default'
+                }}
+              />
+
+              {/* Botão de aumentar (+) */}
+              <button
+                onClick={() => {
+                  const currentValue = Number(valorAposta || 0);
+                  const newValue = (currentValue + 1).toFixed(2);
+                  setValorAposta(newValue);
+                }}
+                style={{
+                  width: '30px',
+                  height: '35px',
+                  border: 'none',
+                  borderRadius: '4px',
+                  background: '#51F893',
+                  color: '#000',
+                  cursor: 'pointer',
+                  fontSize: '16px',
+                  fontWeight: 'bold',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'background-color 0.2s',
+                  outline: 'none'
+                }}
+                onMouseEnter={(e) => e.target.style.backgroundColor = '#45E080'}
+                onMouseLeave={(e) => e.target.style.backgroundColor = '#51F893'}
               >
                 ▶
               </button>
+
+              <span style={{ color: '#fff', fontSize: '14px' }}>R$</span>
             </div>
           </div>
         </footer>

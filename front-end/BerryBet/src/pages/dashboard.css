@@ -1,0 +1,221 @@
+/* Dashboard CSS - Remove TODOS os contornos e bordas de forma global */
+
+/* Regras universais para remover contornos */
+* {
+  outline: none !important;
+  -webkit-tap-highlight-color: transparent !important;
+}
+
+*:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+*:active {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+*:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+*:focus-within {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Regras específicas para botões */
+button,
+input[type="button"],
+input[type="submit"],
+input[type="reset"],
+a {
+  outline: none !important;
+  border: none !important;
+  -webkit-tap-highlight-color: transparent !important;
+}
+
+button:focus,
+input[type="button"]:focus,
+input[type="submit"]:focus,
+input[type="reset"]:focus,
+a:focus {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+button:active,
+input[type="button"]:active,
+input[type="submit"]:active,
+input[type="reset"]:active,
+a:active {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+button:hover,
+input[type="button"]:hover,
+input[type="submit"]:hover,
+input[type="reset"]:hover,
+a:hover {
+  outline: none !important;
+}
+
+button:focus-visible,
+input[type="button"]:focus-visible,
+input[type="submit"]:focus-visible,
+input[type="reset"]:focus-visible,
+a:focus-visible {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+button:focus-within,
+input[type="button"]:focus-within,
+input[type="submit"]:focus-within,
+input[type="reset"]:focus-within,
+a:focus-within {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Remove contornos específicos do WebKit e Firefox */
+button::-moz-focus-inner,
+input[type="button"]::-moz-focus-inner,
+input[type="submit"]::-moz-focus-inner,
+input[type="reset"]::-moz-focus-inner {
+  border: 0 !important;
+  outline: none !important;
+}
+
+input::-moz-focus-inner {
+  border: 0 !important;
+  outline: none !important;
+}
+
+/* Regras específicas para dashboard */
+.dashboard-container * {
+  outline: none !important;
+  -webkit-tap-highlight-color: transparent !important;
+}
+
+.dashboard-container button {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.dashboard-container button:focus {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.dashboard-container button:active {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.dashboard-container button:hover {
+  outline: none !important;
+}
+
+.dashboard-container button:focus-visible {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.dashboard-container button:focus-within {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Especificamente para botões do menu dropdown */
+.dashboard-container .profile-menu-button {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.dashboard-container .profile-menu-button:focus {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.dashboard-container .profile-menu-button:active {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.dashboard-container .profile-menu-button:hover {
+  outline: none !important;
+}
+
+.dashboard-container .profile-menu-button:focus-visible {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Especificamente para botões de navegação */
+.dashboard-container .nav-button {
+  outline: none !important;
+  border: none !important;
+  box-shadow: 0 0 10px rgba(81, 248, 147, 0.3) !important;
+}
+
+.dashboard-container .nav-button:focus {
+  outline: none !important;
+  border: none !important;
+  box-shadow: 0 0 10px rgba(81, 248, 147, 0.3) !important;
+}
+
+.dashboard-container .nav-button:active {
+  outline: none !important;
+  border: none !important;
+  box-shadow: 0 0 10px rgba(81, 248, 147, 0.3) !important;
+}
+
+.dashboard-container .nav-button:hover {
+  outline: none !important;
+  border: none !important;
+  box-shadow: 0 0 15px rgba(81, 248, 147, 0.6) !important;
+}
+
+.dashboard-container .nav-button:focus-visible {
+  outline: none !important;
+  border: none !important;
+  box-shadow: 0 0 10px rgba(81, 248, 147, 0.3) !important;
+}
+
+/* Força remoção de todos os contornos possíveis */
+.dashboard-container *:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.dashboard-container *:active {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.dashboard-container *:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.dashboard-container *:focus-within {
+  outline: none !important;
+  box-shadow: none !important;
+}

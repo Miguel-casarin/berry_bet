@@ -23,15 +23,16 @@
 
 /* Estilo do container do popup */
 .popup-container {
-    background-color: #000000;
+    background-color: #1a1a1a;
     border-radius: 8px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 0 20px rgba(81, 248, 147, 0.3);
     width: 90%;
     max-width: 1800px;
     padding: 20px;
     position: relative;
     transform: scale(0.8);
     transition: transform 0.3s ease;
+    border: 2px solid #51F893;
 }
 
 .popup-overlay.active .popup-container {
@@ -59,13 +60,13 @@
     border: none;
     font-size: 1.5rem;
     cursor: pointer;
-    color: #6b6b6b;
+    color: #51F893;
     transition: color 0.2s;
 }
 
 .popup-close-canto {
     display: flex;
-    flex-direction: column; /* Adicionei "column" que estava faltando */
+    flex-direction: column;
     align-items: flex-start;
     gap: 50px;
     min-width: 2160px;
@@ -73,7 +74,7 @@
 }
 
 .popup-close:hover {
-    color: #ffffff;
+    color: #45E080;
 }
 
 /* Estilo do conteúdo do popup */
@@ -100,46 +101,53 @@
 }
 
 .popup-btn-primary {
-    background-color: #399d58;
-    color: white;
+    background-color: #51F893;
+    color: #000;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 10px rgba(81, 248, 147, 0.3);
 }
 
 .popup-btn-primary:hover {
-    background-color: #3e8e41;
+    background-color: #45E080;
+    box-shadow: 0 0 15px rgba(81, 248, 147, 0.6);
 }
 
 .popup-btn-secondary {
-    background-color: #f1f1f1;
-    color: #000000;
+    background-color: #333;
+    color: #fff;
+    transition: all 0.3s ease;
 }
 
 .popup-btn-secondary:hover {
-    background-color: #ddd;
+    background-color: #555;
+    color: #51F893;
 }
 
 .botao-pagamento {
     margin: 8px;
     padding: 16px 32px;
-    background-color: #222a36;
-    border: 2px solid #4CAF50;
+    background-color: #333;
+    border: 2px solid #51F893;
     border-radius: 30px;
     font-size: 1.2rem;
-    color: #000000;
+    color: #fff;
     font-weight: 600;
     cursor: pointer;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-    transition: all 0.3s;
+    box-shadow: 0 0 10px rgba(81, 248, 147, 0.3);
+    transition: all 0.3s ease;
 }
 
 .botao-pagamento:hover {
-    background-color: #e0e0e0;
+    background-color: #555;
     transform: scale(1.05);
+    box-shadow: 0 0 15px rgba(81, 248, 147, 0.6);
 }
 
 .botao-pagamento.selecionado {
-    background-color: #4CAF50;
-    color: white;
+    background-color: #51F893;
+    color: #000;
     font-weight: bold;
+    box-shadow: 0 0 20px rgba(81, 248, 147, 0.8);
 }
 
 .botoes-pagamento-coluna {

@@ -1,0 +1,219 @@
+/* Global CSS - Remove TODOS os contornos e bordas de toda a aplicação */
+
+/* Regras universais para remover contornos */
+* {
+  outline: none !important;
+  -webkit-tap-highlight-color: transparent !important;
+}
+
+*:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+*:active {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+*:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+*:focus-within {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Regras específicas para botões */
+button,
+input[type="button"],
+input[type="submit"],
+input[type="reset"],
+a {
+  outline: none !important;
+  border: none !important;
+  -webkit-tap-highlight-color: transparent !important;
+}
+
+button:focus,
+input[type="button"]:focus,
+input[type="submit"]:focus,
+input[type="reset"]:focus,
+a:focus {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+button:active,
+input[type="button"]:active,
+input[type="submit"]:active,
+input[type="reset"]:active,
+a:active {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+button:hover,
+input[type="button"]:hover,
+input[type="submit"]:hover,
+input[type="reset"]:hover,
+a:hover {
+  outline: none !important;
+}
+
+button:focus-visible,
+input[type="button"]:focus-visible,
+input[type="submit"]:focus-visible,
+input[type="reset"]:focus-visible,
+a:focus-visible {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+button:focus-within,
+input[type="button"]:focus-within,
+input[type="submit"]:focus-within,
+input[type="reset"]:focus-within,
+a:focus-within {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Remove contornos específicos do WebKit e Firefox */
+button::-moz-focus-inner,
+input[type="button"]::-moz-focus-inner,
+input[type="submit"]::-moz-focus-inner,
+input[type="reset"]::-moz-focus-inner {
+  border: 0 !important;
+  outline: none !important;
+}
+
+input::-moz-focus-inner {
+  border: 0 !important;
+  outline: none !important;
+}
+
+/* Sobrescreve qualquer estilo de contorno que possa existir */
+input, textarea, select {
+  outline: none !important;
+  border: none !important;
+}
+
+input:focus, textarea:focus, select:focus {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Força remoção de contornos em elementos específicos */
+.btn, .button, [role="button"] {
+  outline: none !important;
+  border: none !important;
+}
+
+.btn:focus, .button:focus, [role="button"]:focus {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.btn:active, .button:active, [role="button"]:active {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.btn:focus-visible, .button:focus-visible, [role="button"]:focus-visible {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Remove contornos de elementos de formulário */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="search"],
+input[type="tel"],
+input[type="url"],
+textarea,
+select {
+  outline: none !important;
+  border: none !important;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="number"]:focus,
+input[type="search"]:focus,
+input[type="tel"]:focus,
+input[type="url"]:focus,
+textarea:focus,
+select:focus {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Remove contornos de links */
+a:focus {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+a:active {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+a:focus-visible {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Remove contornos de elementos div clicáveis */
+div[onclick],
+div[role="button"],
+span[onclick],
+span[role="button"] {
+  outline: none !important;
+  border: none !important;
+}
+
+div[onclick]:focus,
+div[role="button"]:focus,
+span[onclick]:focus,
+span[role="button"]:focus {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+div[onclick]:active,
+div[role="button"]:active,
+span[onclick]:active,
+span[role="button"]:active {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+div[onclick]:focus-visible,
+div[role="button"]:focus-visible,
+span[onclick]:focus-visible,
+span[role="button"]:focus-visible {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}

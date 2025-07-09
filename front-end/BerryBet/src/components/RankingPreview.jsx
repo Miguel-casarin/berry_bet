@@ -14,18 +14,17 @@ function RankingPreview() {
         <div style={{
             width: '100%',
             maxWidth: 500,
-            background: 'rgba(16,24,32,0.98)',
+            background: '#1a1a1a',
             borderRadius: 20,
-            boxShadow: '0 4px 32px #00ff8577, 0 0 0 2px #fff70055',
+            boxShadow: '0 0 20px rgba(81, 248, 147, 0.3)',
             padding: 18,
-            border: '2px solid #43e97b',
-            backdropFilter: 'blur(6px)'
+            border: '2px solid #51F893',
         }}>
             <h3 style={{
                 textAlign: 'center',
-                color: '#fff700',
-                fontFamily: 'Montserrat, Arial, sans-serif',
-                textShadow: '0 2px 12px #43e97b99, 0 0 8px #fff70088',
+                color: '#51F893',
+                fontFamily: 'Arial, sans-serif',
+                textShadow: '0 0 10px rgba(81, 248, 147, 0.7)',
                 fontWeight: 900,
                 fontSize: 22,
                 letterSpacing: 1,
@@ -34,22 +33,22 @@ function RankingPreview() {
             <div style={{ overflowX: 'auto' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', background: 'none' }}>
                     <thead>
-                        <tr style={{ background: 'linear-gradient(90deg, #232946 0%, #181c2b 100%)', color: '#fff700', fontWeight: 900, fontSize: 15 }}>
-                            <th style={{ padding: '8px 4px', borderBottom: '2px solid #43e97b', borderRadius: 8 }}>#</th>
-                            <th style={{ padding: '8px 4px', borderBottom: '2px solid #43e97b', borderRadius: 8 }}>Avatar</th>
-                            <th style={{ padding: '8px 4px', borderBottom: '2px solid #43e97b', borderRadius: 8 }}>Nome</th>
-                            <th style={{ padding: '8px 4px', borderBottom: '2px solid #43e97b', borderRadius: 8 }}>Saldo</th>
-                            <th style={{ padding: '8px 4px', borderBottom: '2px solid #43e97b', borderRadius: 8 }}>Lucro</th>
+                        <tr style={{ background: '#333', color: '#51F893', fontWeight: 900, fontSize: 15 }}>
+                            <th style={{ padding: '8px 4px', borderBottom: '2px solid #51F893', borderRadius: 8 }}>#</th>
+                            <th style={{ padding: '8px 4px', borderBottom: '2px solid #51F893', borderRadius: 8 }}>Avatar</th>
+                            <th style={{ padding: '8px 4px', borderBottom: '2px solid #51F893', borderRadius: 8 }}>Nome</th>
+                            <th style={{ padding: '8px 4px', borderBottom: '2px solid #51F893', borderRadius: 8 }}>Saldo</th>
+                            <th style={{ padding: '8px 4px', borderBottom: '2px solid #51F893', borderRadius: 8 }}>Lucro</th>
                         </tr>
                     </thead>
                     <tbody>
                         {ranking.map((player, idx) => (
                             <tr key={player.id} style={{
-                                background: idx === 0 ? 'linear-gradient(90deg, #fff70033 0%, #43e97b22 100%)' : 'transparent',
+                                background: idx === 0 ? 'rgba(81, 248, 147, 0.1)' : 'transparent',
                                 borderRadius: idx === 0 ? 12 : 0,
-                                boxShadow: idx === 0 ? '0 2px 12px #fff70055' : 'none',
+                                boxShadow: idx === 0 ? '0 0 15px rgba(81, 248, 147, 0.3)' : 'none',
                                 fontWeight: idx === 0 ? 900 : 700,
-                                color: idx === 0 ? '#fff700' : '#fff',
+                                color: idx === 0 ? '#51F893' : '#fff',
                                 fontSize: 15,
                                 textAlign: 'center',
                                 transition: 'background 0.2s',
@@ -58,12 +57,12 @@ function RankingPreview() {
                                 <td style={{ padding: '8px 4px' }}>
                                     <img src={player.avatar_url ? (player.avatar_url.startsWith('http') ? player.avatar_url : `http://localhost:8080${player.avatar_url}`) : `https://ui-avatars.com/api/?name=${encodeURIComponent(player.username || 'Jogador')}`}
                                         alt="avatar"
-                                        style={{ width: 28, height: 28, borderRadius: '50%', border: idx === 0 ? '2.5px solid #fff700' : '2px solid #232946', background: '#fff', objectFit: 'cover', boxShadow: idx === 0 ? '0 0 12px #fff70088' : 'none' }}
+                                        style={{ width: 28, height: 28, borderRadius: '50%', border: idx === 0 ? '2.5px solid #51F893' : '2px solid #333', background: '#fff', objectFit: 'cover', boxShadow: idx === 0 ? '0 0 12px rgba(81, 248, 147, 0.8)' : 'none' }}
                                     />
                                 </td>
-                                <td style={{ padding: '8px 4px', maxWidth: 120, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontWeight: idx === 0 ? 900 : 700, color: idx === 0 ? '#fff700' : '#fff' }}>{player.username || 'Jogador'}</td>
-                                <td style={{ padding: '8px 4px', color: '#43e97b', fontWeight: 900 }}>R$ {player.balance?.toFixed(2) ?? '0,00'}</td>
-                                <td style={{ padding: '8px 4px', color: '#43e97b', fontWeight: 900 }}>R$ {player.total_profit?.toFixed(2) ?? '0,00'}</td>
+                                <td style={{ padding: '8px 4px', maxWidth: 120, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontWeight: idx === 0 ? 900 : 700, color: idx === 0 ? '#51F893' : '#fff' }}>{player.username || 'Jogador'}</td>
+                                <td style={{ padding: '8px 4px', color: '#51F893', fontWeight: 900 }}>R$ {player.balance?.toFixed(2) ?? '0,00'}</td>
+                                <td style={{ padding: '8px 4px', color: '#51F893', fontWeight: 900 }}>R$ {player.total_profit?.toFixed(2) ?? '0,00'}</td>
                             </tr>
                         ))}
                     </tbody>
@@ -71,17 +70,25 @@ function RankingPreview() {
             </div>
             <div style={{ textAlign: 'center', marginTop: 8 }}>
                 <a href="/ranking" style={{
-                    color: '#fff700',
+                    color: '#000',
                     fontWeight: 900,
                     fontSize: 16,
                     textDecoration: 'none',
-                    background: 'linear-gradient(90deg, #232946 0%, #43e97b 100%)',
+                    background: '#51F893',
                     padding: '7px 22px',
                     borderRadius: 10,
-                    boxShadow: '0 2px 8px #43e97b55',
-                    border: '2px solid #43e97b',
+                    boxShadow: '0 0 10px rgba(81, 248, 147, 0.3)',
+                    border: '2px solid #51F893',
                     display: 'inline-block',
-                    transition: 'background 0.2s, color 0.2s',
+                    transition: 'all 0.3s ease',
+                }}
+                onMouseEnter={(e) => {
+                    e.target.style.background = '#45E080';
+                    e.target.style.boxShadow = '0 0 15px rgba(81, 248, 147, 0.6)';
+                }}
+                onMouseLeave={(e) => {
+                    e.target.style.background = '#51F893';
+                    e.target.style.boxShadow = '0 0 10px rgba(81, 248, 147, 0.3)';
                 }}
                 >Ver ranking completo</a>
             </div>
