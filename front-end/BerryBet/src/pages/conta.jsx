@@ -1215,7 +1215,7 @@ function Conta() {
                 onClick={() => navigate('/dashboard')}
                 style={{
                     position: 'fixed',
-                    top: 20,
+                    top: -5,
                     left: 20,
                     zIndex: 1000,
                     background: '#51F893',

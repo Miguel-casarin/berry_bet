@@ -216,8 +216,46 @@ function Dashboard() {
           borderBottom: '1px solid #333',
         }}
       >
-        {/* Espaço à esquerda (invisível) para balancear */}
-        <div style={{ flex: 1 }}></div>
+        {/* Espaço à esquerda com botão de avisos */}
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'flex-start', marginLeft: 24, marginBottom: 20, }}>
+          <button
+            onClick={() => navigate('/aviso')}
+            style={{
+              background: '#FF6B35',
+              border: 'none',
+              borderRadius: '14px',
+              padding: '10px 16px',
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: 'bold',
+              color: '#fff',
+              boxShadow: '0 0 10px rgba(255, 107, 53, 0.3)',
+              transition: 'all 0.3s ease',
+              outline: 'none',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '4px',
+              height: '42px',
+              width: 'auto',
+              textAlign: 'center',
+              letterSpacing: '0.5px',
+              fontFamily: 'Arial, sans-serif',
+              whiteSpace: 'nowrap'
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.background = '#FF5722';
+              e.target.style.boxShadow = '0 0 15px rgba(255, 107, 53, 0.6)';
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.background = '#FF6B35';
+              e.target.style.boxShadow = '0 0 10px rgba(255, 107, 53, 0.3)';
+            }}
+            title="Ver avisos importantes"
+          >
+            AVISOS
+          </button>
+        </div>
         
         <header
           style={{
