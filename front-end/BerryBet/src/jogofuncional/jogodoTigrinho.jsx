@@ -133,11 +133,11 @@ function jogodoTigrinho() {
       setResult(data.message || (data.result === 'win' ? '🎉 Vitória!' : '😢 Derrota!'));
 
       // Mostra o caramelo error se for derrota (após o grid final ser mostrado)
-      if (data.result === 'loss' || data.card === 'perca' || data.win_amount < Number(valorAposta)) {
+      if (data.result === 'loss' || data.card === 'perca') {
         setTimeout(() => {
           setShowCarameloError(true);
         }, 500); // Delay para mostrar o caramelo error
-      } else {
+      } else if (data.result === 'win' && data.win_amount > 0) {
         // Para vitória, mostra a carta após um delay
         setTimeout(() => {
           setShowWinCard(true);
@@ -518,8 +518,7 @@ const getCardImage = (card) => {
                   </div>
                 ) : showWinCard && resultadoAposta && ['win', 'vitoria'].includes(resultadoAposta.result) &&
                  resultadoAposta.card &&
-                 ['master', 'vinte', 'dez', 'cinco', 'miseria'].includes(resultadoAposta.card) &&
-                 resultadoAposta.win_amount > Number(valorAposta) ? (
+                 ['master', 'vinte', 'dez', 'cinco', 'miseria'].includes(resultadoAposta.card) ? (
                   (() => {
                     switch (resultadoAposta.card) {
                       case 'master':
@@ -701,12 +700,12 @@ const getCardImage = (card) => {
                       className="dog-img"
                     />
                   ) : (
+                    // Célula transparente quando não há dogId
                     <div style={{ 
-                      fontSize: '4rem', 
-                      color: 'rgba(255, 255, 255, 0.3)',
-                      textShadow: '0 2px 4px rgba(0, 0, 0, 0.5)'
+                      width: '100%',
+                      height: '100%',
+                      background: 'transparent'
                     }}>
-                      ❔
                     </div>
                   )}
                 </div>
