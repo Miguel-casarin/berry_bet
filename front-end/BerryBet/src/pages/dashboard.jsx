@@ -7,7 +7,6 @@ import './dashboard.css'; // Importa o CSS específico do dashboard
 
 const cardData = [
   { id: 'element-1', img: apostaTigrinho },
-  { id: 'element-2', img: apostaEsport },
 ];
 
 
@@ -195,7 +194,7 @@ function Dashboard() {
       className="dashboard-container"
       style={{
         minHeight: '100vh',
-        background: '#0a0a0a',
+        background: 'hsla(0, 0%, 4%, 1.00)',
         color: '#fff',
         fontFamily: 'Arial, sans-serif',
         paddingBottom: 40,
